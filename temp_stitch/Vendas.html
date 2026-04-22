@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Portal de Gestão - Vendas</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f2f4f5",
+                    "on-surface": "#191c1d",
+                    "surface-variant": "#e1e3e4",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#2e3132",
+                    "on-background": "#191c1d",
+                    "secondary": "#4b616f",
+                    "primary-container": "#2a6f8f",
+                    "tertiary": "#025e00",
+                    "primary": "#005675",
+                    "outline-variant": "#c0c7ce",
+                    "secondary-fixed": "#cee6f6",
+                    "on-tertiary-fixed": "#002200",
+                    "inverse-on-surface": "#eff1f2",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#a0f88a",
+                    "on-primary-fixed-variant": "#004c68",
+                    "surface": "#f8fafb",
+                    "surface-container-high": "#e6e8e9",
+                    "on-tertiary-fixed-variant": "#025300",
+                    "outline": "#70787e",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed-dim": "#b2cad9",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#eceeef",
+                    "tertiary-fixed-dim": "#85db71",
+                    "error": "#ba1a1a",
+                    "tertiary-container": "#25781a",
+                    "primary-fixed-dim": "#8fcef2",
+                    "surface-tint": "#1c6585",
+                    "surface-bright": "#f8fafb",
+                    "inverse-primary": "#8fcef2",
+                    "on-surface-variant": "#40484d",
+                    "on-primary-container": "#d0ecff",
+                    "primary-fixed": "#c3e8ff",
+                    "surface-container-highest": "#e1e3e4",
+                    "background": "#f8fafb",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#a6fe8f",
+                    "on-secondary-container": "#516775",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed": "#001e2c",
+                    "on-secondary-fixed": "#051e2a",
+                    "secondary-container": "#cee6f6",
+                    "surface-dim": "#d8dadb",
+                    "on-secondary-fixed-variant": "#334a56",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafb; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .font-manrope { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- SideNavBar Shell -->
+<aside class="bg-slate-50 dark:bg-slate-900 h-screen w-64 fixed left-0 top-0 overflow-y-auto flex flex-col py-6">
+<div class="px-6 mb-8">
+<h1 class="text-lg font-bold tracking-tight text-sky-800 dark:text-sky-200 font-manrope">Gestão Operacional</h1>
+<span class="text-xs text-slate-500 font-medium">v2.4.0</span>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-4 py-2 mx-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+<span class="font-inter text-sm">Dashboard</span>
+</a>
+<a class="flex items-center px-4 py-2 mx-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3">group</span>
+<span class="font-inter text-sm">CRM/Clientes</span>
+</a>
+<!-- Active Tab: Vendas -->
+<a class="flex items-center px-4 py-2 mx-2 bg-sky-100 dark:bg-sky-900/40 text-sky-900 dark:text-sky-100 font-semibold rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3" style="font-variation-settings: 'FILL' 1;">shopping_cart</span>
+<span class="font-inter text-sm">Vendas</span>
+</a>
+<a class="flex items-center px-4 py-2 mx-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3">inventory_2</span>
+<span class="font-inter text-sm">Estoque</span>
+</a>
+<a class="flex items-center px-4 py-2 mx-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3">local_shipping</span>
+<span class="font-inter text-sm">Logística</span>
+</a>
+<a class="flex items-center px-4 py-2 mx-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3">map</span>
+<span class="font-inter text-sm">Rotas</span>
+</a>
+<a class="flex items-center px-4 py-2 mx-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3">person_search</span>
+<span class="font-inter text-sm">Vendedores</span>
+</a>
+<a class="flex items-center px-4 py-2 mx-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3">account_circle</span>
+<span class="font-inter text-sm">Perfil</span>
+</a>
+</nav>
+<div class="px-6 mt-auto">
+<div class="flex items-center gap-3 p-2 bg-slate-100 dark:bg-slate-800 rounded-xl">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="professional portrait of a manager in a clean office environment with soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBp-gUNPAIJz1mSZzUoVfQN7F4lHl-SgVH23O4_5byQW0CylM04H2R9XsDT3qkfpHbrFyFMU0MFg7PMiqPXoPOqnQhk67eQPXfPW6OM06N8Bm50Ve2zwk5yQflTADtnNJrELArmAPuO8_pu-6wXUtYtEO9UTrC9-tkIfQlTfB_JelUb-Bce6XPPETMp06G8UKONo-wYR-H2OkPdpIXWDOLe7ETLgOCwzx10gr-VUZr9qHFO7wuVa16yyrlov-ybFkARCNgBytpcaQ"/>
+<div class="overflow-hidden">
+<p class="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">Carlos Oliveira</p>
+<p class="text-xs text-slate-500 truncate">Admin</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 min-h-screen flex flex-col">
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md flex justify-between items-center px-8 border-b border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md focus-within:ring-2 focus-within:ring-sky-500 rounded-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-highest border-none rounded-full text-sm focus:ring-0" placeholder="Pesquisar vendas, notas ou clientes..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="hover:bg-slate-50 dark:hover:bg-slate-900 rounded-full p-2 transition-colors">
+<span class="material-symbols-outlined text-slate-600">notifications</span>
+</button>
+<button class="hover:bg-slate-50 dark:hover:bg-slate-900 rounded-full p-2 transition-colors">
+<span class="material-symbols-outlined text-slate-600">settings</span>
+</button>
+<button class="hover:bg-slate-50 dark:hover:bg-slate-900 rounded-full p-2 transition-colors">
+<span class="material-symbols-outlined text-slate-600">help_outline</span>
+</button>
+</div>
+</header>
+<!-- Page Content -->
+<div class="pt-24 pb-12 px-8 flex-1 bg-surface-container-low">
+<!-- Hero Header -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="text-3xl font-extrabold font-manrope text-on-surface tracking-tight">Vendas</h2>
+<p class="text-on-surface-variant font-body mt-1">Gerencie seu fluxo comercial e histórico de transações.</p>
+</div>
+<button class="flex items-center gap-2 px-6 py-3 bg-gradient-to-b from-primary-container to-primary text-white rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all font-manrope font-semibold">
+<span class="material-symbols-outlined text-lg">add_circle</span>
+                    Nova Venda
+                </button>
+</div>
+<!-- Dashboard Stats Bento Grid (Subtle Integration) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+<div class="bg-surface-container-lowest p-6 rounded-xl border-none shadow-sm flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-sky-600 bg-sky-50 p-2 rounded-lg">payments</span>
+<span class="text-tertiary text-xs font-bold">+12.5%</span>
+</div>
+<div class="mt-4">
+<p class="text-on-surface-variant text-xs font-semibold uppercase tracking-wider">Total em Vendas</p>
+<h4 class="text-2xl font-bold font-manrope mt-1">R$ 142.480</h4>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border-none shadow-sm flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-amber-600 bg-amber-50 p-2 rounded-lg">pending_actions</span>
+</div>
+<div class="mt-4">
+<p class="text-on-surface-variant text-xs font-semibold uppercase tracking-wider">Aguardando Pagamento</p>
+<h4 class="text-2xl font-bold font-manrope mt-1">18</h4>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border-none shadow-sm flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-tertiary bg-tertiary/10 p-2 rounded-lg">check_circle</span>
+</div>
+<div class="mt-4">
+<p class="text-on-surface-variant text-xs font-semibold uppercase tracking-wider">Concluídas (Mês)</p>
+<h4 class="text-2xl font-bold font-manrope mt-1">245</h4>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border-none shadow-sm flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-error bg-error/10 p-2 rounded-lg">trending_up</span>
+</div>
+<div class="mt-4">
+<p class="text-on-surface-variant text-xs font-semibold uppercase tracking-wider">Ticket Médio</p>
+<h4 class="text-2xl font-bold font-manrope mt-1">R$ 581,50</h4>
+</div>
+</div>
+</div>
+<!-- Filters Bar -->
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm mb-6 flex flex-wrap items-center gap-6">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant">filter_list</span>
+<span class="text-sm font-bold font-manrope">Filtrar por:</span>
+</div>
+<div class="flex gap-4 items-center flex-1">
+<!-- Status Filter -->
+<div class="relative group">
+<select class="appearance-none bg-surface-container pl-4 pr-10 py-2 border-none rounded-lg text-sm font-medium focus:ring-2 focus:ring-sky-500 cursor-pointer">
+<option>Status: Todos</option>
+<option>Concluída</option>
+<option>Pendente</option>
+<option>Cancelada</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+</div>
+<!-- Vendedor Filter -->
+<div class="relative group">
+<select class="appearance-none bg-surface-container pl-4 pr-10 py-2 border-none rounded-lg text-sm font-medium focus:ring-2 focus:ring-sky-500 cursor-pointer">
+<option>Vendedor: Todos</option>
+<option>Ana Paula</option>
+<option>Marcos Silva</option>
+<option>Ricardo Santos</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+</div>
+<!-- Date Filter -->
+<div class="relative group">
+<input class="bg-surface-container px-4 py-2 border-none rounded-lg text-sm font-medium focus:ring-2 focus:ring-sky-500 cursor-pointer" type="date"/>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="px-4 py-2 text-sm font-semibold text-sky-700 hover:bg-sky-50 rounded-lg transition-colors">Limpar</button>
+<button class="px-6 py-2 text-sm font-semibold bg-secondary-container text-on-secondary-container rounded-lg hover:bg-sky-200 transition-colors">Aplicar Filtros</button>
+</div>
+</div>
+<!-- Sales Table -->
+<div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-high/30">
+<tr>
+<th class="px-8 py-5 text-on-surface-variant font-label text-xs uppercase tracking-widest font-bold">Cliente</th>
+<th class="px-6 py-5 text-on-surface-variant font-label text-xs uppercase tracking-widest font-bold">Vendedor</th>
+<th class="px-6 py-5 text-on-surface-variant font-label text-xs uppercase tracking-widest font-bold">Valor</th>
+<th class="px-6 py-5 text-on-surface-variant font-label text-xs uppercase tracking-widest font-bold">Status</th>
+<th class="px-6 py-5 text-on-surface-variant font-label text-xs uppercase tracking-widest font-bold">Data</th>
+<th class="px-8 py-5 text-right text-on-surface-variant font-label text-xs uppercase tracking-widest font-bold">Ações</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-8 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-xs">AM</div>
+<div>
+<p class="text-sm font-semibold text-on-surface">Agência Metrópole</p>
+<p class="text-xs text-on-surface-variant">CNPJ: 42.123.000/0001-90</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm text-on-surface">Ana Paula</p>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm font-bold text-on-surface">R$ 12.450,00</p>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-tertiary-fixed text-on-tertiary-fixed text-[10px] font-bold uppercase rounded-full">Concluída</span>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm text-on-surface-variant">24 Out 2023</p>
+</td>
+<td class="px-8 py-4 text-right">
+<button class="p-2 hover:bg-white rounded-full text-slate-400 hover:text-sky-700 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-8 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">LS</div>
+<div>
+<p class="text-sm font-semibold text-on-surface">Loja do Sul</p>
+<p class="text-xs text-on-surface-variant">CPF: 054.XXX.XXX-12</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm text-on-surface">Ricardo Santos</p>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm font-bold text-on-surface">R$ 3.120,50</p>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-secondary-fixed text-on-secondary-fixed text-[10px] font-bold uppercase rounded-full">Pendente</span>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm text-on-surface-variant">23 Out 2023</p>
+</td>
+<td class="px-8 py-4 text-right">
+<button class="p-2 hover:bg-white rounded-full text-slate-400 hover:text-sky-700 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-8 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs">TC</div>
+<div>
+<p class="text-sm font-semibold text-on-surface">Tech Corp Ltda</p>
+<p class="text-xs text-on-surface-variant">CNPJ: 11.456.789/0001-22</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm text-on-surface">Marcos Silva</p>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm font-bold text-on-surface">R$ 45.900,00</p>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-tertiary-fixed text-on-tertiary-fixed text-[10px] font-bold uppercase rounded-full">Concluída</span>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm text-on-surface-variant">22 Out 2023</p>
+</td>
+<td class="px-8 py-4 text-right">
+<button class="p-2 hover:bg-white rounded-full text-slate-400 hover:text-sky-700 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-8 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-bold text-xs">PB</div>
+<div>
+<p class="text-sm font-semibold text-on-surface">Pizzaria Bella</p>
+<p class="text-xs text-on-surface-variant">CPF: 887.XXX.XXX-00</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm text-on-surface">Ana Paula</p>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm font-bold text-on-surface">R$ 890,00</p>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-error-container text-on-error-container text-[10px] font-bold uppercase rounded-full">Cancelada</span>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm text-on-surface-variant">22 Out 2023</p>
+</td>
+<td class="px-8 py-4 text-right">
+<button class="p-2 hover:bg-white rounded-full text-slate-400 hover:text-sky-700 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-8 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs">GR</div>
+<div>
+<p class="text-sm font-semibold text-on-surface">Geraldo Ramos</p>
+<p class="text-xs text-on-surface-variant">CPF: 122.XXX.XXX-55</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm text-on-surface">Ricardo Santos</p>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm font-bold text-on-surface">R$ 2.400,00</p>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-secondary-fixed text-on-secondary-fixed text-[10px] font-bold uppercase rounded-full">Pendente</span>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm text-on-surface-variant">21 Out 2023</p>
+</td>
+<td class="px-8 py-4 text-right">
+<button class="p-2 hover:bg-white rounded-full text-slate-400 hover:text-sky-700 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Pagination -->
+<div class="px-8 py-4 bg-white border-t border-slate-50 flex items-center justify-between">
+<span class="text-xs font-medium text-on-surface-variant">Mostrando 5 de 1,240 vendas</span>
+<div class="flex gap-1">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-sky-100 text-sky-800 font-bold text-xs">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-bold text-xs text-slate-500">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 font-bold text-xs text-slate-500">3</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Contextual Banner (Editorial Pattern) -->
+<div class="mt-12 bg-sky-900 rounded-2xl overflow-hidden relative min-h-[160px] flex items-center">
+<img class="absolute inset-0 w-full h-full object-cover opacity-20" data-alt="abstract architectural geometry with smooth blue and steel textures, high-end professional atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6eBIax5ULIvikwisyZlNH08QQrVfAveSVnGHH_yD1yv_5qIy1xUkaYnthDfkIBnr2auldXCyDR5iqdpVmzi6VBW1HTuTw0-GLyih-7ggLzvPMgvWv9XP-xmYpicPLPbJwKHrU-M9s05Lf7pBGc8ZKtjfMmUuF5l6h0-YND7MGRdKr77EP1mnnZ3MGzA7EDrw7rv6KLaLVQozEgtPJFuBwoRHo_fVp44hFYsus3QncI7Jrww2xMA5UWxt679A3Rl7LvIy2s-Qugg"/>
+<div class="relative z-10 px-10 flex flex-col md:flex-row md:items-center justify-between w-full gap-6">
+<div>
+<h3 class="text-white font-manrope text-2xl font-bold">Relatório de Desempenho Disponível</h3>
+<p class="text-sky-200/80 font-body text-sm mt-1">Sua equipe atingiu 85% da meta mensal. Veja os detalhes agora.</p>
+</div>
+<button class="bg-white text-sky-900 px-6 py-3 rounded-xl font-bold font-manrope hover:bg-sky-50 transition-all flex items-center gap-2">
+                        Ver Insights
+                        <span class="material-symbols-outlined">trending_up</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="px-8 py-6 flex justify-between items-center text-on-surface-variant/60 text-xs border-t border-slate-200/40">
+<p>© 2023 Portal de Gestão Operacional. Todos os direitos reservados.</p>
+<div class="flex gap-6">
+<a class="hover:text-primary" href="#">Termos de Uso</a>
+<a class="hover:text-primary" href="#">Privacidade</a>
+<a class="hover:text-primary" href="#">Suporte</a>
+</div>
+</footer>
+</main>
+</body></html>

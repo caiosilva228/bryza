@@ -1,0 +1,149 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background-image: linear-gradient(135deg, #f8fafb 0%, #eceeef 100%);
+  font-family: var(--font-body);
+}
+
+.mainCard {
+  width: 100%;
+  max-width: 900px;
+  background-color: var(--color-surface-container-lowest);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px -10px rgba(0, 86, 117, 0.04);
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .mainCard {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.brandingSide {
+  display: none;
+  background-color: var(--color-primary);
+  padding: 48px;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .brandingSide {
+    display: flex;
+  }
+}
+
+.brandingContent {
+  position: relative;
+  z-index: 10;
+}
+
+.formSide {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .formSide {
+    padding: 64px;
+  }
+}
+
+.mobileLogo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 40px;
+}
+
+@media (min-width: 768px) {
+  .mobileLogo {
+    display: none;
+  }
+}
+
+.label {
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-on-surface-variant);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.inputGroup {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 16px;
+  color: var(--color-outline);
+  pointer-events: none;
+  transition: color 0.2s;
+}
+
+.inputGroup:focus-within .inputIcon {
+  color: var(--color-primary);
+}
+
+.input {
+  width: 100%;
+  padding: 12px 16px 12px 48px;
+  background-color: var(--color-surface-container-highest);
+  border: none;
+  border-radius: 8px;
+  color: var(--color-on-surface);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: box-shadow 0.2s;
+  outline: none;
+}
+
+.input:focus {
+  box-shadow: 0 0 0 2px rgba(0, 86, 117, 0.2);
+}
+
+.input::placeholder {
+  color: var(--color-outline);
+}
+
+.submitButton {
+  width: 100%;
+  padding: 16px;
+  background-image: linear-gradient(to bottom, var(--color-primary-container), var(--color-primary));
+  color: white;
+  font-family: var(--font-headline);
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 86, 117, 0.2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.submitButton:hover {
+  opacity: 0.95;
+}
+
+.submitButton:active {
+  transform: scale(0.98);
+}

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Rotas Operacionais | Portal de Gestão</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafb;
+            color: #191c1d;
+        }
+        h1, h2, h3, .font-headline {
+            font-family: 'Manrope', sans-serif;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e1e3e4;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-low": "#f2f4f5",
+                      "on-surface": "#191c1d",
+                      "surface-variant": "#e1e3e4",
+                      "on-error": "#ffffff",
+                      "inverse-surface": "#2e3132",
+                      "on-background": "#191c1d",
+                      "secondary": "#4b616f",
+                      "primary-container": "#2a6f8f",
+                      "tertiary": "#025e00",
+                      "primary": "#005675",
+                      "outline-variant": "#c0c7ce",
+                      "secondary-fixed": "#cee6f6",
+                      "on-tertiary-fixed": "#002200",
+                      "inverse-on-surface": "#eff1f2",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed": "#a0f88a",
+                      "on-primary-fixed-variant": "#004c68",
+                      "surface": "#f8fafb",
+                      "surface-container-high": "#e6e8e9",
+                      "on-tertiary-fixed-variant": "#025300",
+                      "outline": "#70787e",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed-dim": "#b2cad9",
+                      "on-secondary": "#ffffff",
+                      "surface-container": "#eceeef",
+                      "tertiary-fixed-dim": "#85db71",
+                      "error": "#ba1a1a",
+                      "tertiary-container": "#25781a",
+                      "primary-fixed-dim": "#8fcef2",
+                      "surface-tint": "#1c6585",
+                      "surface-bright": "#f8fafb",
+                      "inverse-primary": "#8fcef2",
+                      "on-surface-variant": "#40484d",
+                      "on-primary-container": "#d0ecff",
+                      "primary-fixed": "#c3e8ff",
+                      "surface-container-highest": "#e1e3e4",
+                      "background": "#f8fafb",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-container": "#a6fe8f",
+                      "on-secondary-container": "#516775",
+                      "on-primary": "#ffffff",
+                      "on-primary-fixed": "#001e2c",
+                      "on-secondary-fixed": "#051e2a",
+                      "secondary-container": "#cee6f6",
+                      "surface-dim": "#d8dadb",
+                      "on-secondary-fixed-variant": "#334a56",
+                      "on-error-container": "#93000a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "fontFamily": {
+                      "headline": ["Manrope"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface antialiased">
+<!-- SideNavBar (Execution from JSON) -->
+<aside class="bg-slate-50 dark:bg-slate-900 h-screen w-64 fixed left-0 top-0 overflow-y-auto flex flex-col py-6 z-50">
+<div class="px-6 mb-8">
+<h1 class="text-lg font-bold tracking-tight text-sky-800 dark:text-sky-200 font-manrope">Gestão Operacional</h1>
+<p class="text-xs text-slate-500 font-inter">v2.4.0</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Active State Logic: 'Rotas' is active -->
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 flex items-center px-4 py-2.5 rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">dashboard</span>
+<span class="text-sm font-inter">Dashboard</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 flex items-center px-4 py-2.5 rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">group</span>
+<span class="text-sm font-inter">CRM/Clientes</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 flex items-center px-4 py-2.5 rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">shopping_cart</span>
+<span class="text-sm font-inter">Vendas</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 flex items-center px-4 py-2.5 rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">inventory_2</span>
+<span class="text-sm font-inter">Estoque</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 flex items-center px-4 py-2.5 rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">local_shipping</span>
+<span class="text-sm font-inter">Logística</span>
+</a>
+<a class="bg-sky-100 dark:bg-sky-900/40 text-sky-900 dark:text-sky-100 font-semibold rounded-lg mx-2 flex items-center px-4 py-2.5 group" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">map</span>
+<span class="text-sm font-inter">Rotas</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 flex items-center px-4 py-2.5 rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">person_search</span>
+<span class="text-sm font-inter">Vendedores</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 flex items-center px-4 py-2.5 rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">account_circle</span>
+<span class="text-sm font-inter">Perfil</span>
+</a>
+</nav>
+</aside>
+<!-- TopNavBar (Execution from JSON) -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 flex justify-between items-center px-8 shadow-sm dark:shadow-none">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+<input class="w-full bg-slate-100 dark:bg-slate-900 border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-sky-500 transition-all font-inter" placeholder="Pesquisar rotas ou motoristas..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="hover:bg-slate-50 dark:hover:bg-slate-900 rounded-full p-2 transition-colors relative">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+</button>
+<button class="hover:bg-slate-50 dark:hover:bg-slate-900 rounded-full p-2 transition-colors">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300">settings</span>
+</button>
+<button class="hover:bg-slate-50 dark:hover:bg-slate-900 rounded-full p-2 transition-colors">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300">help_outline</span>
+</button>
+<div class="ml-4 flex items-center gap-3">
+<div class="text-right hidden sm:block">
+<p class="text-sm font-semibold text-slate-900 dark:text-white leading-none font-inter">Carlos Silva</p>
+<p class="text-[10px] text-slate-500 font-inter">Supervisor de Logística</p>
+</div>
+<img alt="Foto do Usuário" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" data-alt="close-up portrait of a professional man in a business setting with soft natural office lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQZXTmu6z7zLHaa-9J3CXrD6G9EVbOrvv4k4PNfpAm38RjPPngtlDrTZIKhkasN59LFjOnVwgwHY0k_rBHJswh4eTwGDQi-gxrn_AmMkJmNNgZatI6aiqofUgOpqtVkQvE3BEAiHTf4yUW9VYTgmGvCgVN-JRiyRb3hIZ0X6_tXZTHA_T7wTpkeNVnazuXsAxLPeB0XukXF7dfEBLAPRuXjAmidaggrcpX6ZiUCPGDrrR_fVNtvuMgOgN6XRhbFEvWYqbvLTqj8Q"/>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-64 pt-24 px-8 pb-12 min-h-screen">
+<!-- Dashboard Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+<div>
+<h2 class="text-3xl font-bold font-headline text-on-surface tracking-tight mb-2">Rotas Diárias</h2>
+<div class="flex items-center gap-3 text-sm text-on-surface-variant font-body">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+<span>Terça-feira, 24 de Outubro</span>
+<span class="w-1 h-1 bg-outline-variant rounded-full"></span>
+<span class="text-tertiary font-semibold">12 rotas ativas hoje</span>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 bg-secondary-container text-on-secondary-container px-4 py-2.5 rounded-xl font-semibold text-sm transition-transform hover:scale-[1.02] active:scale-95">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+                    Filtrar Região
+                </button>
+<button class="flex items-center gap-2 bg-gradient-to-b from-primary-container to-primary text-on-primary px-5 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition-transform hover:scale-[1.02] active:scale-95">
+<span class="material-symbols-outlined text-[20px]">add_road</span>
+                    Otimizar Novas Rotas
+                </button>
+</div>
+</div>
+<!-- Bento Grid Layout for Routes -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+<!-- Statistics Column -->
+<div class="xl:col-span-3 space-y-6">
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm space-y-6">
+<div>
+<p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-4 font-label">Resumo de Entregas</p>
+<div class="space-y-4">
+<div class="flex justify-between items-end">
+<span class="text-sm font-medium text-on-surface-variant font-body">Concluídas</span>
+<span class="text-xl font-bold font-headline">142/256</span>
+</div>
+<div class="w-full bg-surface-container-high h-2.5 rounded-full overflow-hidden">
+<div class="bg-tertiary h-full rounded-full w-[55%]"></div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 gap-4 pt-4 border-t border-surface-container">
+<div class="bg-surface-container-low p-3 rounded-lg flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-tertiary/10 text-tertiary flex items-center justify-center">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div>
+<p class="text-[10px] uppercase font-bold text-on-surface-variant font-label">Em Tempo</p>
+<p class="text-lg font-bold font-headline">92%</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-error/10 text-error flex items-center justify-center">
+<span class="material-symbols-outlined">warning</span>
+</div>
+<div>
+<p class="text-[10px] uppercase font-bold text-on-surface-variant font-label">Atrasos</p>
+<p class="text-lg font-bold font-headline">08</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Map Preview -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden relative h-64">
+<img class="w-full h-full object-cover opacity-80" data-alt="stylized modern digital map visualization with blue route lines and location pins over a dark aesthetic background" data-location="São Paulo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjBW3uhIcQyrDYAlVCjWp3Or1iL702JtmAh5FTtNbvbiygMpb79FLeoxUX-Jr_W3qcR0AWxdX8Fp1MA7F2lkDfB5T1Be3nvLwDLW0T3FfsXhM_QBkIjeQqYam5Oy-0_clBwPeZd2A7IDyWqTAwn0fxsuE9KT9VHg4TrudMWDfHK_C2slwTENHjMTsnyhaKLMwS1W5maL2nqf5uRyDX9--Vj0xHcwD7tfO8OR0VFEhAmoanc38VtwmxHcOC8cHkjCggXT602N-ugA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent flex flex-col justify-end p-5">
+<p class="text-white font-bold font-headline text-lg">Visão Geral SP</p>
+<p class="text-white/80 text-xs font-body">Monitoramento em tempo real</p>
+</div>
+<div class="absolute top-4 right-4">
+<button class="bg-white/90 backdrop-blur p-2 rounded-lg shadow-lg text-primary hover:bg-white transition-colors">
+<span class="material-symbols-outlined">zoom_out_map</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Routes Column (Agrupamento por Região) -->
+<div class="xl:col-span-9 space-y-10">
+<!-- Região: Zona Sul -->
+<section>
+<div class="flex items-center gap-4 mb-6">
+<div class="h-px bg-surface-container flex-1"></div>
+<h3 class="flex items-center gap-2 text-on-surface-variant font-bold font-headline uppercase tracking-tighter text-sm">
+<span class="material-symbols-outlined text-primary text-lg">location_on</span>
+                            Zona Sul (Região A)
+                        </h3>
+<div class="h-px bg-surface-container flex-1"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Card Rota 1 -->
+<div class="bg-surface-container-lowest p-5 rounded-2xl border border-transparent hover:border-primary-container/20 hover:shadow-xl transition-all group">
+<div class="flex justify-between items-start mb-4">
+<div class="bg-primary/5 px-3 py-1 rounded-lg">
+<span class="text-primary font-bold font-headline text-xs">ROTA-01</span>
+</div>
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 rounded text-[10px] font-bold">EM ROTA</span>
+</div>
+<h4 class="text-lg font-bold font-headline text-on-surface mb-1 group-hover:text-primary transition-colors">Moema / Brooklin</h4>
+<p class="text-xs text-on-surface-variant font-body mb-6">Motorista: Ricardo Alves</p>
+<div class="space-y-3 mb-6">
+<div class="flex items-center gap-3 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">inventory</span>
+<span>28 Entregas totais</span>
+</div>
+<div class="flex items-center gap-3 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span>Início: 08:30 • Previsão: 16:45</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-surface-container">
+<div class="flex -space-x-2">
+<img alt="Avatar" class="w-8 h-8 rounded-full border-2 border-white object-cover" data-alt="professional male driver avatar headshot with warm lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBi7MaPVljkG6-3YyOjhvaOzAraSKnap9mo_bwtciT6SBEDeAGT2BfNAwB8rBA-j4fiQpJxgGbIDHYeguFQDTcR4wzLdMrCqGXPbllgrQEp0IgDRAl3tPxAdS-mAjaYLSHfQkdikXOwmAxPhl4wIkyezi5Kct_EztdK5Q6ZTBzxaqmy-kGiYGgBvnCzqYIA01JS38KssFaWCEzwf8VyVYpferpTwFtRQz-5EgVA-RVv4R-CMVnxMCF8pmVZxxbWjXDQB7d6bGKiQw"/>
+</div>
+<button class="text-primary font-bold text-xs flex items-center gap-1 group-hover:gap-2 transition-all">
+                                    DETALHES <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card Rota 2 -->
+<div class="bg-surface-container-lowest p-5 rounded-2xl border border-transparent hover:border-primary-container/20 hover:shadow-xl transition-all group">
+<div class="flex justify-between items-start mb-4">
+<div class="bg-primary/5 px-3 py-1 rounded-lg">
+<span class="text-primary font-bold font-headline text-xs">ROTA-02</span>
+</div>
+<span class="bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded text-[10px] font-bold">AGUARDANDO</span>
+</div>
+<h4 class="text-lg font-bold font-headline text-on-surface mb-1 group-hover:text-primary transition-colors">Itaim Bibi / Jardins</h4>
+<p class="text-xs text-on-surface-variant font-body mb-6">Motorista: Helena Martins</p>
+<div class="space-y-3 mb-6">
+<div class="flex items-center gap-3 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">inventory</span>
+<span>22 Entregas totais</span>
+</div>
+<div class="flex items-center gap-3 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span>Início: 10:00 • Previsão: 18:30</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-surface-container">
+<div class="flex -space-x-2">
+<img alt="Avatar" class="w-8 h-8 rounded-full border-2 border-white object-cover" data-alt="portrait of a professional female fleet driver smiling with soft bokeh background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOsfR-U2Xco7_C55zRneZAZiy3fn5o8b5Y5XD0YQe5qAZz6dZOTC60MZtFfIl8E8H3QH_2r-Jcq3_wFdsMNU9P_lfnNqJCBu11anSfb3PY_iAIe4sgI-28OVv5AXlpswlv3zItHf9b-hxlNIoygBtqtXUk2YnC7PPXe9kl9Cc1yq84Y_fLL7C9XcwRaNjwdDwvsYfkfiiSCxtWMmm7Nt0F6Jmf9njq3VYSo42mR8WZSknCrJmRS8FfzO6bXUQN3gxup43SItIAPA"/>
+</div>
+<button class="text-primary font-bold text-xs flex items-center gap-1 group-hover:gap-2 transition-all">
+                                    DETALHES <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card Rota 3 -->
+<div class="bg-surface-container-lowest p-5 rounded-2xl border border-transparent hover:border-primary-container/20 hover:shadow-xl transition-all group">
+<div class="flex justify-between items-start mb-4">
+<div class="bg-primary/5 px-3 py-1 rounded-lg">
+<span class="text-primary font-bold font-headline text-xs">ROTA-05</span>
+</div>
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 rounded text-[10px] font-bold">EM ROTA</span>
+</div>
+<h4 class="text-lg font-bold font-headline text-on-surface mb-1 group-hover:text-primary transition-colors">Morumbi / Panamby</h4>
+<p class="text-xs text-on-surface-variant font-body mb-6">Motorista: Pedro Santos</p>
+<div class="space-y-3 mb-6">
+<div class="flex items-center gap-3 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">inventory</span>
+<span>19 Entregas totais</span>
+</div>
+<div class="flex items-center gap-3 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span>Início: 08:00 • Previsão: 15:30</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-surface-container">
+<div class="flex -space-x-2">
+<img alt="Avatar" class="w-8 h-8 rounded-full border-2 border-white object-cover" data-alt="professional staff portrait with natural lighting and neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuACktaX3HctHdJHPvEnz15ttdE9XkGh9dxXn2QjNeE6wGHsvUfVkXpofFCXClI6SH2oFGKgfBlCRYK8LeJTK8F57J_jC0JpZqxJgB2cRaoEMnPMfZoqh-Brd4039ypmtuV53UpXQbPtLJ-voJ3ePQlBz6xEnfXDTtrymyA9RpBKF4FgVdE5lgBhuiKpjhvnG2-lgZrv-jwZ89X30QvkGtIKber53P5vSqTomApLiAK0T8yWx2V8AwBXUZsOsSZMDAw3jVQCye1r0Q"/>
+</div>
+<button class="text-primary font-bold text-xs flex items-center gap-1 group-hover:gap-2 transition-all">
+                                    DETALHES <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Região: Zona Oeste -->
+<section>
+<div class="flex items-center gap-4 mb-6">
+<div class="h-px bg-surface-container flex-1"></div>
+<h3 class="flex items-center gap-2 text-on-surface-variant font-bold font-headline uppercase tracking-tighter text-sm">
+<span class="material-symbols-outlined text-primary text-lg">location_on</span>
+                            Zona Oeste (Região B)
+                        </h3>
+<div class="h-px bg-surface-container flex-1"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Card Rota 4 -->
+<div class="bg-surface-container-lowest p-5 rounded-2xl border border-transparent hover:border-primary-container/20 hover:shadow-xl transition-all group">
+<div class="flex justify-between items-start mb-4">
+<div class="bg-primary/5 px-3 py-1 rounded-lg">
+<span class="text-primary font-bold font-headline text-xs">ROTA-11</span>
+</div>
+<span class="bg-error-container text-on-error-container px-2 py-0.5 rounded text-[10px] font-bold">ATRASO</span>
+</div>
+<h4 class="text-lg font-bold font-headline text-on-surface mb-1 group-hover:text-primary transition-colors">Pinheiros / Vila Madalena</h4>
+<p class="text-xs text-on-surface-variant font-body mb-6">Motorista: André Rocha</p>
+<div class="space-y-3 mb-6">
+<div class="flex items-center gap-3 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm text-error">error</span>
+<span class="text-error font-medium">Trânsito intenso na Marginal</span>
+</div>
+<div class="flex items-center gap-3 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">inventory</span>
+<span>31 Entregas totais</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-surface-container">
+<div class="flex -space-x-2">
+<img alt="Avatar" class="w-8 h-8 rounded-full border-2 border-white object-cover" data-alt="professional male chauffeur or driver portrait in soft afternoon light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAgBNNbdoAcFgU4YonK_1ywrjkf1ubb-aBWc5nHzBCvrjtiSmbOAYvItmYtuALp_3_aapQIqKmXjigJcYNuakIR69bQuuZJ9GiwF_KOhghlWwRHSU1SsNL9UkxGK-2kdITSnDrngxpsUTMKZ8SpOFuf5Heqy6ECyw7uGN2qkDDmpZ_NK2KhKNhuYkUQiFmlc4ibPhW_2s5w077s6W1ei_4qDLDgkIyGPX29aV4FSZ3Y3ObvucuH5r5hzhL3t4OCwdCoOxv5IQt5w"/>
+</div>
+<button class="bg-error text-white font-bold text-[10px] px-3 py-1 rounded-lg transition-all hover:bg-red-700">
+                                    VER ALERTA
+                                </button>
+</div>
+</div>
+<!-- Card Rota 5 -->
+<div class="bg-surface-container-lowest p-5 rounded-2xl border border-transparent hover:border-primary-container/20 hover:shadow-xl transition-all group">
+<div class="flex justify-between items-start mb-4">
+<div class="bg-primary/5 px-3 py-1 rounded-lg">
+<span class="text-primary font-bold font-headline text-xs">ROTA-12</span>
+</div>
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 rounded text-[10px] font-bold">EM ROTA</span>
+</div>
+<h4 class="text-lg font-bold font-headline text-on-surface mb-1 group-hover:text-primary transition-colors">Lapa / Perdizes</h4>
+<p class="text-xs text-on-surface-variant font-body mb-6">Motorista: Juliana Ferraz</p>
+<div class="space-y-3 mb-6">
+<div class="flex items-center gap-3 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">inventory</span>
+<span>24 Entregas totais</span>
+</div>
+<div class="flex items-center gap-3 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span>Início: 09:00 • Previsão: 17:15</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-surface-container">
+<div class="flex -space-x-2">
+<img alt="Avatar" class="w-8 h-8 rounded-full border-2 border-white object-cover" data-alt="confident professional woman headshot in professional work environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmPqNdjRjrNBPI2Vo_ilV69vYrVtRRSbmo-t7j--Ytm0yB3IavA8knQuOayuBvYbO2xxnM1sxKHlWlkyVuCanWS25N73uxAm7b0IT2Vv9BkLxpWUZsGTmPlaGDO7hP6t2gr5aNWWdgL9glfcoC4SmHe5VcJkP-kogEgtlvQVd5n-TdpPfWPdeT6ANIkQzBGz1GEbkGV5PpNS2y9KLmV0RL5bfAbCnBLDHhJ5kjaKGOVfURv9Ck9GAcUYC_N3VnBFW29z5Jjh2PJw"/>
+</div>
+<button class="text-primary font-bold text-xs flex items-center gap-1 group-hover:gap-2 transition-all">
+                                    DETALHES <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- Float Action for Emergency or Quick Change -->
+<div class="fixed bottom-10 right-10">
+<button class="bg-inverse-surface text-inverse-on-surface w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-transform hover:scale-110 active:scale-95 group">
+<span class="material-symbols-outlined text-3xl group-hover:rotate-12 transition-transform">support_agent</span>
+</button>
+</div>
+</main>
+<!-- Bottom Navigation for Mobile (Responsive Pivot) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-950 px-6 h-20 flex justify-between items-center z-50 shadow-[0_-1px_10px_rgba(0,0,0,0.05)]">
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium">Início</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">local_shipping</span>
+<span class="text-[10px] font-medium">Envios</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-sky-700" href="#">
+<div class="bg-sky-100 p-2 rounded-xl mb-[-4px]">
+<span class="material-symbols-outlined">map</span>
+</div>
+<span class="text-[10px] font-bold">Rotas</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[10px] font-medium">Estoque</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="text-[10px] font-medium">Perfil</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Perfil do Usuário - Portal de Gestão</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f2f4f5",
+                    "on-surface": "#191c1d",
+                    "surface-variant": "#e1e3e4",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#2e3132",
+                    "on-background": "#191c1d",
+                    "secondary": "#4b616f",
+                    "primary-container": "#2a6f8f",
+                    "tertiary": "#025e00",
+                    "primary": "#005675",
+                    "outline-variant": "#c0c7ce",
+                    "secondary-fixed": "#cee6f6",
+                    "on-tertiary-fixed": "#002200",
+                    "inverse-on-surface": "#eff1f2",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#a0f88a",
+                    "on-primary-fixed-variant": "#004c68",
+                    "surface": "#f8fafb",
+                    "surface-container-high": "#e6e8e9",
+                    "on-tertiary-fixed-variant": "#025300",
+                    "outline": "#70787e",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed-dim": "#b2cad9",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#eceeef",
+                    "tertiary-fixed-dim": "#85db71",
+                    "error": "#ba1a1a",
+                    "tertiary-container": "#25781a",
+                    "primary-fixed-dim": "#8fcef2",
+                    "surface-tint": "#1c6585",
+                    "surface-bright": "#f8fafb",
+                    "inverse-primary": "#8fcef2",
+                    "on-surface-variant": "#40484d",
+                    "on-primary-container": "#d0ecff",
+                    "primary-fixed": "#c3e8ff",
+                    "surface-container-highest": "#e1e3e4",
+                    "background": "#f8fafb",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#a6fe8f",
+                    "on-secondary-container": "#516775",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed": "#001e2c",
+                    "on-secondary-fixed": "#051e2a",
+                    "secondary-container": "#cee6f6",
+                    "surface-dim": "#d8dadb",
+                    "on-secondary-fixed-variant": "#334a56",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .tonal-shift-bg { background-color: #f2f4f5; }
+        .glass-nav { backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 overflow-y-auto bg-slate-50 dark:bg-slate-900 flex flex-col py-6 tonal-shift-bg">
+<div class="px-6 mb-8">
+<h1 class="text-lg font-bold tracking-tight text-sky-800 dark:text-sky-200 font-headline">Gestão Operacional</h1>
+<p class="text-xs text-slate-500 font-body">v2.4.0</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 rounded-lg font-body text-sm" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="dashboard">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 rounded-lg font-body text-sm" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="group">group</span> CRM/Clientes
+            </a>
+<a class="flex items-center px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 rounded-lg font-body text-sm" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="shopping_cart">shopping_cart</span> Vendas
+            </a>
+<a class="flex items-center px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 rounded-lg font-body text-sm" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="inventory_2">inventory_2</span> Estoque
+            </a>
+<a class="flex items-center px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 rounded-lg font-body text-sm" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="local_shipping">local_shipping</span> Logística
+            </a>
+<a class="flex items-center px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 rounded-lg font-body text-sm" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="map">map</span> Rotas
+            </a>
+<a class="flex items-center px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 rounded-lg font-body text-sm" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="person_search">person_search</span> Vendedores
+            </a>
+<a class="flex items-center px-4 py-2 bg-sky-100 dark:bg-sky-900/40 text-sky-900 dark:text-sky-100 font-semibold rounded-lg mx-2 font-body text-sm" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="account_circle" style="font-variation-settings: 'FILL' 1;">account_circle</span> Perfil
+            </a>
+</nav>
+<div class="px-6 mt-auto pt-6 border-t border-slate-200/50">
+<div class="flex items-center gap-3">
+<img alt="Foto do Usuário" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" data-alt="Professional headshot of a smiling man with neat hair and a clean-shaven face, warm studio lighting, neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEBtLAe1gkMDoCRZtOVQyx13Sd47kaV4ZNHjhfVjqt8HigF9J2cTIQQX2VFmqBwuNwkAPkMihWzX2Oi8OWOBhCh65Twch5AKhBunLu7KQUEW_h4uPcJBJq6PKBBz06ltAFB1i9ieXPorluK1MbtToxL2PQk-3K817NvjATEsisUJQ02S1_oInXUXMB-MauGVGW4WR-RSAEz3T97V23AFp86yykx8MUvaQJopsCNNVFcpl3YHYxWOzh0oA87zaO9xkcLQpXybeOTg"/>
+<div>
+<p class="text-sm font-semibold text-slate-900">Ricardo Silva</p>
+<p class="text-xs text-slate-500">Admin</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md flex justify-between items-center px-8 border-b border-slate-100 dark:border-slate-800 shadow-sm">
+<div class="flex items-center bg-surface-container-low px-4 py-2 rounded-full w-96 focus-within:ring-2 focus-within:ring-sky-500 transition-all">
+<span class="material-symbols-outlined text-slate-400 text-xl mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-full font-body placeholder:text-slate-400" placeholder="Pesquisar no sistema..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<button class="hover:bg-slate-50 dark:hover:bg-slate-900 rounded-full p-2 transition-colors">
+<span class="material-symbols-outlined text-slate-600" data-icon="notifications">notifications</span>
+</button>
+<button class="hover:bg-slate-50 dark:hover:bg-slate-900 rounded-full p-2 transition-colors">
+<span class="material-symbols-outlined text-slate-600" data-icon="settings">settings</span>
+</button>
+<button class="hover:bg-slate-50 dark:hover:bg-slate-900 rounded-full p-2 transition-colors">
+<span class="material-symbols-outlined text-slate-600" data-icon="help_outline">help_outline</span>
+</button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-64 pt-24 px-12 pb-12 min-h-screen bg-surface">
+<div class="max-w-5xl mx-auto">
+<!-- Header Section -->
+<div class="mb-10">
+<h2 class="text-3xl font-bold font-headline text-on-surface tracking-tight">Meu Perfil</h2>
+<p class="text-on-surface-variant font-body mt-1">Gerencie suas informações pessoais e configurações de segurança.</p>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Profile Identity Card -->
+<section class="md:col-span-4 flex flex-col gap-6">
+<div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/10 flex flex-col items-center text-center">
+<div class="relative mb-6">
+<img alt="Foto do Usuário" class="w-32 h-32 rounded-full border-4 border-surface shadow-md" data-alt="Close-up portrait of a professional man in a white shirt, soft natural light coming from the side, clean minimalist background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZOB5awJKRVBtQWuoxVyC2fTjAeEh_Y7LE_B_hO6pKMGsAiW2JZx-rlj3EfqSIsyzaHomOlDufpH7PZgTkNQC2jbJZrM7tt59_iOlg-_oaNiecsuiDh40n_knnUOw8N3gSulBV8Dj3xqANXy2a_YtgEp4Y4bTpnDJSM-OqiQxAIiy_rg0wxSTtzGFJ4XsPcprP2P3EowFdyzSJmkFl2LnIPcRSj6iGX9_ySRGF5Ee7dLQWzqf2HFTzcWu-nfBoLOV4dd0iXhfIuw"/>
+<button class="absolute bottom-1 right-1 bg-primary text-on-primary p-2 rounded-full shadow-lg hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-sm">photo_camera</span>
+</button>
+</div>
+<h3 class="text-xl font-bold font-headline text-on-surface">Ricardo Silva</h3>
+<span class="mt-2 px-3 py-1 bg-primary-fixed text-on-primary-fixed text-xs font-semibold rounded-full font-label">ADMINISTRADOR</span>
+<p class="mt-4 text-sm text-on-surface-variant font-body">Membro desde Outubro de 2023</p>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/10">
+<h4 class="text-sm font-semibold text-on-surface font-label mb-4 uppercase tracking-wider">Atividade Recente</h4>
+<ul class="space-y-4">
+<li class="flex gap-3 items-start">
+<div class="w-2 h-2 rounded-full bg-tertiary mt-1.5"></div>
+<div class="text-xs">
+<p class="text-on-surface font-semibold">Login realizado</p>
+<p class="text-on-surface-variant">Hoje às 08:42</p>
+</div>
+</li>
+<li class="flex gap-3 items-start">
+<div class="w-2 h-2 rounded-full bg-primary mt-1.5"></div>
+<div class="text-xs">
+<p class="text-on-surface font-semibold">Venda aprovada #8842</p>
+<p class="text-on-surface-variant">Ontem às 16:15</p>
+</div>
+</li>
+</ul>
+</div>
+</section>
+<!-- Information Form Section -->
+<section class="md:col-span-8 flex flex-col gap-6">
+<div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/10">
+<div class="flex items-center justify-between mb-8">
+<h4 class="text-lg font-bold font-headline text-on-surface">Dados Pessoais</h4>
+<button class="text-primary font-semibold text-sm hover:underline">Editar Informações</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="text-xs font-bold text-on-surface-variant font-label uppercase">Nome Completo</label>
+<div class="bg-surface-container-highest px-4 py-3 rounded-lg text-sm text-on-surface font-body">
+                                    Ricardo Silva de Oliveira
+                                </div>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold text-on-surface-variant font-label uppercase">E-mail Corporativo</label>
+<div class="bg-surface-container-highest px-4 py-3 rounded-lg text-sm text-on-surface font-body">
+                                    ricardo.silva@gestaooperacional.com.br
+                                </div>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold text-on-surface-variant font-label uppercase">Tipo de Usuário</label>
+<div class="flex items-center gap-2 bg-surface-container-highest px-4 py-3 rounded-lg text-sm text-on-surface font-body">
+<span class="material-symbols-outlined text-primary text-lg">verified_user</span>
+                                    Administrador
+                                </div>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold text-on-surface-variant font-label uppercase">Departamento</label>
+<div class="bg-surface-container-highest px-4 py-3 rounded-lg text-sm text-on-surface font-body">
+                                    Diretoria de Operações
+                                </div>
+</div>
+</div>
+</div>
+<!-- Password Management -->
+<div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/10">
+<div class="mb-6">
+<h4 class="text-lg font-bold font-headline text-on-surface">Segurança da Conta</h4>
+<p class="text-sm text-on-surface-variant font-body">Mantenha sua conta protegida alterando sua senha regularmente.</p>
+</div>
+<form class="space-y-5">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+<div class="space-y-2">
+<label class="text-xs font-bold text-on-surface-variant font-label uppercase" for="current_pwd">Senha Atual</label>
+<input class="w-full bg-surface-container-highest border-none rounded-lg focus:ring-2 focus:ring-primary/20 font-body text-sm py-3" id="current_pwd" placeholder="••••••••" type="password"/>
+</div>
+<div class="hidden md:block"></div>
+<div class="space-y-2">
+<label class="text-xs font-bold text-on-surface-variant font-label uppercase" for="new_pwd">Nova Senha</label>
+<input class="w-full bg-surface-container-highest border-none rounded-lg focus:ring-2 focus:ring-primary/20 font-body text-sm py-3" id="new_pwd" placeholder="Mínimo 8 caracteres" type="password"/>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold text-on-surface-variant font-label uppercase" for="confirm_pwd">Confirmar Nova Senha</label>
+<input class="w-full bg-surface-container-highest border-none rounded-lg focus:ring-2 focus:ring-primary/20 font-body text-sm py-3" id="confirm_pwd" placeholder="Repita a nova senha" type="password"/>
+</div>
+</div>
+<div class="pt-4 flex justify-end">
+<button class="bg-gradient-to-b from-primary-container to-primary text-on-primary px-8 py-3 rounded-lg font-semibold text-sm shadow-md hover:opacity-90 transition-all active:scale-95" type="submit">
+                                    Atualizar Senha
+                                </button>
+</div>
+</form>
+</div>
+<!-- Integration/Others Section -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="bg-surface-container-low rounded-xl p-6 flex items-center gap-4 border border-outline-variant/10">
+<div class="bg-tertiary-fixed p-3 rounded-lg text-on-tertiary-fixed">
+<span class="material-symbols-outlined">security</span>
+</div>
+<div>
+<h5 class="text-sm font-bold text-on-surface">Autenticação em 2 Etapas</h5>
+<p class="text-xs text-on-surface-variant">Ativada via Google Authenticator</p>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-xl p-6 flex items-center gap-4 border border-outline-variant/10">
+<div class="bg-secondary-fixed p-3 rounded-lg text-on-secondary-fixed">
+<span class="material-symbols-outlined">devices</span>
+</div>
+<div>
+<h5 class="text-sm font-bold text-on-surface">Dispositivos Conectados</h5>
+<p class="text-xs text-on-surface-variant">3 sessões ativas no momento</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Danger Zone -->
+<div class="mt-12 pt-8 border-t border-outline-variant/20 flex items-center justify-between">
+<div>
+<h5 class="text-sm font-bold text-on-surface">Sair da Conta</h5>
+<p class="text-xs text-on-surface-variant">Encerrar sua sessão em todos os dispositivos.</p>
+</div>
+<button class="text-error font-semibold text-sm px-6 py-2 rounded-lg border border-error/20 hover:bg-error-container/20 transition-colors">
+                    Logout
+                </button>
+</div>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Desempenho de Vendedores | Portal de Gestão</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-header {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                "surface-container-low": "#f2f4f5",
+                "on-surface": "#191c1d",
+                "surface-variant": "#e1e3e4",
+                "on-error": "#ffffff",
+                "inverse-surface": "#2e3132",
+                "on-background": "#191c1d",
+                "secondary": "#4b616f",
+                "primary-container": "#2a6f8f",
+                "tertiary": "#025e00",
+                "primary": "#005675",
+                "outline-variant": "#c0c7ce",
+                "secondary-fixed": "#cee6f6",
+                "on-tertiary-fixed": "#002200",
+                "inverse-on-surface": "#eff1f2",
+                "error-container": "#ffdad6",
+                "tertiary-fixed": "#a0f88a",
+                "on-primary-fixed-variant": "#004c68",
+                "surface": "#f8fafb",
+                "surface-container-high": "#e6e8e9",
+                "on-tertiary-fixed-variant": "#025300",
+                "outline": "#70787e",
+                "on-tertiary": "#ffffff",
+                "secondary-fixed-dim": "#b2cad9",
+                "on-secondary": "#ffffff",
+                "surface-container": "#eceeef",
+                "tertiary-fixed-dim": "#85db71",
+                "error": "#ba1a1a",
+                "tertiary-container": "#25781a",
+                "primary-fixed-dim": "#8fcef2",
+                "surface-tint": "#1c6585",
+                "surface-bright": "#f8fafb",
+                "inverse-primary": "#8fcef2",
+                "on-surface-variant": "#40484d",
+                "on-primary-container": "#d0ecff",
+                "primary-fixed": "#c3e8ff",
+                "surface-container-highest": "#e1e3e4",
+                "background": "#f8fafb",
+                "surface-container-lowest": "#ffffff",
+                "on-tertiary-container": "#a6fe8f",
+                "on-secondary-container": "#516775",
+                "on-primary": "#ffffff",
+                "on-primary-fixed": "#001e2c",
+                "on-secondary-fixed": "#051e2a",
+                "secondary-container": "#cee6f6",
+                "surface-dim": "#d8dadb",
+                "on-secondary-fixed-variant": "#334a56",
+                "on-error-container": "#93000a"
+              },
+              "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+              },
+              "fontFamily": {
+                "headline": ["Manrope"],
+                "body": ["Inter"],
+                "label": ["Inter"]
+              }
+            },
+          }
+        }
+    </script>
+</head>
+<body class="bg-surface font-body text-on-surface">
+<!-- SideNavBar Integration -->
+<aside class="bg-slate-50 dark:bg-slate-900 h-screen w-64 fixed left-0 top-0 overflow-y-auto flex flex-col py-6 z-50">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">analytics</span>
+</div>
+<div>
+<h1 class="text-lg font-bold tracking-tight text-sky-800 dark:text-sky-200 font-headline">Gestão Operacional</h1>
+<p class="text-[10px] text-slate-500 font-body">v2.4.0</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 flex items-center gap-3 px-4 py-3 rounded-lg group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-inter">Dashboard</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 flex items-center gap-3 px-4 py-3 rounded-lg" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-sm font-inter">CRM/Clientes</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 flex items-center gap-3 px-4 py-3 rounded-lg" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="text-sm font-inter">Vendas</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 flex items-center gap-3 px-4 py-3 rounded-lg" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-sm font-inter">Estoque</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 flex items-center gap-3 px-4 py-3 rounded-lg" href="#">
+<span class="material-symbols-outlined">local_shipping</span>
+<span class="text-sm font-inter">Logística</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 flex items-center gap-3 px-4 py-3 rounded-lg" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="text-sm font-inter">Rotas</span>
+</a>
+<a class="bg-sky-100 dark:bg-sky-900/40 text-sky-900 dark:text-sky-100 font-semibold rounded-lg mx-2 flex items-center gap-3 px-4 py-3" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person_search</span>
+<span class="text-sm font-inter">Vendedores</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 flex items-center gap-3 px-4 py-3 rounded-lg" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="text-sm font-inter">Perfil</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 min-h-screen">
+<!-- TopNavBar Integration -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 flex justify-between items-center px-8 shadow-sm dark:shadow-none">
+<div class="flex items-center gap-6">
+<h2 class="text-xl font-extrabold text-slate-900 dark:text-slate-50 font-headline">Portal de Gestão</h2>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="pl-9 pr-4 py-2 bg-surface-container-highest border-none rounded-full text-sm focus:ring-2 focus:ring-sky-500 transition-all w-64 font-body" placeholder="Pesquisar vendedores..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="hover:bg-slate-50 dark:hover:bg-slate-900 rounded-full p-2 transition-colors">
+<span class="material-symbols-outlined text-slate-600">notifications</span>
+</button>
+<button class="hover:bg-slate-50 dark:hover:bg-slate-900 rounded-full p-2 transition-colors">
+<span class="material-symbols-outlined text-slate-600">settings</span>
+</button>
+<div class="ml-2 w-8 h-8 rounded-full bg-surface-container overflow-hidden">
+<img alt="Foto do Usuário" class="w-full h-full object-cover" data-alt="professional corporate headshot of a smiling manager in a light office setting with blurred background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfzG8Yyyoj1zjSuenoowfRvow7r5e8XWhC1xVdK6J6chMB6oOfrQtp8RHdXbKtApt0n4ZwDJ9AIwV4GgOqM2Gohr5V3eRt3toblrvGydXSiAyds5EKAuuCuX0NtNKDw9IiRH1U9Q-V-u700Dta00V69MaXHHwdW8R3JFxzBGq5WAqYU-g1A-EkeP4pYi_qcgfDZFoOTK6sOs0vWGTkl7y5kWuLaahGaKNlBMKgiz7zyfgeIjAu1F0ZlP-L4ZsG9hgr-yy15r1dfA"/>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="pt-24 px-8 pb-12">
+<!-- Header Section -->
+<div class="mb-8">
+<h3 class="text-3xl font-bold font-headline text-on-surface tracking-tight">Performance de Vendedores</h3>
+<p class="text-on-surface-variant mt-1 font-body">Monitoramento de vendas e comissionamento em tempo real.</p>
+</div>
+<!-- Dashboard Stats Summary (Bento Pattern) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/10">
+<p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-2">Total de Vendas</p>
+<h4 class="text-2xl font-bold font-headline text-primary">R$ 1.284.000</h4>
+<div class="mt-2 flex items-center text-tertiary text-xs font-medium">
+<span class="material-symbols-outlined text-sm mr-1">trending_up</span>
+<span>+12.5% vs mês anterior</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/10">
+<p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-2">Ticket Médio</p>
+<h4 class="text-2xl font-bold font-headline text-on-surface">R$ 4.250</h4>
+<div class="mt-2 flex items-center text-tertiary text-xs font-medium">
+<span class="material-symbols-outlined text-sm mr-1">check_circle</span>
+<span>Meta atingida</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/10">
+<p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-2">Melhor Região</p>
+<h4 class="text-2xl font-bold font-headline text-on-surface">Sudeste</h4>
+<p class="text-on-surface-variant text-xs mt-2">42% do volume total</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/10">
+<p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-2">Vendedores Ativos</p>
+<h4 class="text-2xl font-bold font-headline text-on-surface">124</h4>
+<p class="text-on-surface-variant text-xs mt-2">98.2% de engajamento</p>
+</div>
+</div>
+<!-- Performance List Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/10 overflow-hidden">
+<div class="px-8 py-6 border-b border-surface-container flex justify-between items-center">
+<h5 class="text-lg font-semibold font-headline">Ranking de Performance</h5>
+<button class="bg-secondary-container text-on-secondary-container px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 hover:bg-slate-200 transition-colors">
+<span class="material-symbols-outlined text-lg">filter_list</span>
+                        Filtrar
+                    </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low">
+<th class="px-8 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-widest font-label">Vendedor</th>
+<th class="px-8 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-widest font-label">Região</th>
+<th class="px-8 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-widest font-label">Vendas no Mês</th>
+<th class="px-8 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-widest font-label text-right">Comissão</th>
+<th class="px-8 py-4 text-xs font-semibold text-on-surface-variant uppercase tracking-widest font-label text-center">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-high/50 transition-colors cursor-pointer group">
+<td class="px-8 py-5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-fixed">
+<img alt="Ricardo Silva" class="w-full h-full object-cover" data-alt="portrait of a confident brazilian salesman in a modern suit against a bright professional background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBh5_TImBcul4pHBnbKN3tGYcNmWm7EzF-4HvY-xCAEJSmFDTE6bOhlr7jIHKwBXbh5FbSO87SWi8CzTVqhuQMMpwCT_4ts0C66hT3RvrJ-CvJMwMo7ocEsSVjPF5bWI2hVZvyHLyKlGBFU213X16Nud4Kb_SgELfkkHzwsG48NRg84Z-qKmYwECsUS-yW7oLqUdWAt3rK-zlDx2x6U4gL2X_o1kkDYz4DBv1Twun3clQAIInVzIPPJnLTEvzu2xpeVjqZ1f1KryA"/>
+</div>
+<div>
+<p class="font-semibold text-on-surface text-sm">Ricardo Silva</p>
+<p class="text-xs text-on-surface-variant">ID: #4492</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="bg-surface-container px-3 py-1 rounded-full text-xs font-medium text-secondary">São Paulo, SP</span>
+</td>
+<td class="px-8 py-5">
+<p class="text-sm font-bold text-on-surface">R$ 145.200,00</p>
+<div class="w-full bg-surface-container-highest h-1 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary h-full" style="width: 85%;"></div>
+</div>
+</td>
+<td class="px-8 py-5 text-right">
+<span class="text-sm font-semibold text-tertiary">R$ 7.260,00</span>
+</td>
+<td class="px-8 py-5 text-center">
+<span class="inline-flex items-center gap-1 bg-tertiary-fixed text-on-tertiary-fixed px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase">Meta Batida</span>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-high/50 transition-colors cursor-pointer group">
+<td class="px-8 py-5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-transparent">
+<img alt="Ana Paula Martins" class="w-full h-full object-cover" data-alt="successful business woman smiling in a bright office environment with a professional air" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgfsdQ21Jv_aXSNnGtTdJYGsvFViE8PlJ-btYWRhWF3HmDS_uLBUMCqJft7hIyVlKlBhgFtlI_94oI1_ti4qZokiBgKWb0_uVuwFvzmbHEOgi9zck1xDAl68AiaVimr3Hiuky7jPTUFFYsDN8_Qw4Ss2xdgv8HOqiG34fkkyhYemabsQxfoiSOzV-a6JdCBvftKjBVcuhFCTy8HocA1myjtL6jvEtFNDl5X3pUraxLkulMDgAfqTcKri7YCO0t0Z-giTQHaoX4ag"/>
+</div>
+<div>
+<p class="font-semibold text-on-surface text-sm">Ana Paula Martins</p>
+<p class="text-xs text-on-surface-variant">ID: #4481</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="bg-surface-container px-3 py-1 rounded-full text-xs font-medium text-secondary">Curitiba, PR</span>
+</td>
+<td class="px-8 py-5">
+<p class="text-sm font-bold text-on-surface">R$ 128.900,00</p>
+<div class="w-full bg-surface-container-highest h-1 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary h-full" style="width: 78%;"></div>
+</div>
+</td>
+<td class="px-8 py-5 text-right">
+<span class="text-sm font-semibold text-tertiary">R$ 6.445,00</span>
+</td>
+<td class="px-8 py-5 text-center">
+<span class="inline-flex items-center gap-1 bg-tertiary-fixed text-on-tertiary-fixed px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase">Meta Batida</span>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-high/50 transition-colors cursor-pointer group">
+<td class="px-8 py-5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden">
+<img alt="Carlos Mendes" class="w-full h-full object-cover" data-alt="focused young professional man in creative office setting with modern lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHigkxJyLycKW9WExeMwgmeBtH5fl7tvPOhYtbuQVxv2S9zp-I5nf9DFwnLDkG5gTF2ckML9Wc4SmqmvVPf3Rqd5RRlJdhSuQ1nfNRVng8vnxz8MDVJU0365e4E4JTB2VZuysHtwTryQhEX1LhLKQFASpwRJIgwyJP94lEMGuke47cHDDcdulWmPz6TLwiLLXDPULtjND1tJRwZaGwm3gUC4RViR85PPhodd54pHjp9eGWXp7pMODGdJgw9B8MvT4jXSOUP46XWA"/>
+</div>
+<div>
+<p class="font-semibold text-on-surface text-sm">Carlos Mendes</p>
+<p class="text-xs text-on-surface-variant">ID: #4495</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="bg-surface-container px-3 py-1 rounded-full text-xs font-medium text-secondary">Rio de Janeiro, RJ</span>
+</td>
+<td class="px-8 py-5">
+<p class="text-sm font-bold text-on-surface">R$ 92.400,00</p>
+<div class="w-full bg-surface-container-highest h-1 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary-fixed-dim h-full" style="width: 60%;"></div>
+</div>
+</td>
+<td class="px-8 py-5 text-right">
+<span class="text-sm font-semibold text-tertiary">R$ 4.620,00</span>
+</td>
+<td class="px-8 py-5 text-center">
+<span class="inline-flex items-center gap-1 bg-surface-container-high text-secondary px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase">Em Progresso</span>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-high/50 transition-colors cursor-pointer group">
+<td class="px-8 py-5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden">
+<img alt="Beatriz Oliveira" class="w-full h-full object-cover" data-alt="professional woman in a modern workspace looking energetic and confident" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCC6YuA5KRmzvnlAcjrStyTQqXh3LUUZ5YCOH0fAPx5YqcREBWMPqgjj8F3oCNSpVTyi1V1N761miR05kSy1r7wclzYq7HW65KGGdHNUEMQj0tNxKQ1qwfAv_aFXomKzTJGOHxr8uIduVih50cNdq4haRfA5_CbKJEQzW15uhlpPpoKNsEe9WG-VhbMkFAB6w1mh28HchCTYWwhpjvXFHISnQROPOvted70KdCmMCmcJjaxMr_ZUi4bd_epEyTfQrlpWdImRSiNyA"/>
+</div>
+<div>
+<p class="font-semibold text-on-surface text-sm">Beatriz Oliveira</p>
+<p class="text-xs text-on-surface-variant">ID: #4501</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="bg-surface-container px-3 py-1 rounded-full text-xs font-medium text-secondary">Belo Horizonte, MG</span>
+</td>
+<td class="px-8 py-5">
+<p class="text-sm font-bold text-on-surface">R$ 115.000,00</p>
+<div class="w-full bg-surface-container-highest h-1 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary h-full" style="width: 72%;"></div>
+</div>
+</td>
+<td class="px-8 py-5 text-right">
+<span class="text-sm font-semibold text-tertiary">R$ 5.750,00</span>
+</td>
+<td class="px-8 py-5 text-center">
+<span class="inline-flex items-center gap-1 bg-tertiary-fixed text-on-tertiary-fixed px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase">Meta Batida</span>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-high/50 transition-colors cursor-pointer group">
+<td class="px-8 py-5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden">
+<img alt="Felipe Costa" class="w-full h-full object-cover" data-alt="handsome middle-aged businessman in a professional environment smiling warmly" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZDUKHpRkO6oJhpvPF4qe6HUhZ5K_Z0nLpEfQAslgiEh8-n3Mi0_sIbvc6__mN5gXAyBthcLHoDxFYPVyRK1MY59buSVOMMzKcf9rB71rqPDIa7szhXaxxFs9SJ4E0fQiGULico96CBksgHVbG1OwWqv8R7GGBSokNqYR2OyHaeqYaUgC7WwW5QJlAj69Tf_9tyZMwiyeUbSNa1cvqlPvTxCvtrXhPR3Blh6IyNMxOcmUsOFvM3oVTl-lo1HI_HTroOPuZdx-H1Q"/>
+</div>
+<div>
+<p class="font-semibold text-on-surface text-sm">Felipe Costa</p>
+<p class="text-xs text-on-surface-variant">ID: #4512</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="bg-surface-container px-3 py-1 rounded-full text-xs font-medium text-secondary">Brasília, DF</span>
+</td>
+<td class="px-8 py-5">
+<p class="text-sm font-bold text-on-surface">R$ 88.000,00</p>
+<div class="w-full bg-surface-container-highest h-1 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary-fixed-dim h-full" style="width: 58%;"></div>
+</div>
+</td>
+<td class="px-8 py-5 text-right">
+<span class="text-sm font-semibold text-tertiary">R$ 4.400,00</span>
+</td>
+<td class="px-8 py-5 text-center">
+<span class="inline-flex items-center gap-1 bg-surface-container-high text-secondary px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase">Em Progresso</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-8 py-4 bg-surface-container-low flex justify-between items-center">
+<p class="text-xs text-on-surface-variant">Exibindo 5 de 124 vendedores</p>
+<div class="flex gap-2">
+<button class="p-1 rounded hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="p-1 rounded hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Footer Task Bar (Contextual) -->
+<div class="mt-10 flex justify-end gap-3">
+<button class="px-6 py-3 bg-secondary-container text-on-secondary-container rounded-lg font-semibold text-sm hover:scale-95 transition-transform active:scale-90">Exportar Relatório</button>
+<button class="px-6 py-3 bg-gradient-to-b from-primary-container to-primary text-on-primary rounded-lg font-semibold text-sm shadow-md hover:scale-95 transition-transform active:scale-90 flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">person_add</span>
+                    Novo Vendedor
+                </button>
+</div>
+</div>
+</main>
+</body></html>

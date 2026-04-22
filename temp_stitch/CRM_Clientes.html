@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CRM - Clientes | Portal de Gestão</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f2f4f5",
+                    "on-surface": "#191c1d",
+                    "surface-variant": "#e1e3e4",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#2e3132",
+                    "on-background": "#191c1d",
+                    "secondary": "#4b616f",
+                    "primary-container": "#2a6f8f",
+                    "tertiary": "#025e00",
+                    "primary": "#005675",
+                    "outline-variant": "#c0c7ce",
+                    "secondary-fixed": "#cee6f6",
+                    "on-tertiary-fixed": "#002200",
+                    "inverse-on-surface": "#eff1f2",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#a0f88a",
+                    "on-primary-fixed-variant": "#004c68",
+                    "surface": "#f8fafb",
+                    "surface-container-high": "#e6e8e9",
+                    "on-tertiary-fixed-variant": "#025300",
+                    "outline": "#70787e",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed-dim": "#b2cad9",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#eceeef",
+                    "tertiary-fixed-dim": "#85db71",
+                    "error": "#ba1a1a",
+                    "tertiary-container": "#25781a",
+                    "primary-fixed-dim": "#8fcef2",
+                    "surface-tint": "#1c6585",
+                    "surface-bright": "#f8fafb",
+                    "inverse-primary": "#8fcef2",
+                    "on-surface-variant": "#40484d",
+                    "on-primary-container": "#d0ecff",
+                    "primary-fixed": "#c3e8ff",
+                    "surface-container-highest": "#e1e3e4",
+                    "background": "#f8fafb",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#a6fe8f",
+                    "on-secondary-container": "#516775",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed": "#001e2c",
+                    "on-secondary-fixed": "#051e2a",
+                    "secondary-container": "#cee6f6",
+                    "surface-dim": "#d8dadb",
+                    "on-secondary-fixed-variant": "#334a56",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- SideNavBar -->
+<aside class="bg-slate-50 dark:bg-slate-900 h-screen w-64 fixed left-0 top-0 overflow-y-auto flex flex-col py-6">
+<div class="px-6 mb-8">
+<h1 class="text-lg font-bold tracking-tight text-sky-800 dark:text-sky-200">Gestão Operacional</h1>
+<p class="font-inter text-sm text-slate-500">v2.4.0</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 py-2 px-4 flex items-center gap-3 rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-inter text-sm">Dashboard</span>
+</a>
+<a class="bg-sky-100 dark:bg-sky-900/40 text-sky-900 dark:text-sky-100 font-semibold rounded-lg mx-2 py-2 px-4 flex items-center gap-3" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-inter text-sm">CRM/Clientes</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 py-2 px-4 flex items-center gap-3 rounded-lg" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="font-inter text-sm">Vendas</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 py-2 px-4 flex items-center gap-3 rounded-lg" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-inter text-sm">Estoque</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 py-2 px-4 flex items-center gap-3 rounded-lg" href="#">
+<span class="material-symbols-outlined">local_shipping</span>
+<span class="font-inter text-sm">Logística</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 py-2 px-4 flex items-center gap-3 rounded-lg" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-inter text-sm">Rotas</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 py-2 px-4 flex items-center gap-3 rounded-lg" href="#">
+<span class="material-symbols-outlined">person_search</span>
+<span class="font-inter text-sm">Vendedores</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mx-2 py-2 px-4 flex items-center gap-3 rounded-lg" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="font-inter text-sm">Perfil</span>
+</a>
+</nav>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 flex justify-between items-center px-8">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md focus-within:ring-2 focus-within:ring-sky-500 rounded-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full bg-surface-container-highest border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-0" placeholder="Pesquisar clientes..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="hover:bg-slate-50 dark:hover:bg-slate-900 rounded-full p-2 transition-colors">
+<span class="material-symbols-outlined text-slate-500">notifications</span>
+</button>
+<button class="hover:bg-slate-50 dark:hover:bg-slate-900 rounded-full p-2 transition-colors">
+<span class="material-symbols-outlined text-slate-500">settings</span>
+</button>
+<button class="hover:bg-slate-50 dark:hover:bg-slate-900 rounded-full p-2 transition-colors">
+<span class="material-symbols-outlined text-slate-500">help_outline</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden ml-2 ring-2 ring-sky-100">
+<img class="h-full w-full object-cover" data-alt="professional portrait of a manager wearing a suit in a bright office setting, warm and approachable expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBK-ntkCjdwwgsHMAr8b-bgtDLi1lrdoNFO_wdZ1-doWEVKYcRyQJQoYNecdStIBw1Ojv9ec3uYWfd_e7pYOjjqBottzPAYhaxiye6I45zhaOKahQkXlVKethVzmsxI3NK4P_fiMz5VVF5JSqDrSFlJPYjJfotjfQ9SAz45I3vHLPXImlLxpwyyOLtwQKQLz0xajkOkQ1p-EhZGFdEBG3CD2rzj4wNvMPtRrFnHhJ3788_zionCWe2Bdy2HaGxsGHKlHwAjNVNt1Q"/>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-64 pt-16 min-h-screen bg-surface">
+<div class="p-8 max-w-7xl mx-auto">
+<!-- Page Header & Action -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-1">CRM — CLIENTES</h2>
+<p class="text-on-surface-variant font-body">Gerencie sua base de contatos e histórico comercial.</p>
+</div>
+<button class="bg-gradient-to-v from-primary-container to-primary text-on-primary px-5 py-2.5 rounded-lg flex items-center gap-2 font-medium shadow-md hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                    Novo Cliente
+                </button>
+</div>
+<!-- Filters Section -->
+<section class="bg-surface-container-low rounded-xl p-6 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+<div class="space-y-1.5">
+<label class="label-md block text-on-surface-variant font-semibold text-[11px] uppercase tracking-wider">Bairro</label>
+<select class="w-full bg-surface-container-lowest border-none rounded-lg text-sm text-on-surface focus:ring-1 focus:ring-primary shadow-sm py-2">
+<option>Todos os Bairros</option>
+<option>Centro</option>
+<option>Jardins</option>
+<option>Vila Olímpia</option>
+</select>
+</div>
+<div class="space-y-1.5">
+<label class="label-md block text-on-surface-variant font-semibold text-[11px] uppercase tracking-wider">Cidade</label>
+<select class="w-full bg-surface-container-lowest border-none rounded-lg text-sm text-on-surface focus:ring-1 focus:ring-primary shadow-sm py-2">
+<option>Todas as Cidades</option>
+<option>São Paulo</option>
+<option>Campinas</option>
+<option>Curitiba</option>
+</select>
+</div>
+<div class="space-y-1.5">
+<label class="label-md block text-on-surface-variant font-semibold text-[11px] uppercase tracking-wider">Estado</label>
+<select class="w-full bg-surface-container-lowest border-none rounded-lg text-sm text-on-surface focus:ring-1 focus:ring-primary shadow-sm py-2">
+<option>Todos</option>
+<option>SP</option>
+<option>PR</option>
+<option>RJ</option>
+</select>
+</div>
+<div class="space-y-1.5">
+<label class="label-md block text-on-surface-variant font-semibold text-[11px] uppercase tracking-wider">Status</label>
+<select class="w-full bg-surface-container-lowest border-none rounded-lg text-sm text-on-surface focus:ring-1 focus:ring-primary shadow-sm py-2">
+<option>Qualquer Status</option>
+<option>Ativo</option>
+<option>Inativo</option>
+<option>Lead</option>
+</select>
+</div>
+<div class="space-y-1.5">
+<label class="label-md block text-on-surface-variant font-semibold text-[11px] uppercase tracking-wider">Vendedor</label>
+<select class="w-full bg-surface-container-lowest border-none rounded-lg text-sm text-on-surface focus:ring-1 focus:ring-primary shadow-sm py-2">
+<option>Todos Vendedores</option>
+<option>Ricardo Silva</option>
+<option>Ana Paula</option>
+</select>
+</div>
+</div>
+</section>
+<!-- Data Table Content -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<table class="w-full border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-6 py-4 text-left label-md text-on-surface-variant uppercase tracking-[0.05em] font-semibold text-[11px]">Nome</th>
+<th class="px-6 py-4 text-left label-md text-on-surface-variant uppercase tracking-[0.05em] font-semibold text-[11px]">Telefone</th>
+<th class="px-6 py-4 text-left label-md text-on-surface-variant uppercase tracking-[0.05em] font-semibold text-[11px]">Bairro / Cidade</th>
+<th class="px-6 py-4 text-left label-md text-on-surface-variant uppercase tracking-[0.05em] font-semibold text-[11px]">Status</th>
+<th class="px-6 py-4 text-left label-md text-on-surface-variant uppercase tracking-[0.05em] font-semibold text-[11px]">Última Compra</th>
+<th class="px-6 py-4 text-left label-md text-on-surface-variant uppercase tracking-[0.05em] font-semibold text-[11px]">Vendedor</th>
+<th class="px-6 py-4 text-right label-md text-on-surface-variant uppercase tracking-[0.05em] font-semibold text-[11px]">Ações</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low/30">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-high transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="h-9 w-9 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-xs">AM</div>
+<div>
+<div class="text-sm font-semibold text-on-surface">Artur Mendes</div>
+<div class="text-xs text-on-surface-variant">artur.m@email.com</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface">(11) 98765-4321</td>
+<td class="px-6 py-5">
+<div class="text-sm text-on-surface">Jardins</div>
+<div class="text-xs text-on-surface-variant">São Paulo, SP</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-tertiary-fixed text-on-tertiary-fixed-variant">
+                                    Ativo
+                                </span>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface">12 Mai 2024</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">person</span>
+<span class="text-sm text-on-surface">Ricardo Silva</span>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-high transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="h-9 w-9 bg-secondary-container rounded-full flex items-center justify-center text-secondary font-bold text-xs">BF</div>
+<div>
+<div class="text-sm font-semibold text-on-surface">Beatriz Fonseca</div>
+<div class="text-xs text-on-surface-variant">b.fonseca@provider.com</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface">(21) 91234-5678</td>
+<td class="px-6 py-5">
+<div class="text-sm text-on-surface">Ipanema</div>
+<div class="text-xs text-on-surface-variant">Rio de Janeiro, RJ</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-fixed text-on-primary-fixed-variant">
+                                    Lead
+                                </span>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface-variant italic">Nenhuma</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">person</span>
+<span class="text-sm text-on-surface">Ana Paula</span>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-high transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="h-9 w-9 bg-error-container rounded-full flex items-center justify-center text-error font-bold text-xs">CL</div>
+<div>
+<div class="text-sm font-semibold text-on-surface">Carlos Lima</div>
+<div class="text-xs text-on-surface-variant">carlos@logistica.com.br</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface">(41) 99887-6655</td>
+<td class="px-6 py-5">
+<div class="text-sm text-on-surface">Batel</div>
+<div class="text-xs text-on-surface-variant">Curitiba, PR</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-surface-container-high text-outline">
+                                    Inativo
+                                </span>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface">28 Out 2023</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">person</span>
+<span class="text-sm text-on-surface">Ricardo Silva</span>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-high transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="h-9 w-9 bg-tertiary-fixed rounded-full flex items-center justify-center text-tertiary font-bold text-xs">DR</div>
+<div>
+<div class="text-sm font-semibold text-on-surface">Daniela Rocha</div>
+<div class="text-xs text-on-surface-variant">drocha.adv@gmail.com</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface">(11) 97766-5544</td>
+<td class="px-6 py-5">
+<div class="text-sm text-on-surface">Moema</div>
+<div class="text-xs text-on-surface-variant">São Paulo, SP</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-tertiary-fixed text-on-tertiary-fixed-variant">
+                                    Ativo
+                                </span>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface">05 Jun 2024</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">person</span>
+<span class="text-sm text-on-surface">Ana Paula</span>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-high transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="h-9 w-9 bg-primary-fixed-dim rounded-full flex items-center justify-center text-primary-fixed-variant font-bold text-xs">EV</div>
+<div>
+<div class="text-sm font-semibold text-on-surface">Eduardo Viana</div>
+<div class="text-xs text-on-surface-variant">edu_viana@outlook.com</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface">(19) 98822-3344</td>
+<td class="px-6 py-5">
+<div class="text-sm text-on-surface">Cambuí</div>
+<div class="text-xs text-on-surface-variant">Campinas, SP</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-tertiary-fixed text-on-tertiary-fixed-variant">
+                                    Ativo
+                                </span>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface">22 Abr 2024</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">person</span>
+<span class="text-sm text-on-surface">Ricardo Silva</span>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Pagination -->
+<div class="px-6 py-4 bg-surface-container-low/20 flex items-center justify-between border-t border-surface-container-low">
+<p class="text-xs text-on-surface-variant">Mostrando 1-5 de 248 clientes</p>
+<div class="flex items-center gap-1">
+<button class="p-2 rounded hover:bg-surface-container-high text-outline transition-colors disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded bg-primary text-on-primary text-xs font-bold">1</button>
+<button class="w-8 h-8 rounded hover:bg-surface-container-high text-xs font-medium text-on-surface transition-colors">2</button>
+<button class="w-8 h-8 rounded hover:bg-surface-container-high text-xs font-medium text-on-surface transition-colors">3</button>
+<span class="px-2 text-outline">...</span>
+<button class="w-8 h-8 rounded hover:bg-surface-container-high text-xs font-medium text-on-surface transition-colors">50</button>
+<button class="p-2 rounded hover:bg-surface-container-high text-outline transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Footer Stats (Atmospheric Overlay) -->
+<div class="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6">
+<div class="p-4 bg-surface-container-low rounded-lg border-l-4 border-primary">
+<p class="text-xs text-on-surface-variant font-semibold uppercase tracking-wider mb-1">Total de Clientes</p>
+<p class="text-2xl font-bold text-on-surface">1,248</p>
+</div>
+<div class="p-4 bg-surface-container-low rounded-lg border-l-4 border-tertiary">
+<p class="text-xs text-on-surface-variant font-semibold uppercase tracking-wider mb-1">Clientes Ativos</p>
+<p class="text-2xl font-bold text-on-surface">942</p>
+</div>
+<div class="p-4 bg-surface-container-low rounded-lg border-l-4 border-secondary">
+<p class="text-xs text-on-surface-variant font-semibold uppercase tracking-wider mb-1">Novos (Este mês)</p>
+<p class="text-2xl font-bold text-on-surface">+18</p>
+</div>
+</div>
+</div>
+</main>
+</body></html>
