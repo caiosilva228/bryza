@@ -1,0 +1,8 @@
+name = "bryza"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# Variáveis de ambiente serão configuradas no painel da Cloudflare
+# NEXT_PUBLIC_SUPABASE_URL = ""
+# NEXT_PUBLIC_SUPABASE_ANON_KEY = ""

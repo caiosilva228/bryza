@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { logout } from '@/app/login/actions';
+import { createClient } from '@/utils/supabase/client';
+import { Profile } from '@/models/types';
 import styles from './layout.module.css';
 
 interface Route {
@@ -15,7 +17,36 @@ interface Route {
 
 export const Sidebar = () => {
   const pathname = usePathname();
-  const [openMenus, setOpenMenus] = useState<string[]>(['Vendas']); // Vendas aberto por padrão para facilitar a visualização inicial
+  const [openMenus, setOpenMenus] = useState<string[]>(['Vendas']);
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    
+    const fetchProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        
+        if (data) setProfile(data as Profile);
+      }
+    };
+
+    fetchProfile();
+
+    // Ouvir atualizações no auth (opcional mas bom para sincronia)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        fetchProfile();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const routes: Route[] = [
     { label: 'Dashboard', path: '/', icon: 'dashboard' },
@@ -41,6 +72,12 @@ export const Sidebar = () => {
     setOpenMenus(prev => 
       prev.includes(label) ? prev.filter(m => m !== label) : [...prev, label]
     );
+  };
+
+  const roleLabels: Record<string, string> = {
+    'admin': 'Administrador',
+    'vendedor': 'Vendedor',
+    'logistica': 'Logística'
   };
 
   return (
@@ -150,9 +187,13 @@ export const Sidebar = () => {
           <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: 'var(--color-primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span className="material-symbols-outlined">person</span>
           </div>
-          <div>
-            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--color-on-surface)' }}>Usuário Demo</p>
-            <p style={{ margin: 0, fontSize: 10, textTransform: 'uppercase', color: 'var(--color-on-surface-variant)' }}>Administrador</p>
+          <div style={{ overflow: 'hidden' }}>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--color-on-surface)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {profile?.nome || 'Carregando...'}
+            </p>
+            <p style={{ margin: 0, fontSize: 10, textTransform: 'uppercase', color: 'var(--color-on-surface-variant)' }}>
+              {profile ? (roleLabels[profile.role] || profile.role) : '...'}
+            </p>
           </div>
         </div>
       </div>
