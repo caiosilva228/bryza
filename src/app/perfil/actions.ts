@@ -1,76 +1,82 @@
-'use server';
+'use server'
 
-import { createClient } from '@/utils/supabase/server';
-import { revalidatePath } from 'next/cache';
+import { createClient } from '@/utils/supabase/server'
+import { revalidatePath } from 'next/cache'
 
 export async function updateProfile(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = await createClient()
   
-  const nome = formData.get('nome') as string;
-  const telefone = formData.get('telefone') as string;
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  
+  if (userError || !user) {
+    return { success: false, error: 'Usuário não autenticado.' }
+  }
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const nome = formData.get('nome') as string
+  const telefone = formData.get('telefone') as string
 
-  if (!user) {
-    return { success: false, error: 'Usuário não autenticado' };
+  if (!nome || nome.trim() === '') {
+    return { success: false, error: 'O nome é obrigatório.' }
   }
 
   const { error } = await supabase
     .from('profiles')
     .update({ 
-      nome, 
-      telefone,
-      updated_at: new Date().toISOString()
+      nome: nome.trim(), 
+      telefone: telefone.trim() || null
     })
-    .eq('id', user.id);
+    .eq('id', user.id)
 
   if (error) {
-    console.error('Erro ao atualizar perfil:', error);
-    return { success: false, error: 'Falha ao atualizar perfil' };
+    console.error('Erro ao atualizar perfil:', error)
+    return { success: false, error: 'Falha ao atualizar perfil no banco de dados.' }
   }
 
-  // Opcional: Atualizar metadados do auth também
-  await supabase.auth.updateUser({
-    data: { full_name: nome }
-  });
-
-  revalidatePath('/perfil');
-  revalidatePath('/', 'layout'); // Para atualizar o sidebar em todas as páginas
+  revalidatePath('/perfil')
+  revalidatePath('/', 'layout') // Atualiza a sidebar se necessário
   
-  return { success: true };
+  return { success: true }
 }
 
 export async function updatePassword(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = await createClient()
   
-  const currentPassword = formData.get('currentPassword') as string;
-  const newPassword = formData.get('newPassword') as string;
+  const currentPassword = formData.get('currentPassword') as string
+  const newPassword = formData.get('newPassword') as string
+  const confirmPassword = formData.get('confirmPassword') as string
 
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user || !user.email) {
-    return { success: false, error: 'Usuário não autenticado' };
+  if (!newPassword || newPassword.length < 6) {
+    return { success: false, error: 'A nova senha deve ter no mínimo 6 caracteres.' }
   }
 
-  // Primeiro verificamos a senha atual tentando logar
+  if (newPassword !== confirmPassword) {
+    return { success: false, error: 'As senhas não coincidem.' }
+  }
+
+  // Primeiro reautenticamos o usuário com a senha atual para garantir que ele sabe a senha atual
+  const { data: { user: currentUser } } = await supabase.auth.getUser()
+  
+  if (!currentUser?.email) {
+    return { success: false, error: 'Usuário não autenticado.' }
+  }
+
   const { error: signInError } = await supabase.auth.signInWithPassword({
-    email: user.email,
+    email: currentUser.email,
     password: currentPassword,
-  });
+  })
 
   if (signInError) {
-    return { success: false, error: 'Senha atual incorreta' };
+    return { success: false, error: 'A senha atual está incorreta.' }
   }
 
-  // Se a senha atual está correta, procedemos com a atualização
+  // Atualizar a senha
   const { error: updateError } = await supabase.auth.updateUser({
     password: newPassword
-  });
+  })
 
   if (updateError) {
-    console.error('Erro ao atualizar senha:', updateError);
-    return { success: false, error: 'Falha ao atualizar senha' };
+    return { success: false, error: 'Erro ao atualizar a senha.' }
   }
 
-  return { success: true };
+  return { success: true }
 }

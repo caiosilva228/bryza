@@ -1,25 +1,36 @@
+import { MainLayout } from '@/components/layout/MainLayout';
 import { createClient } from '@/utils/supabase/server';
-import { PerfilClient } from './PerfilClient';
 import { redirect } from 'next/navigation';
+import { PerfilClient } from './PerfilClient';
+import { Profile } from '@/models/types';
+
+export const metadata = {
+  title: 'Meu Perfil | BRYZA',
+};
 
 export default async function PerfilPage() {
   const supabase = await createClient();
-  
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     redirect('/login');
   }
 
-  const { data: profile } = await supabase
+  const { data: profileData } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single();
 
-  if (!profile) {
-    return <div>Perfil não encontrado.</div>;
+  if (!profileData) {
+    redirect('/login');
   }
 
-  return <PerfilClient profile={profile} />;
+  const profile = profileData as Profile;
+
+  return (
+    <MainLayout>
+      <PerfilClient profile={profile} />
+    </MainLayout>
+  );
 }
