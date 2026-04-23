@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Produto } from '@/models/types';
 import ProdutoTable from './ProdutoTable';
 import ProdutoFormModal from './ProdutoFormModal';
 import { toggleStatusProduto } from './actions';
+import ProdutoStats from './ProdutoStats';
 
 interface ProdutoClientPageProps {
   initialProdutos: Produto[];
@@ -21,6 +22,21 @@ export default function ProdutoClientPage({ initialProdutos }: ProdutoClientPage
     const matchesCategoria = filterCategoria === '' || p.categoria === filterCategoria;
     return matchesSearch && matchesCategoria;
   });
+
+  const stats = useMemo(() => {
+    return produtos.reduce((acc, produto) => {
+      acc.total += 1;
+      if (produto.ativo) acc.ativos += 1;
+      if (produto.estoque_atual <= produto.estoque_minimo) acc.estoqueBaixo += 1;
+      acc.valorPotencial += produto.estoque_atual * produto.preco_venda;
+      return acc;
+    }, {
+      total: 0,
+      ativos: 0,
+      estoqueBaixo: 0,
+      valorPotencial: 0,
+    });
+  }, [produtos]);
 
   const handleOpenModal = (produto?: Produto) => {
     setEditingProduto(produto || null);
@@ -52,6 +68,7 @@ export default function ProdutoClientPage({ initialProdutos }: ProdutoClientPage
         </div>
       </header>
 
+      <ProdutoStats stats={stats} />
 
       {/* Filtros */}
       <div style={{
