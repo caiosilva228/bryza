@@ -48,33 +48,12 @@ export default function ClienteInfoModal({ cliente, onClose }: ClienteInfoModalP
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      backdropFilter: 'blur(12px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '24px'
-    }} onClick={onClose}>
-      <div style={{
-        backgroundColor: 'var(--color-surface)',
-        width: '100%',
-        maxWidth: '960px',
-        maxHeight: '90vh',
-        borderRadius: '28px',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        border: '1px solid var(--color-outline-variant)',
-        animation: 'slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-      }} onClick={e => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose}>
+      <div 
+        className="modal-content"
+        style={{ maxWidth: '960px' }}
+        onClick={e => e.stopPropagation()}
+      >
         
         {/* Header Elegante */}
         <div style={{
@@ -149,8 +128,9 @@ export default function ClienteInfoModal({ cliente, onClose }: ClienteInfoModalP
         </div>
 
         {/* Content Area */}
-        <div style={{ padding: '32px', overflowY: 'auto', flex: 1, backgroundColor: 'var(--color-surface)' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.8fr', gap: '32px' }}>
+        <div style={{ padding: '24px', overflowY: 'auto', flex: 1, backgroundColor: 'var(--color-surface)' }}>
+          <div className="cliente-info-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1.8fr', gap: '32px' }}>
+
             
             {/* Left: Info Grid */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>

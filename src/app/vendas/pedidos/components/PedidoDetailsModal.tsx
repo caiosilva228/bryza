@@ -72,29 +72,8 @@ export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onCl
   const currentStatus = statusWorkflow[pedido.status_pedido] || statusWorkflow['aguardando_preparacao'];
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.4)',
-      backdropFilter: 'blur(4px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 9999,
-      padding: '16px',
-      fontFamily: 'var(--font-sans)',
-    }}>
-      <div style={{
-        backgroundColor: 'var(--color-surface, #ffffff)',
-        borderRadius: '12px',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-        width: '100%',
-        maxWidth: '768px',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        maxHeight: '95vh'
-      }}>
+    <div className="modal-overlay" style={{ fontFamily: 'var(--font-sans)' }}>
+      <div className="modal-content" style={{ maxWidth: '768px' }}>
         
         {/* Header */}
         <div style={{ padding: '24px', paddingBottom: '16px', position: 'relative' }}>

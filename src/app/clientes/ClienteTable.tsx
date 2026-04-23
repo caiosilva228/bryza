@@ -2,10 +2,12 @@
 
 import { Cliente } from '@/models/types';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import ClienteInfoModal from './ClienteInfoModal';
 import { formatDate } from '@/utils/format';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import Pagination from '@/components/ui/Pagination';
+
 
 interface ClienteTableProps {
   clientes: Cliente[];
@@ -14,7 +16,14 @@ interface ClienteTableProps {
 export default function ClienteTable({ clientes }: ClienteTableProps) {
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const isMobile = useIsMobile();
+
+  const paginatedClientes = useMemo(() => {
+    return clientes.slice((page - 1) * pageSize, page * pageSize);
+  }, [clientes, page, pageSize]);
+
 
   const toggleSelect = (id: string) => {
     const newSelected = new Set(selectedIds);
@@ -166,7 +175,8 @@ export default function ClienteTable({ clientes }: ClienteTableProps) {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {clientes.map(cliente => {
+            {paginatedClientes.map(cliente => {
+
               const statusStyle = getStatusStyle(cliente.status_cliente);
               const isSelected = selectedIds.has(cliente.id);
 
@@ -280,6 +290,14 @@ export default function ClienteTable({ clientes }: ClienteTableProps) {
           </div>
         )}
 
+        <Pagination
+          total={clientes.length}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+        />
+
         {selectedCliente && (
           <ClienteInfoModal 
             cliente={selectedCliente} 
@@ -289,6 +307,7 @@ export default function ClienteTable({ clientes }: ClienteTableProps) {
       </>
     );
   }
+
 
   // ── VIEW DESKTOP — Tabela original (INALTERADA) ────────────────────────
   return (
@@ -331,7 +350,8 @@ export default function ClienteTable({ clientes }: ClienteTableProps) {
                   </td>
                 </tr>
               ) : (
-                clientes.map(cliente => {
+                paginatedClientes.map(cliente => {
+
                   const statusStyle = getStatusStyle(cliente.status_cliente);
                   return (
                     <tr 
@@ -440,6 +460,14 @@ export default function ClienteTable({ clientes }: ClienteTableProps) {
           </table>
         </div>
       </div>
+
+      <Pagination
+        total={clientes.length}
+        page={page}
+        pageSize={pageSize}
+        onPageChange={setPage}
+        onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+      />
 
       {selectedCliente && (
         <ClienteInfoModal 

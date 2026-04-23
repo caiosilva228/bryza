@@ -9,36 +9,36 @@ interface DashboardBlockProps {
 }
 
 export function DashboardBlock({ title, icon, children, className = '', columns = 4 }: DashboardBlockProps) {
-  // Lógica de grid nativa via inline styles
-  const getGridStyle = () => {
-    return {
-      display: 'grid',
-      gap: '16px',
-      gridTemplateColumns: `repeat(auto-fit, minmax(${columns >= 4 ? '240px' : '300px'}, 1fr))`
-    };
-  };
-
   return (
-    <section style={{ marginBottom: '32px' }} className={className}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+    <section style={{ marginBottom: '40px' }} className={className}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
         {icon && (
-          <span className="material-symbols-outlined" style={{ color: 'var(--color-on-surface)', fontWeight: 'bold' }}>
-            {icon}
-          </span>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            backgroundColor: 'var(--color-surface-container)',
+            borderRadius: '8px',
+            width: '32px',
+            height: '32px'
+          }}>
+            <span className="material-symbols-outlined" style={{ color: 'var(--color-on-surface-variant)', fontSize: '18px' }}>
+              {icon}
+            </span>
+          </div>
         )}
         <h2 style={{ 
-          fontSize: '14px', 
-          fontWeight: 800, 
-          color: 'var(--color-on-surface-variant)', 
-          textTransform: 'uppercase', 
-          letterSpacing: '0.1em',
+          fontSize: '18px', 
+          fontWeight: 700, 
+          color: 'var(--color-on-surface)', 
+          letterSpacing: '-0.01em',
           margin: 0
         }}>
           {title}
         </h2>
       </div>
       
-      <div style={getGridStyle()}>
+      <div className="dashboard-grid-container">
         {children}
       </div>
     </section>

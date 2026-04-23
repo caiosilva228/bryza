@@ -1,81 +1,81 @@
 import React from 'react';
 
+export type MetricColorHint = 'primary' | 'secondary' | 'tertiary' | 'error' | 'success' | 'warning' | 'default';
+
 interface MetricCardProps {
   label: string;
   value: string | number;
   variation?: number;
   icon?: string;
   prefix?: string;
+  suffix?: string;
   className?: string;
+  colorHint?: MetricColorHint;
 }
 
-export function MetricCard({ label, value, variation, icon, prefix, className = '' }: MetricCardProps) {
+export function MetricCard({ label, value, variation, icon, prefix, suffix, className = '', colorHint = 'default' }: MetricCardProps) {
   const isPositive = variation !== undefined && variation > 0;
   const isNegative = variation !== undefined && variation < 0;
 
+  // Map color hints to specific CSS variables
+  const colorMap: Record<MetricColorHint, { main: string, bg: string }> = {
+    primary: { main: 'var(--color-primary)', bg: 'var(--color-primary-container)' },
+    secondary: { main: 'var(--color-secondary)', bg: 'var(--color-secondary-container)' },
+    tertiary: { main: 'var(--color-tertiary)', bg: 'var(--color-tertiary-container)' },
+    error: { main: 'var(--color-error)', bg: 'var(--color-error-container)' },
+    success: { main: '#025e00', bg: 'rgba(2, 94, 0, 0.1)' },
+    warning: { main: '#a47200', bg: 'rgba(164, 114, 0, 0.1)' },
+    default: { main: 'var(--color-on-surface-variant)', bg: 'var(--color-surface-container)' }
+  };
+
+  const hint = colorMap[colorHint];
+
   return (
-    <div 
-      style={{
-        backgroundColor: 'var(--color-surface-container-lowest)',
-        padding: '24px',
-        borderRadius: '20px',
-        border: '1px solid var(--color-outline-variant)',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
-        transition: 'all 0.2s ease-in-out',
-        ...((className as any)?.style || {})
-      }}
-      className={className}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-        <span style={{ 
-          color: 'var(--color-on-surface-variant)', 
-          fontSize: '12px', 
-          fontWeight: 600, 
-          textTransform: 'uppercase', 
-          letterSpacing: '0.05em' 
-        }}>
-          {label}
-        </span>
-        {icon && (
-          <span className="material-symbols-outlined" style={{ color: 'var(--color-outline)', fontSize: '20px' }}>
-            {icon}
+    <div className={`metric-card ${className}`}>
+      {/* Top Accent Line based on colorHint */}
+      {colorHint !== 'default' && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', backgroundColor: hint.main, opacity: 0.8 }} />
+      )}
+
+      <div className="content-group">
+        <div className="label-group">
+          {icon && (
+            <span className="material-symbols-outlined" style={{ color: hint.main, fontSize: '16px' }}>
+              {icon}
+            </span>
+          )}
+          <span style={{ fontSize: '11px', fontWeight: 800, color: hint.main, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            {label}
           </span>
-        )}
+        </div>
+        
+        <div className="value-row">
+          {prefix && <span className="prefix-text" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>{prefix}</span>}
+          <span className="value-text" style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-on-surface)', lineHeight: 1 }}>
+            {value}
+          </span>
+          {suffix && <span className="suffix-text" style={{ fontSize: '11px', color: 'var(--color-outline)', marginLeft: '4px' }}>{suffix}</span>}
+        </div>
       </div>
       
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-        <h3 style={{ 
-          fontSize: '28px', 
-          margin: 0, 
-          fontWeight: 800, 
-          color: 'var(--color-on-surface)',
-          fontFamily: 'var(--font-headline)'
+      {variation !== undefined && (
+        <span className="variation-badge" style={{ 
+          fontSize: '11px', 
+          fontWeight: 700, 
+          padding: '4px 6px', 
+          borderRadius: '6px', 
+          display: 'flex', 
+          alignItems: 'center',
+          backgroundColor: isPositive ? 'rgba(2, 94, 0, 0.1)' : isNegative ? 'rgba(186, 26, 26, 0.1)' : 'var(--color-surface-container-low)',
+          color: isPositive ? '#025e00' : isNegative ? 'var(--color-error)' : 'var(--color-on-surface-variant)',
         }}>
-          {prefix && <span style={{ fontSize: '18px', fontWeight: 600, marginRight: '4px', opacity: 0.7 }}>{prefix}</span>}
-          {value}
-        </h3>
-        
-        {variation !== undefined && (
-          <span style={{ 
-            fontSize: '12px', 
-            fontWeight: 700, 
-            padding: '4px 8px', 
-            borderRadius: '12px', 
-            display: 'flex', 
-            alignItems: 'center',
-            backgroundColor: isPositive ? 'rgba(2, 94, 0, 0.1)' : isNegative ? 'rgba(186, 26, 26, 0.1)' : 'var(--color-surface-container-low)',
-            color: isPositive ? 'var(--color-tertiary-container)' : isNegative ? 'var(--color-error)' : 'var(--color-on-surface-variant)',
-          }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '14px', marginRight: '2px' }}>
-              {isPositive ? 'trending_up' : isNegative ? 'trending_down' : 'trending_flat'}
-            </span>
-            {Math.abs(variation).toFixed(1)}%
+          <span className="material-symbols-outlined" style={{ fontSize: '14px', marginRight: '2px' }}>
+            {isPositive ? 'trending_up' : isNegative ? 'trending_down' : 'trending_flat'}
           </span>
-        )}
-      </div>
+          {Math.abs(variation).toFixed(1)}%
+        </span>
+      )}
     </div>
   );
 }
+

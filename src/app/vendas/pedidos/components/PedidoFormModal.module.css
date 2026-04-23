@@ -1,0 +1,298 @@
+.modalHeaderIntro {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.form,
+.body {
+  min-height: 0;
+}
+
+.modalHeaderText,
+.catalogPane,
+.catalogSearch,
+.catalogList,
+.cartPane,
+.cartBody,
+.cartItem,
+.cartItemFooter,
+.cartItemTotals,
+.productInfo,
+.searchSelector {
+  min-width: 0;
+}
+
+.qtyControl {
+  flex-shrink: 0;
+}
+
+.modalClose {
+  flex-shrink: 0;
+}
+
+.submitButton {}
+
+.catalogSearchInput,
+.searchSelectorInput,
+.qtyInput,
+.observationsField {
+  font: inherit;
+}
+
+@media (max-width: 768px) {
+  .modalContent {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
+    border-radius: 20px 20px 0 0 !important;
+  }
+
+  .modalHeader {
+    padding: 16px !important;
+    gap: 12px !important;
+    align-items: flex-start !important;
+  }
+
+  .modalHeaderIntro {
+    gap: 12px !important;
+    align-items: flex-start !important;
+  }
+
+  .modalHeaderText h2 {
+    font-size: 18px !important;
+    line-height: 1.2;
+  }
+
+  .modalHeaderText p {
+    font-size: 12px !important;
+  }
+
+  .topSection {
+    padding: 16px !important;
+    gap: 12px !important;
+  }
+
+  .paymentGrid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .paymentButton {
+    min-width: 0;
+    padding: 10px 4px !important;
+    font-size: 10px !important;
+    gap: 3px !important;
+    white-space: nowrap;
+  }
+
+  .paymentButton :global(.material-symbols-outlined) {
+    font-size: 16px !important;
+  }
+
+  .body {
+    display: block !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+
+  .catalogPane {
+    display: block !important;
+    flex: none !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--color-outline-variant) !important;
+  }
+
+  .catalogToolbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding: 16px !important;
+  }
+
+  .catalogSearch {
+    width: 100% !important;
+  }
+
+  .catalogSearchInput,
+  .searchSelectorInput,
+  .observationsField,
+  .qtyInput {
+    font-size: 16px !important;
+  }
+
+  .catalogList {
+    flex: none !important;
+    overflow: visible !important;
+    padding: 16px !important;
+  }
+
+  .productTableHead {
+    display: none !important;
+  }
+
+  .productRow {
+    flex-wrap: wrap !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    padding: 14px !important;
+  }
+
+  .productCode,
+  .productPrice,
+  .productStock,
+  .productReserved,
+  .productAvailable {
+    display: inline-flex !important;
+    align-items: center !important;
+    width: auto !important;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background-color: var(--color-surface-container-lowest);
+    border: 1px solid var(--color-outline-variant);
+    text-align: left !important;
+  }
+
+  .productCode {
+    order: 1;
+    font-size: 11px !important;
+  }
+
+  .productCode::before {
+    content: "Codigo ";
+    margin-right: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .productInfo {
+    order: 2;
+    flex-basis: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+
+  .productName {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .productCategory {
+    white-space: normal !important;
+  }
+
+  .productPrice {
+    order: 3;
+    font-size: 12px !important;
+  }
+
+  .productPrice::before {
+    content: "Preco ";
+    margin-right: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-outline);
+  }
+
+  .productStock {
+    order: 4;
+    font-size: 12px !important;
+  }
+
+  .productStock::before {
+    content: "Fisico ";
+    margin-right: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-outline);
+  }
+
+  .productReserved {
+    order: 5;
+    font-size: 12px !important;
+  }
+
+  .productReserved::before {
+    content: "Pedidos ";
+    margin-right: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-outline);
+  }
+
+  .productAvailable {
+    order: 6;
+    font-size: 12px !important;
+  }
+
+  .productAvailable::before {
+    content: "Disp. ";
+    margin-right: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-outline);
+  }
+
+  .productAction {
+    order: 7;
+    width: auto !important;
+    margin-left: auto;
+  }
+
+  .cartPane {
+    width: 100% !important;
+    flex: none !important;
+  }
+
+  .cartToolbar,
+  .cartBody,
+  .summaryPane {
+    padding: 16px !important;
+  }
+
+  .cartBody {
+    flex: none !important;
+    overflow: visible !important;
+  }
+
+  .cartItem {
+    padding: 14px !important;
+  }
+
+  .cartItemFooter {
+    flex-wrap: wrap !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .cartItemTotals {
+    width: 100%;
+    text-align: left !important;
+  }
+
+  .searchSelectorField,
+  .searchSelectorOption {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .searchSelectorDropdown {
+    max-height: 180px !important;
+  }
+
+  .totalCard {
+    padding: 14px !important;
+  }
+}

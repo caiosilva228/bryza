@@ -23,7 +23,7 @@ export default async function PedidosPage() {
 
   return (
     <MainLayout>
-      <div style={{ padding: '32px' }}>
+      <div className="page-wrapper">
         <Suspense fallback={<div style={{ height: '400px', backgroundColor: 'var(--color-surface-container)', borderRadius: '24px', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />}>
           <PedidoClientPage 
             initialPedidos={pedidos} 

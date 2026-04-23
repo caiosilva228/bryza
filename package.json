@@ -10,20 +10,20 @@
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",
-    "@supabase/supabase-js": "^2.103.0",
+    "@supabase/supabase-js": "^2.104.0",
     "date-fns": "^4.1.0",
     "lucide-react": "^1.8.0",
-    "next": "15.5.7",
+    "next": "^16.2.4",
     "react": "19.2.5",
     "react-dom": "19.2.5",
     "sonner": "^2.0.7"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/node": "^25.6.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.5.7",
-    "typescript": "^5"
+    "eslint": "^10.2.1",
+    "eslint-config-next": "^16.2.4",
+    "typescript": "^6.0.3"
   }
 }
