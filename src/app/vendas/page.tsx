@@ -14,9 +14,20 @@ export default async function VendasPage(props: {
   const searchParams = await props.searchParams;
   const from = searchParams.from;
   const to = searchParams.to;
+  const period = searchParams.period;
 
-  const startDate = typeof from === 'string' ? from : format(startOfMonth(new Date()), 'yyyy-MM-dd');
-  const endDate = typeof to === 'string' ? to : format(endOfMonth(new Date()), 'yyyy-MM-dd');
+  const startDate =
+    typeof period === 'string' && period === 'maximo'
+      ? undefined
+      : typeof from === 'string'
+        ? from
+        : format(startOfMonth(new Date()), 'yyyy-MM-dd');
+  const endDate =
+    typeof period === 'string' && period === 'maximo'
+      ? undefined
+      : typeof to === 'string'
+        ? to
+        : format(endOfMonth(new Date()), 'yyyy-MM-dd');
 
   const vendasRaw = await getVendas(startDate, endDate);
   const vendas = Array.isArray(vendasRaw) ? vendasRaw : [];

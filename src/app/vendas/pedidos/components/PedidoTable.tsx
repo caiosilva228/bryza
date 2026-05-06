@@ -7,21 +7,110 @@ import { formatCurrency, formatDate } from '@/utils/format';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 
+type SortKey = 'pedido' | 'cliente' | 'destino' | 'responsavel' | 'status' | 'valor';
+type SortDirection = 'asc' | 'desc';
+
 interface Props {
   pedidos: Pedido[];
   onSelectPedido: (pedido: Pedido) => void;
   onRefresh: () => void;
   isLoading?: boolean;
+  sortKey: SortKey | null;
+  sortDirection: SortDirection;
+  onSort: (key: SortKey) => void;
 }
 
 
-export default function PedidoTable({ pedidos, onSelectPedido, onRefresh, isLoading }: Props) {
+export default function PedidoTable({
+  pedidos,
+  onSelectPedido,
+  onRefresh,
+  isLoading,
+  sortKey,
+  sortDirection,
+  onSort,
+}: Props) {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  const getSortIcon = (key: SortKey) => {
+    if (sortKey !== key) {
+      return 'unfold_more';
+    }
+
+    return sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward';
+  };
+
+  const getSortHint = (key: SortKey) => {
+    if (sortKey !== key) {
+      if (key === 'pedido' || key === 'valor') {
+        return 'Ordenar em ordem crescente';
+      }
+
+      return 'Ordenar em ordem alfabetica';
+    }
+
+    if (sortDirection === 'asc') {
+      return 'Ordenacao crescente ativa. Clique para inverter.';
+    }
+
+    return 'Ordenacao decrescente ativa. Clique para limpar.';
+  };
+
+  const renderSortableHeader = (
+    label: string,
+    key: SortKey,
+    align: 'left' | 'center' | 'right' = 'left'
+  ) => {
+    const isActive = sortKey === key;
+    const justifyContent =
+      align === 'right' ? 'flex-end' : align === 'center' ? 'center' : 'space-between';
+
+    return (
+      <th
+        aria-sort={isActive ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+        style={{ padding: 0, textAlign: align }}
+      >
+        <button
+          type="button"
+          onClick={() => onSort(key)}
+          title={getSortHint(key)}
+          style={{
+            width: '100%',
+            padding: '16px 20px',
+            border: 'none',
+            background: 'transparent',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent,
+            gap: '8px',
+            cursor: 'pointer',
+            color: isActive ? 'var(--color-primary)' : 'var(--color-outline)',
+            fontSize: '12px',
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            textAlign: align,
+          }}
+        >
+          <span>{label}</span>
+          <span
+            className="material-symbols-outlined"
+            style={{
+              fontSize: '16px',
+              color: isActive ? 'var(--color-primary)' : 'var(--color-outline)',
+            }}
+          >
+            {getSortIcon(key)}
+          </span>
+        </button>
+      </th>
+    );
+  };
 
   if (!isMounted) return null;
 
@@ -94,13 +183,13 @@ export default function PedidoTable({ pedidos, onSelectPedido, onRefresh, isLoad
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ backgroundColor: 'var(--color-surface-container-low)', borderBottom: '2px solid var(--color-outline-variant)' }}>
-              <th style={{ padding: '16px 20px', textAlign: 'left', fontSize: '12px', fontWeight: 800, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Nº Pedido / Data</th>
-              <th style={{ padding: '16px 20px', textAlign: 'left', fontSize: '12px', fontWeight: 800, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cliente / Contato</th>
-              <th style={{ padding: '16px 20px', textAlign: 'left', fontSize: '12px', fontWeight: 800, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Destino (Entrega)</th>
-              <th style={{ padding: '16px 20px', textAlign: 'left', fontSize: '12px', fontWeight: 800, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Responsável</th>
-              <th style={{ padding: '16px 20px', textAlign: 'center', fontSize: '12px', fontWeight: 800, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
+              {renderSortableHeader('Nº Pedido / Data', 'pedido')}
+              {renderSortableHeader('Cliente / Contato', 'cliente')}
+              {renderSortableHeader('Destino (Entrega)', 'destino')}
+              {renderSortableHeader('Responsável', 'responsavel')}
+              {renderSortableHeader('Status', 'status', 'center')}
               <th style={{ padding: '16px 20px', textAlign: 'center', fontSize: '12px', fontWeight: 800, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Ação Rápida</th>
-              <th style={{ padding: '16px 20px', textAlign: 'right', fontSize: '12px', fontWeight: 800, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Valor Total</th>
+              {renderSortableHeader('Valor Total', 'valor', 'right')}
               <th style={{ padding: '16px 20px', textAlign: 'center', fontSize: '12px', fontWeight: 800, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Detalhes</th>
             </tr>
           </thead>

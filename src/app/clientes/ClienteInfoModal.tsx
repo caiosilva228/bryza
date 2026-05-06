@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Cliente } from '@/models/types';
 import { VendaWithItens } from '@/services/vendas';
 import Link from 'next/link';
@@ -36,6 +37,21 @@ export default function ClienteInfoModal({ cliente, onClose }: ClienteInfoModalP
   };
 
   if (!cliente) return null;
+
+  const formatCep = (cep?: string | null) => {
+    if (!cep) return null;
+    const digits = cep.replace(/\D/g, '');
+    if (digits.length !== 8) return cep;
+    return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+  };
+
+  const enderecoCompleto = [
+    cliente.endereco,
+    cliente.numero ? `Nº ${cliente.numero}` : null,
+    cliente.bairro,
+    cliente.cidade && cliente.estado ? `${cliente.cidade}/${cliente.estado}` : cliente.cidade || cliente.estado,
+    formatCep(cliente.cep) ? `CEP ${formatCep(cliente.cep)}` : null,
+  ].filter(Boolean);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -156,8 +172,12 @@ export default function ClienteInfoModal({ cliente, onClose }: ClienteInfoModalP
                       <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>location_on</span>
                     </div>
                     <span style={{ fontSize: '14px', lineHeight: '1.5', color: 'var(--color-on-surface)' }}>
-                      {cliente.endereco}, {cliente.numero}<br/>
-                      {cliente.bairro} - {cliente.cidade}/{cliente.estado}
+                      {enderecoCompleto.map((linha, index) => (
+                        <React.Fragment key={`${linha}-${index}`}>
+                          {linha}
+                          {index < enderecoCompleto.length - 1 && <br />}
+                        </React.Fragment>
+                      ))}
                     </span>
                   </div>
                 </div>

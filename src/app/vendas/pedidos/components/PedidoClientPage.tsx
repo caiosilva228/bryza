@@ -18,6 +18,20 @@ interface Props {
   vendedores: Usuario[];
 }
 
+type SortKey = 'pedido' | 'cliente' | 'destino' | 'responsavel' | 'status' | 'valor';
+type SortDirection = 'asc' | 'desc';
+
+const textCollator = new Intl.Collator('pt-BR', {
+  sensitivity: 'base',
+  numeric: true,
+});
+
+const getPedidoTimestamp = (pedido: Pedido) => {
+  const rawDate = pedido.data_criacao || pedido.created_at;
+  const timestamp = rawDate ? new Date(rawDate).getTime() : Number.NaN;
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+};
+
 export default function PedidoClientPage({ 
   initialPedidos, 
   initialStats,
@@ -37,6 +51,8 @@ export default function PedidoClientPage({
   // Paginação
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   // Modais
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -97,13 +113,80 @@ export default function PedidoClientPage({
     });
   }, [pedidos, search, statusFilter, dateFrom, dateTo]);
 
+  const sortedPedidos = useMemo(() => {
+    if (!sortKey) {
+      return filteredPedidos;
+    }
+
+    const sorted = [...filteredPedidos];
+
+    sorted.sort((a, b) => {
+      let comparison = 0;
+
+      switch (sortKey) {
+        case 'pedido':
+          comparison = getPedidoTimestamp(a) - getPedidoTimestamp(b);
+          if (comparison === 0) {
+            comparison = textCollator.compare(a.numero_pedido || '', b.numero_pedido || '');
+          }
+          break;
+        case 'cliente':
+          comparison = textCollator.compare(
+            a.nome_cliente || a.cliente?.nome || 'Consumidor',
+            b.nome_cliente || b.cliente?.nome || 'Consumidor'
+          );
+          break;
+        case 'destino':
+          comparison = textCollator.compare(
+            `${a.bairro || a.cliente?.bairro || ''} ${a.cidade || a.cliente?.cidade || ''}`,
+            `${b.bairro || b.cliente?.bairro || ''} ${b.cidade || b.cliente?.cidade || ''}`
+          );
+          break;
+        case 'responsavel':
+          comparison = textCollator.compare(
+            a.nome_vendedor || a.vendedor?.nome || 'Admin',
+            b.nome_vendedor || b.vendedor?.nome || 'Admin'
+          );
+          break;
+        case 'status':
+          comparison = textCollator.compare(a.status_pedido || '', b.status_pedido || '');
+          break;
+        case 'valor':
+          comparison = (a.valor_total || 0) - (b.valor_total || 0);
+          break;
+      }
+
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+
+    return sorted;
+  }, [filteredPedidos, sortDirection, sortKey]);
+
+  const handleSort = (key: SortKey) => {
+    setPage(1);
+
+    if (sortKey !== key) {
+      setSortKey(key);
+      setSortDirection('asc');
+      return;
+    }
+
+    if (sortDirection === 'asc') {
+      setSortDirection('desc');
+      return;
+    }
+
+    setSortKey(null);
+    setSortDirection('asc');
+  };
+
   // Resetar página ao mudar filtros
   React.useEffect(() => {
     setPage(1);
   }, [search, statusFilter, dateFrom, dateTo]);
 
-  const totalFiltered = filteredPedidos.length;
-  const paginatedPedidos = filteredPedidos.slice((page - 1) * pageSize, page * pageSize);
+  const totalFiltered = sortedPedidos.length;
+  const paginatedPedidos = sortedPedidos.slice((page - 1) * pageSize, page * pageSize);
 
   const clearDateFilter = () => {
     setDateFrom('');
@@ -413,6 +496,9 @@ export default function PedidoClientPage({
           onSelectPedido={(p) => setSelectedPedido(p)}
           onRefresh={refreshData}
           isLoading={isLoading}
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+          onSort={handleSort}
         />
 
         <Pagination

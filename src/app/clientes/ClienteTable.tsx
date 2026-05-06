@@ -1,7 +1,6 @@
 'use client';
 
 import { Cliente } from '@/models/types';
-import Link from 'next/link';
 import { useState, useMemo } from 'react';
 import ClienteInfoModal from './ClienteInfoModal';
 import { formatDate } from '@/utils/format';
@@ -13,16 +12,188 @@ interface ClienteTableProps {
   clientes: Cliente[];
 }
 
+type SortKey = 'codigo' | 'nome' | 'cidade' | 'vendedor' | 'status' | 'atividade';
+type SortDirection = 'asc' | 'desc';
+
+const textCollator = new Intl.Collator('pt-BR', {
+  sensitivity: 'base',
+  numeric: true,
+});
+
+const getLastPurchaseTimestamp = (cliente: Cliente) => {
+  if (!cliente.data_ultima_compra) {
+    return null;
+  }
+
+  const timestamp = new Date(cliente.data_ultima_compra).getTime();
+  return Number.isNaN(timestamp) ? null : timestamp;
+};
+
 export default function ClienteTable({ clientes }: ClienteTableProps) {
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const isMobile = useIsMobile();
 
+  const sortedClientes = useMemo(() => {
+    if (!sortKey) {
+      return clientes;
+    }
+
+    const sorted = [...clientes];
+
+    sorted.sort((a, b) => {
+      let comparison = 0;
+
+      switch (sortKey) {
+        case 'codigo':
+          comparison = (a.codigo_cliente || 0) - (b.codigo_cliente || 0);
+          break;
+        case 'nome':
+          comparison = textCollator.compare(a.nome || '', b.nome || '');
+          break;
+        case 'cidade':
+          comparison = textCollator.compare(
+            `${a.cidade || ''} ${a.estado || ''}`,
+            `${b.cidade || ''} ${b.estado || ''}`
+          );
+          break;
+        case 'vendedor':
+          comparison = textCollator.compare(
+            a.vendedor?.nome || 'Sem vendedor',
+            b.vendedor?.nome || 'Sem vendedor'
+          );
+          break;
+        case 'status':
+          comparison = textCollator.compare(a.status_cliente || '', b.status_cliente || '');
+          break;
+        case 'atividade': {
+          const aTimestamp = getLastPurchaseTimestamp(a);
+          const bTimestamp = getLastPurchaseTimestamp(b);
+
+          if (aTimestamp === null && bTimestamp === null) {
+            comparison = textCollator.compare(a.nome || '', b.nome || '');
+            break;
+          }
+
+          if (aTimestamp === null) {
+            comparison = -1;
+            break;
+          }
+
+          if (bTimestamp === null) {
+            comparison = 1;
+            break;
+          }
+
+          comparison = aTimestamp - bTimestamp;
+          break;
+        }
+      }
+
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+
+    return sorted;
+  }, [clientes, sortDirection, sortKey]);
+
   const paginatedClientes = useMemo(() => {
-    return clientes.slice((page - 1) * pageSize, page * pageSize);
-  }, [clientes, page, pageSize]);
+    return sortedClientes.slice((page - 1) * pageSize, page * pageSize);
+  }, [page, pageSize, sortedClientes]);
+
+  const handleSort = (key: SortKey) => {
+    setPage(1);
+
+    if (sortKey !== key) {
+      setSortKey(key);
+      setSortDirection('asc');
+      return;
+    }
+
+    if (sortDirection === 'asc') {
+      setSortDirection('desc');
+      return;
+    }
+
+    setSortKey(null);
+    setSortDirection('asc');
+  };
+
+  const getSortIcon = (key: SortKey) => {
+    if (sortKey !== key) {
+      return 'unfold_more';
+    }
+
+    return sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward';
+  };
+
+  const getSortHint = (key: SortKey) => {
+    if (sortKey !== key) {
+      if (key === 'atividade') {
+        return 'Ordenar pela ultima compra';
+      }
+
+      if (key === 'codigo') {
+        return 'Ordenar em ordem crescente';
+      }
+
+      return 'Ordenar em ordem alfabetica';
+    }
+
+    if (sortDirection === 'asc') {
+      return 'Ordenacao crescente ativa. Clique para inverter.';
+    }
+
+    return 'Ordenacao decrescente ativa. Clique para limpar.';
+  };
+
+  const renderSortableHeader = (label: string, key: SortKey) => {
+    const isActive = sortKey === key;
+
+    return (
+      <th
+        aria-sort={isActive ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+        style={{ padding: 0 }}
+      >
+        <button
+          type="button"
+          onClick={() => handleSort(key)}
+          title={getSortHint(key)}
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            border: 'none',
+            background: 'transparent',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '8px',
+            cursor: 'pointer',
+            color: isActive ? 'var(--color-primary)' : 'var(--color-on-surface)',
+            fontSize: '11px',
+            fontWeight: 900,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            textAlign: 'left',
+          }}
+        >
+          <span>{label}</span>
+          <span
+            className="material-symbols-outlined"
+            style={{
+              fontSize: '16px',
+              color: isActive ? 'var(--color-primary)' : 'var(--color-outline)',
+            }}
+          >
+            {getSortIcon(key)}
+          </span>
+        </button>
+      </th>
+    );
+  };
 
 
   const toggleSelect = (id: string) => {
@@ -333,12 +504,12 @@ export default function ClienteTable({ clientes }: ClienteTableProps) {
                     style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--color-primary)' }}
                   />
                 </th>
-                <th style={{ padding: '12px 16px', fontWeight: 900, color: 'var(--color-on-surface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cod</th>
-                <th style={{ padding: '12px 16px', fontWeight: 900, color: 'var(--color-on-surface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cliente / Contato</th>
-                <th style={{ padding: '12px 16px', fontWeight: 900, color: 'var(--color-on-surface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Localidade</th>
-                <th style={{ padding: '12px 16px', fontWeight: 900, color: 'var(--color-on-surface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Vendedor</th>
-                <th style={{ padding: '12px 16px', fontWeight: 900, color: 'var(--color-on-surface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Situação</th>
-                <th style={{ padding: '12px 16px', fontWeight: 900, color: 'var(--color-on-surface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Atividade</th>
+                {renderSortableHeader('Cod', 'codigo')}
+                {renderSortableHeader('Cliente / Contato', 'nome')}
+                {renderSortableHeader('Localidade', 'cidade')}
+                {renderSortableHeader('Vendedor', 'vendedor')}
+                {renderSortableHeader('Situação', 'status')}
+                {renderSortableHeader('Atividade', 'atividade')}
                 <th style={{ padding: '12px 16px', fontWeight: 900, color: 'var(--color-on-surface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Ações</th>
               </tr>
             </thead>
