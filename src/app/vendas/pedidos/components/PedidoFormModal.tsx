@@ -42,7 +42,7 @@ const DISCOUNT_OPTIONS: { value: TipoDesconto; label: string }[] = [
 
 const roundCurrency = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 
-const calculateDiscountAmount = (baseAmount: number, tipo: TipoDesconto, valor: number) => {
+const calculateDiscountAmount = (baseAmount: number, tipo: TipoDesconto, valor: number, quantity: number = 1) => {
   const safeBase = roundCurrency(Math.max(0, Number(baseAmount) || 0));
   const safeValue = Math.max(0, Number(valor) || 0);
 
@@ -54,7 +54,7 @@ const calculateDiscountAmount = (baseAmount: number, tipo: TipoDesconto, valor: 
     return roundCurrency(Math.min(safeBase, safeBase * (Math.min(safeValue, 100) / 100)));
   }
 
-  return roundCurrency(Math.min(safeBase, safeValue));
+  return roundCurrency(Math.min(safeBase, safeValue * quantity));
 };
 
 function DiscountControls({
@@ -291,7 +291,7 @@ export default function PedidoFormModal({
   const cartSummary = useMemo(() => {
     return cart.reduce((acc, item) => {
       const subtotalBrutoItem = roundCurrency(item.quantidade * item.preco_unitario);
-      const descontoAplicadoItem = calculateDiscountAmount(subtotalBrutoItem, item.tipo, item.valor);
+      const descontoAplicadoItem = calculateDiscountAmount(subtotalBrutoItem, item.tipo, item.valor, item.quantidade);
       const subtotalLiquidoItem = roundCurrency(subtotalBrutoItem - descontoAplicadoItem);
 
       acc.subtotalBruto += subtotalBrutoItem;
@@ -407,7 +407,7 @@ export default function PedidoFormModal({
 
       const itensData = cart.map(item => {
         const subtotalBrutoItem = roundCurrency(item.quantidade * item.preco_unitario);
-        const descontoAplicadoItem = calculateDiscountAmount(subtotalBrutoItem, item.tipo, item.valor);
+        const descontoAplicadoItem = calculateDiscountAmount(subtotalBrutoItem, item.tipo, item.valor, item.quantidade);
 
         return {
           produto_id: item.produtoId,
@@ -682,7 +682,7 @@ export default function PedidoFormModal({
                     {cart.map(item => {
                       const p = produtos.find(prod => prod.id === item.produtoId);
                       const subtotalBrutoItem = roundCurrency(item.quantidade * item.preco_unitario);
-                      const descontoAplicadoItem = calculateDiscountAmount(subtotalBrutoItem, item.tipo, item.valor);
+                      const descontoAplicadoItem = calculateDiscountAmount(subtotalBrutoItem, item.tipo, item.valor, item.quantidade);
                       const subtotalLiquidoItem = roundCurrency(subtotalBrutoItem - descontoAplicadoItem);
                       return (
                         <div key={item.produtoId} className={styles.cartItem} style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-outline-variant)', borderRadius: '12px', minWidth: 0 }}>
