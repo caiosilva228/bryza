@@ -35,6 +35,8 @@
 .catalogSearchInput,
 .searchSelectorInput,
 .qtyInput,
+.summaryPane select,
+.summaryPane input,
 .observationsField {
   font: inherit;
 }

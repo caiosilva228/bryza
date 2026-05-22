@@ -155,8 +155,8 @@ export const updatePedido = async (
     throw new Error('Só é possível editar pedidos com status "Aguardando Preparação".');
   }
 
-  // Calcular valor total dos novos itens
-  const valorTotal = itens.reduce((acc, item) => acc + item.subtotal, 0);
+  // Preserva o total informado pela tela quando houver desconto no pedido inteiro.
+  const valorTotal = pedidoData.valor_total ?? itens.reduce((acc, item) => acc + item.subtotal, 0);
 
   // Atualizar meta dados do pedido
   const { error: updateError } = await supabase

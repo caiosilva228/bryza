@@ -21,6 +21,9 @@ export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onCl
   const [pedido, setPedido] = useState<Pedido>(pedidoInitial);
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const subtotalBruto = itens.reduce((acc, item) => acc + (item.quantidade * item.preco_unitario), 0);
+  const descontoItens = itens.reduce((acc, item) => acc + (Number(item.desconto_aplicado) || 0), 0);
+  const descontoPedido = Number(pedido.desconto_aplicado) || 0;
 
   useEffect(() => {
     if (isOpen && pedidoInitial.id) {
@@ -182,6 +185,24 @@ export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onCl
                     {formatCurrency(pedido.valor_total)}
                   </span>
                 </div>
+                {descontoItens > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
+                    <span style={{ color: 'var(--color-on-surface-variant)' }}>Desconto nos itens:</span>
+                    <span style={{ fontWeight: 600, color: '#0d9488', textAlign: 'right' }}>- {formatCurrency(descontoItens)}</span>
+                  </div>
+                )}
+                {descontoPedido > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
+                    <span style={{ color: 'var(--color-on-surface-variant)' }}>Desconto no pedido:</span>
+                    <span style={{ fontWeight: 600, color: '#0d9488', textAlign: 'right' }}>- {formatCurrency(descontoPedido)}</span>
+                  </div>
+                )}
+                {(descontoItens > 0 || descontoPedido > 0) && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
+                    <span style={{ color: 'var(--color-on-surface-variant)' }}>Subtotal bruto:</span>
+                    <span style={{ fontWeight: 500, color: 'var(--color-on-surface)', textAlign: 'right' }}>{formatCurrency(subtotalBruto)}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -200,6 +221,7 @@ export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onCl
                     <th style={{ padding: '10px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase' }}>CÓD/PRODUTO</th>
                     <th style={{ padding: '10px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', textAlign: 'center', width: '80px' }}>QTD</th>
                     <th style={{ padding: '10px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', textAlign: 'right', width: '120px' }}>VALOR UNIT.</th>
+                    <th style={{ padding: '10px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', textAlign: 'right', width: '120px' }}>DESC.</th>
                     <th style={{ padding: '10px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', textAlign: 'right', width: '120px' }}>SUBTOTAL</th>
                   </tr>
                 </thead>
@@ -216,11 +238,14 @@ export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onCl
                       </td>
                       <td style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 700, color: 'var(--color-on-surface)' }}>{item.quantidade}</td>
                       <td style={{ padding: '12px 16px', textAlign: 'right', color: 'var(--color-on-surface-variant)' }}>{formatCurrency(item.preco_unitario)}</td>
+                      <td style={{ padding: '12px 16px', textAlign: 'right', color: Number(item.desconto_aplicado) > 0 ? '#0d9488' : 'var(--color-on-surface-variant)' }}>
+                        {Number(item.desconto_aplicado) > 0 ? `- ${formatCurrency(Number(item.desconto_aplicado))}` : '--'}
+                      </td>
                       <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: 'var(--color-on-surface)' }}>{formatCurrency(item.subtotal)}</td>
                     </tr>
                   )) : (
                     <tr>
-                      <td colSpan={4} style={{ padding: '32px', textAlign: 'center', color: 'var(--color-outline)' }}>Nenhum item adicionado a este pedido.</td>
+                      <td colSpan={5} style={{ padding: '32px', textAlign: 'center', color: 'var(--color-outline)' }}>Nenhum item adicionado a este pedido.</td>
                     </tr>
                   )}
                 </tbody>

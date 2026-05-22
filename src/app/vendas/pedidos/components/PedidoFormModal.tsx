@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Cliente, Produto, Profile, PedidoItem, Pedido } from '@/models/types';
+import { Cliente, Produto, Profile, PedidoItem, Pedido, TipoDesconto } from '@/models/types';
 import { savePedido, updatePedidoAction } from '../actions';
 import { formatCurrency } from '@/utils/format';
 import { toast } from 'sonner';
@@ -21,6 +21,112 @@ interface SearchItem {
   search: string;
   code?: string;
   name: string;
+}
+
+interface DiscountState {
+  tipo: TipoDesconto;
+  valor: number;
+}
+
+interface CartItemState extends DiscountState {
+  produtoId: string;
+  quantidade: number;
+  preco_unitario: number;
+}
+
+const DISCOUNT_OPTIONS: { value: TipoDesconto; label: string }[] = [
+  { value: 'none', label: 'Sem desconto' },
+  { value: 'percent', label: 'Percentual (%)' },
+  { value: 'fixed', label: 'Valor fixo (R$)' },
+];
+
+const roundCurrency = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
+
+const calculateDiscountAmount = (baseAmount: number, tipo: TipoDesconto, valor: number) => {
+  const safeBase = roundCurrency(Math.max(0, Number(baseAmount) || 0));
+  const safeValue = Math.max(0, Number(valor) || 0);
+
+  if (safeBase === 0 || tipo === 'none' || safeValue === 0) {
+    return 0;
+  }
+
+  if (tipo === 'percent') {
+    return roundCurrency(Math.min(safeBase, safeBase * (Math.min(safeValue, 100) / 100)));
+  }
+
+  return roundCurrency(Math.min(safeBase, safeValue));
+};
+
+function DiscountControls({
+  label,
+  discount,
+  appliedAmount,
+  onTypeChange,
+  onValueChange,
+}: {
+  label: string;
+  discount: DiscountState;
+  appliedAmount: number;
+  onTypeChange: (tipo: TipoDesconto) => void;
+  onValueChange: (valor: number) => void;
+}) {
+  const isDisabled = discount.tipo === 'none';
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        {label}
+      </span>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(96px, 1fr)', gap: '8px' }}>
+        <select
+          value={discount.tipo}
+          onChange={(e) => onTypeChange(e.target.value as TipoDesconto)}
+          style={{
+            width: '100%',
+            backgroundColor: 'var(--color-surface)',
+            border: '1px solid var(--color-outline-variant)',
+            borderRadius: '8px',
+            padding: '10px 12px',
+            fontSize: '13px',
+            color: 'var(--color-on-surface)',
+            outline: 'none',
+          }}
+        >
+          {DISCOUNT_OPTIONS.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <input
+          type="number"
+          min="0"
+          max={discount.tipo === 'percent' ? 100 : undefined}
+          step={discount.tipo === 'percent' ? '0.01' : '0.01'}
+          disabled={isDisabled}
+          value={isDisabled ? '' : discount.valor}
+          onChange={(e) => onValueChange(Number(e.target.value) || 0)}
+          placeholder={discount.tipo === 'percent' ? '0,00%' : '0,00'}
+          style={{
+            width: '100%',
+            backgroundColor: isDisabled ? 'var(--color-surface-container-lowest)' : 'var(--color-surface)',
+            border: '1px solid var(--color-outline-variant)',
+            borderRadius: '8px',
+            padding: '10px 12px',
+            fontSize: '13px',
+            color: 'var(--color-on-surface)',
+            outline: 'none',
+            opacity: isDisabled ? 0.7 : 1,
+          }}
+        />
+      </div>
+      {appliedAmount > 0 && (
+        <span style={{ fontSize: '12px', color: 'var(--color-primary)', fontWeight: 600 }}>
+          Desconto aplicado: {formatCurrency(appliedAmount)}
+        </span>
+      )}
+    </div>
+  );
 }
 
 function SearchSelector({ 
@@ -146,7 +252,8 @@ export default function PedidoFormModal({
   const [formaPagamento, setFormaPagamento] = useState<'dinheiro' | 'pix' | 'cartao'>('pix');
   const [observacoes, setObservacoes] = useState('');
   
-  const [cart, setCart] = useState<{ produtoId: string; quantidade: number; preco_unitario: number }[]>([]);
+  const [cart, setCart] = useState<CartItemState[]>([]);
+  const [orderDiscount, setOrderDiscount] = useState<DiscountState>({ tipo: 'none', valor: 0 });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [productSearch, setProductSearch] = useState('');
 
@@ -157,12 +264,18 @@ export default function PedidoFormModal({
       setSelectedVendedorId(pedidoToEdit.vendedor_id || '');
       setFormaPagamento((pedidoToEdit.forma_pagamento as any) || 'pix');
       setObservacoes(pedidoToEdit.observacoes || '');
-      const itensCart = (pedidoToEdit.itens || []).map(item => ({
+      const itensCart: CartItemState[] = (pedidoToEdit.itens || []).map(item => ({
         produtoId: item.produto_id,
         quantidade: item.quantidade,
         preco_unitario: item.preco_unitario,
+        tipo: (item.desconto_tipo || 'none') as TipoDesconto,
+        valor: Number(item.desconto_valor) || 0,
       }));
       setCart(itensCart);
+      setOrderDiscount({
+        tipo: (pedidoToEdit.desconto_tipo || 'none') as TipoDesconto,
+        valor: Number(pedidoToEdit.desconto_valor) || 0,
+      });
     } else if (isOpen && !pedidoToEdit) {
       // Resetar ao abrir em modo criação
       setSelectedClienteId('');
@@ -170,11 +283,30 @@ export default function PedidoFormModal({
       setFormaPagamento('pix');
       setObservacoes('');
       setCart([]);
+      setOrderDiscount({ tipo: 'none', valor: 0 });
       setProductSearch('');
     }
   }, [isOpen, pedidoToEdit]);
-  
-  const total = cart.reduce((acc, item) => acc + (item.quantidade * item.preco_unitario), 0);
+
+  const cartSummary = useMemo(() => {
+    return cart.reduce((acc, item) => {
+      const subtotalBrutoItem = roundCurrency(item.quantidade * item.preco_unitario);
+      const descontoAplicadoItem = calculateDiscountAmount(subtotalBrutoItem, item.tipo, item.valor);
+      const subtotalLiquidoItem = roundCurrency(subtotalBrutoItem - descontoAplicadoItem);
+
+      acc.subtotalBruto += subtotalBrutoItem;
+      acc.descontoItens += descontoAplicadoItem;
+      acc.subtotalLiquido += subtotalLiquidoItem;
+      return acc;
+    }, { subtotalBruto: 0, descontoItens: 0, subtotalLiquido: 0 });
+  }, [cart]);
+
+  const descontoPedidoAplicado = useMemo(
+    () => calculateDiscountAmount(cartSummary.subtotalLiquido, orderDiscount.tipo, orderDiscount.valor),
+    [cartSummary.subtotalLiquido, orderDiscount.tipo, orderDiscount.valor]
+  );
+
+  const total = roundCurrency(cartSummary.subtotalLiquido - descontoPedidoAplicado);
 
   const clientesSearchItems = useMemo(() => clientes.map(c => ({
     id: c.id,
@@ -202,7 +334,7 @@ export default function PedidoFormModal({
         toast.error('Produto sem estoque disponível!');
         return;
       }
-      setCart([...cart, { produtoId: produto.id, quantidade: 1, preco_unitario: produto.preco_venda }]);
+      setCart([...cart, { produtoId: produto.id, quantidade: 1, preco_unitario: produto.preco_venda, tipo: 'none', valor: 0 }]);
     }
   };
 
@@ -224,6 +356,22 @@ export default function PedidoFormModal({
     setCart(cart.map(c => c.produtoId === produtoId ? { ...c, quantidade: qta } : c));
   };
 
+  const updateItemDiscountType = (produtoId: string, tipo: TipoDesconto) => {
+    setCart(cart.map(item => item.produtoId === produtoId ? { ...item, tipo, valor: tipo === 'none' ? 0 : item.valor } : item));
+  };
+
+  const updateItemDiscountValue = (produtoId: string, valor: number) => {
+    setCart(cart.map(item => item.produtoId === produtoId ? { ...item, valor: Math.max(0, valor) } : item));
+  };
+
+  const updateOrderDiscountType = (tipo: TipoDesconto) => {
+    setOrderDiscount(current => ({ tipo, valor: tipo === 'none' ? 0 : current.valor }));
+  };
+
+  const updateOrderDiscountValue = (valor: number) => {
+    setOrderDiscount(current => ({ ...current, valor: Math.max(0, valor) }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedClienteId || !selectedVendedorId || cart.length === 0) {
@@ -240,6 +388,9 @@ export default function PedidoFormModal({
         cliente_id: selectedClienteId,
         vendedor_id: selectedVendedorId,
         valor_total: total,
+        desconto_tipo: orderDiscount.tipo,
+        desconto_valor: orderDiscount.valor,
+        desconto_aplicado: descontoPedidoAplicado,
         forma_pagamento: formaPagamento,
         observacoes,
         nome_cliente: clienteSelecionado?.nome,
@@ -254,12 +405,20 @@ export default function PedidoFormModal({
         codigo_vendedor: vendedorSelecionado?.codigo_vendedor || 0
       };
 
-      const itensData = cart.map(item => ({
-        produto_id: item.produtoId,
-        quantidade: item.quantidade,
-        preco_unitario: item.preco_unitario,
-        subtotal: item.quantidade * item.preco_unitario
-      }));
+      const itensData = cart.map(item => {
+        const subtotalBrutoItem = roundCurrency(item.quantidade * item.preco_unitario);
+        const descontoAplicadoItem = calculateDiscountAmount(subtotalBrutoItem, item.tipo, item.valor);
+
+        return {
+          produto_id: item.produtoId,
+          quantidade: item.quantidade,
+          preco_unitario: item.preco_unitario,
+          desconto_tipo: item.tipo,
+          desconto_valor: item.valor,
+          desconto_aplicado: descontoAplicadoItem,
+          subtotal: roundCurrency(subtotalBrutoItem - descontoAplicadoItem)
+        };
+      });
 
       if (isEditMode && pedidoToEdit) {
         await updatePedidoAction(pedidoToEdit.id, pedidoMeta, itensData as any);
@@ -459,7 +618,7 @@ export default function PedidoFormModal({
                             {p.codigo_produto || '-'}
                           </div>
                           <div className={styles.productInfo} style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                            <h3 className={styles.productName} style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-on-surface)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            <h3 className={styles.productName} title={p.nome_produto} style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-on-surface)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               {p.nome_produto}
                             </h3>
                             <span className={styles.productCategory} style={{ fontSize: '11px', color: 'var(--color-outline)', textTransform: 'uppercase', fontWeight: 500, whiteSpace: 'nowrap' }}>
@@ -522,10 +681,13 @@ export default function PedidoFormModal({
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {cart.map(item => {
                       const p = produtos.find(prod => prod.id === item.produtoId);
+                      const subtotalBrutoItem = roundCurrency(item.quantidade * item.preco_unitario);
+                      const descontoAplicadoItem = calculateDiscountAmount(subtotalBrutoItem, item.tipo, item.valor);
+                      const subtotalLiquidoItem = roundCurrency(subtotalBrutoItem - descontoAplicadoItem);
                       return (
                         <div key={item.produtoId} className={styles.cartItem} style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-outline-variant)', borderRadius: '12px', minWidth: 0 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
-                            <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-on-surface)', lineHeight: 1.3, flex: 1, minWidth: 0 }}>{p?.nome_produto}</span>
+                            <span title={p?.nome_produto} style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-on-surface)', lineHeight: 1.3, flex: 1, minWidth: 0 }}>{p?.nome_produto}</span>
                             <button 
                               type="button" 
                               onClick={() => removeFromCart(item.produtoId)}
@@ -537,6 +699,14 @@ export default function PedidoFormModal({
                               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span>
                             </button>
                           </div>
+
+                          <DiscountControls
+                            label="Desconto do item"
+                            discount={{ tipo: item.tipo, valor: item.valor }}
+                            appliedAmount={descontoAplicadoItem}
+                            onTypeChange={(tipo) => updateItemDiscountType(item.produtoId, tipo)}
+                            onValueChange={(valor) => updateItemDiscountValue(item.produtoId, valor)}
+                          />
                           
                           <div className={styles.cartItemFooter} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '12px', borderTop: '1px solid var(--color-surface-container)' }}>
                             <div className={styles.qtyControl} style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: 'var(--color-surface-container-lowest)', border: '1px solid var(--color-outline-variant)', borderRadius: '8px', padding: '4px', flexShrink: 0 }}>
@@ -565,7 +735,12 @@ export default function PedidoFormModal({
                             
                             <div className={styles.cartItemTotals} style={{ textAlign: 'right', minWidth: 0 }}>
                               <span style={{ fontSize: '11px', color: 'var(--color-outline)', display: 'block', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{formatCurrency(item.preco_unitario)} cada</span>
-                              <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-on-surface)', whiteSpace: 'nowrap' }}>{formatCurrency(item.quantidade * item.preco_unitario)}</span>
+                              {descontoAplicadoItem > 0 && (
+                                <span style={{ fontSize: '11px', color: 'var(--color-outline)', display: 'block', textDecoration: 'line-through' }}>
+                                  {formatCurrency(subtotalBrutoItem)}
+                                </span>
+                              )}
+                              <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-on-surface)', whiteSpace: 'nowrap' }}>{formatCurrency(subtotalLiquidoItem)}</span>
                             </div>
                           </div>
                         </div>
@@ -594,11 +769,37 @@ export default function PedidoFormModal({
                   />
                 </div>
                 
+                <div style={{ marginBottom: '16px' }}>
+                  <DiscountControls
+                    label="Desconto no pedido inteiro"
+                    discount={orderDiscount}
+                    appliedAmount={descontoPedidoAplicado}
+                    onTypeChange={updateOrderDiscountType}
+                    onValueChange={updateOrderDiscountValue}
+                  />
+                </div>
+
                 <div className={styles.totalCard} style={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-outline-variant)', borderRadius: '12px', padding: '16px', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'var(--color-outline)' }}>
-                    <span>Subtotal</span>
-                    <span>{formatCurrency(total)}</span>
+                    <span>Subtotal bruto</span>
+                    <span>{formatCurrency(cartSummary.subtotalBruto)}</span>
                   </div>
+                  {cartSummary.descontoItens > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'var(--color-primary)' }}>
+                      <span>Desconto nos itens</span>
+                      <span>- {formatCurrency(cartSummary.descontoItens)}</span>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'var(--color-outline)' }}>
+                    <span>Subtotal</span>
+                    <span>{formatCurrency(cartSummary.subtotalLiquido)}</span>
+                  </div>
+                  {descontoPedidoAplicado > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'var(--color-primary)' }}>
+                      <span>Desconto no pedido</span>
+                      <span>- {formatCurrency(descontoPedidoAplicado)}</span>
+                    </div>
+                  )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', marginTop: '4px', borderTop: '1px solid var(--color-surface-container)' }}>
                     <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-on-surface)' }}>Total do Pedido</span>
                     <span style={{ fontSize: '20px', fontWeight: 700, color: 'var(--color-primary)' }}>{formatCurrency(total)}</span>

@@ -9,6 +9,7 @@ export type StatusPedido = 'aguardando_preparacao' | 'pronto_para_entrega' | 'em
 export type TipoMeta = 'faturamento' | 'vendas' | 'clientes' | 'conversao' | 'entregas';
 
 export type NivelComissao = 'Bronze' | 'Prata' | 'Ouro';
+export type TipoDesconto = 'none' | 'percent' | 'fixed';
 
 export interface Profile {
   id: string;
@@ -219,6 +220,9 @@ export interface Pedido {
   cliente_id: string;
   vendedor_id: string;
   valor_total: number;
+  desconto_tipo?: TipoDesconto;
+  desconto_valor?: number;
+  desconto_aplicado?: number;
   forma_pagamento: 'dinheiro' | 'pix' | 'cartao';
   status_pedido: StatusPedido;
   observacoes?: string | null;
@@ -263,6 +267,9 @@ export interface PedidoItem {
   produto_id: string;
   quantidade: number;
   preco_unitario: number;
+  desconto_tipo?: TipoDesconto;
+  desconto_valor?: number;
+  desconto_aplicado?: number;
   subtotal: number;
   created_at?: string;
   
