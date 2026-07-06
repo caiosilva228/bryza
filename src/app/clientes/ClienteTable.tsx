@@ -2,14 +2,18 @@
 
 import { Cliente } from '@/models/types';
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import ClienteInfoModal from './ClienteInfoModal';
 import { formatDate } from '@/utils/format';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import Pagination from '@/components/ui/Pagination';
+import { toast } from 'sonner';
+import { excluirClienteAction } from './actions';
 
 
 interface ClienteTableProps {
   clientes: Cliente[];
+  isAdmin?: boolean;
 }
 
 type SortKey = 'codigo' | 'nome' | 'cidade' | 'vendedor' | 'status' | 'atividade';
@@ -29,14 +33,16 @@ const getLastPurchaseTimestamp = (cliente: Cliente) => {
   return Number.isNaN(timestamp) ? null : timestamp;
 };
 
-export default function ClienteTable({ clientes }: ClienteTableProps) {
+export default function ClienteTable({ clientes, isAdmin = false }: ClienteTableProps) {
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const isMobile = useIsMobile();
+  const router = useRouter();
 
   const sortedClientes = useMemo(() => {
     if (!sortKey) {
@@ -148,6 +154,32 @@ export default function ClienteTable({ clientes }: ClienteTableProps) {
     }
 
     return 'Ordenacao decrescente ativa. Clique para limpar.';
+  };
+
+  const handleDeleteCliente = async (cliente: Cliente) => {
+    if (!isAdmin) return;
+
+    const confirmed = window.confirm(
+      `Excluir o cliente ${cliente.nome.toUpperCase()}? Esta ação não pode ser desfeita.`
+    );
+
+    if (!confirmed) return;
+
+    setDeletingId(cliente.id);
+    try {
+      const result = await excluirClienteAction(cliente.id);
+      if (result.success) {
+        toast.success(result.message);
+        router.refresh();
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error('Erro ao excluir cliente:', error);
+      toast.error('Erro inesperado ao excluir cliente.');
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const renderSortableHeader = (label: string, key: SortKey) => {
@@ -424,7 +456,7 @@ export default function ClienteTable({ clientes }: ClienteTableProps) {
                   </div>
 
                   {/* Linha 3: Vendedor + Última compra + Botão */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '28px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '28px', gap: '12px' }}>
                     <div>
                       <span style={{ fontSize: '11px', color: 'var(--color-outline)', fontWeight: 600 }}>
                         {cliente.vendedor?.nome?.toUpperCase() || 'SEM VENDEDOR'}
@@ -433,27 +465,57 @@ export default function ClienteTable({ clientes }: ClienteTableProps) {
                         ÚLT: {cliente.data_ultima_compra ? formatDate(cliente.data_ultima_compra) : 'NUNCA'}
                       </div>
                     </div>
-                    <button
-                      onClick={() => setSelectedCliente(cliente)}
-                      style={{
-                        backgroundColor: 'var(--color-surface-container-high)',
-                        border: '1px solid var(--color-outline-variant)',
-                        borderRadius: '8px',
-                        padding: '8px 14px',
-                        color: 'var(--color-on-surface)',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        fontWeight: 700,
-                        fontSize: '12px',
-                        minHeight: '40px',
-                        WebkitTapHighlightColor: 'transparent',
-                      }}
-                    >
-                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>visibility</span>
-                      Ver
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <button
+                        onClick={() => setSelectedCliente(cliente)}
+                        style={{
+                          backgroundColor: 'var(--color-surface-container-high)',
+                          border: '1px solid var(--color-outline-variant)',
+                          borderRadius: '8px',
+                          padding: '8px 14px',
+                          color: 'var(--color-on-surface)',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          fontWeight: 700,
+                          fontSize: '12px',
+                          minHeight: '40px',
+                          WebkitTapHighlightColor: 'transparent',
+                        }}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>visibility</span>
+                        Ver
+                      </button>
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCliente(cliente)}
+                          disabled={deletingId === cliente.id}
+                          style={{
+                            backgroundColor: 'var(--color-error-container)',
+                            border: '1px solid rgba(239,68,68,0.18)',
+                            borderRadius: '8px',
+                            padding: '8px 12px',
+                            color: 'var(--color-error)',
+                            cursor: deletingId === cliente.id ? 'not-allowed' : 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            fontWeight: 700,
+                            fontSize: '12px',
+                            minHeight: '40px',
+                            WebkitTapHighlightColor: 'transparent',
+                            opacity: deletingId === cliente.id ? 0.7 : 1,
+                          }}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+                            {deletingId === cliente.id ? 'hourglass_top' : 'delete'}
+                          </span>
+                          Excluir
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -510,7 +572,9 @@ export default function ClienteTable({ clientes }: ClienteTableProps) {
                 {renderSortableHeader('Vendedor', 'vendedor')}
                 {renderSortableHeader('Situação', 'status')}
                 {renderSortableHeader('Atividade', 'atividade')}
-                <th style={{ padding: '12px 16px', fontWeight: 900, color: 'var(--color-on-surface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Ações</th>
+                <th style={{ padding: '12px 16px', fontWeight: 900, color: 'var(--color-on-surface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>
+                  {isAdmin ? 'Ações' : 'Detalhes'}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -602,26 +666,55 @@ export default function ClienteTable({ clientes }: ClienteTableProps) {
                         </div>
                       </td>
                       <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                        <button 
-                          onClick={() => setSelectedCliente(cliente)}
-                          style={{ 
-                            backgroundColor: 'white', 
-                            border: '1px solid #ccc', 
-                            borderRadius: '4px', 
-                            padding: '6px 12px', 
-                            color: '#333', 
-                            cursor: 'pointer', 
-                            display: 'inline-flex', 
-                            alignItems: 'center', 
-                            gap: '6px', 
-                            fontWeight: 800,
-                            fontSize: '11px',
-                            textTransform: 'uppercase'
-                          }}
-                        >
-                          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>visibility</span>
-                          Detalhes
-                        </button>
+                        <div style={{ display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
+                          <button 
+                            onClick={() => setSelectedCliente(cliente)}
+                            style={{ 
+                              backgroundColor: 'white', 
+                              border: '1px solid #ccc', 
+                              borderRadius: '4px', 
+                              padding: '6px 12px', 
+                              color: '#333', 
+                              cursor: 'pointer', 
+                              display: 'inline-flex', 
+                              alignItems: 'center', 
+                              gap: '6px', 
+                              fontWeight: 800,
+                              fontSize: '11px',
+                              textTransform: 'uppercase'
+                            }}
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>visibility</span>
+                            Detalhes
+                          </button>
+                          {isAdmin && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteCliente(cliente)}
+                              disabled={deletingId === cliente.id}
+                              style={{
+                                backgroundColor: 'var(--color-error-container)',
+                                border: '1px solid rgba(239,68,68,0.18)',
+                                borderRadius: '4px',
+                                padding: '6px 12px',
+                                color: 'var(--color-error)',
+                                cursor: deletingId === cliente.id ? 'not-allowed' : 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                fontWeight: 800,
+                                fontSize: '11px',
+                                textTransform: 'uppercase',
+                                opacity: deletingId === cliente.id ? 0.7 : 1,
+                              }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+                                {deletingId === cliente.id ? 'hourglass_top' : 'delete'}
+                              </span>
+                              Excluir
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

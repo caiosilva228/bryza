@@ -1,6 +1,6 @@
 import { MainLayout } from '@/components/layout/MainLayout';
 import { getClientes } from '@/services/clientes';
-import { getVendedores } from '@/services/profiles';
+import { getCurrentProfile, getVendedores } from '@/services/profiles';
 import Link from 'next/link';
 import ClienteFilter from './ClienteFilter';
 import ClienteTable from './ClienteTable';
@@ -15,6 +15,7 @@ export default async function ClientesPage({
     getVendedores(),
     searchParams
   ]);
+  const profile = await getCurrentProfile();
 
   // Filtros resolvidos
   const search = typeof resolvedParams.search === 'string' ? resolvedParams.search.toLowerCase() : '';
@@ -115,12 +116,11 @@ export default async function ClientesPage({
               </Link>
             </div>
           ) : (
-            <ClienteTable clientes={filteredClientes} />
+            <ClienteTable clientes={filteredClientes} isAdmin={profile?.role === 'admin'} />
           )}
         </div>
       </div>
     </MainLayout>
   );
 }
-
 
