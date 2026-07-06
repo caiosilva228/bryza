@@ -38,6 +38,7 @@ export async function savePedido(
 ) {
   try {
     const data = await pedidoService.createPedido(pedido, itens);
+    revalidatePath('/');
     revalidatePath('/vendas/pedidos');
     revalidatePath('/estoque');
     revalidatePath('/vendas');
@@ -63,6 +64,7 @@ export async function updatePedidoStatus(id: string, status: StatusPedido) {
       data = await pedidoService.updateStatusPedido(id, status);
     }
 
+    revalidatePath('/');
     revalidatePath('/vendas/pedidos');
     revalidatePath('/estoque');
     revalidatePath('/vendas');
@@ -87,6 +89,7 @@ export async function getPedidosStats() {
 export async function finalizarPedidoAction(id: string) {
   try {
     const result = await pedidoService.finalizarPedido(id);
+    revalidatePath('/');
     revalidatePath('/vendas/pedidos');
     revalidatePath('/vendas');
     revalidatePath('/estoque');
@@ -100,6 +103,7 @@ export async function finalizarPedidoAction(id: string) {
 export async function cancelarPedidoAction(id: string) {
   try {
     const result = await pedidoService.cancelarPedido(id);
+    revalidatePath('/');
     revalidatePath('/vendas/pedidos');
     revalidatePath('/estoque');
     return result;
@@ -116,6 +120,7 @@ export async function updatePedidoAction(
 ) {
   try {
     const result = await pedidoService.updatePedido(pedidoId, pedidoData, itens);
+    revalidatePath('/');
     revalidatePath('/vendas/pedidos');
     revalidatePath('/estoque');
     revalidatePath('/vendas');

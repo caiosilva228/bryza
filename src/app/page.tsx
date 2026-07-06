@@ -5,6 +5,7 @@ import { MetricCard } from '@/components/dashboard/MetricCard';
 import { MiniTable } from '@/components/dashboard/MiniTable';
 import { DashboardFilter } from '@/components/dashboard/DashboardFilter';
 import { MetaCard } from '@/components/dashboard/MetaCard';
+import { DashboardAutoRefresh } from '@/components/dashboard/DashboardAutoRefresh';
 import { MetasService, calcularDiasUteisRestantes } from '@/services/metas';
 import { formatCurrency } from '@/utils/format';
 import { format, parseISO, subDays, startOfMonth, startOfYesterday } from 'date-fns';
@@ -47,6 +48,7 @@ export default async function Home({ searchParams }: PageProps) {
 
   return (
     <MainLayout>
+      <DashboardAutoRefresh intervalMs={60000} />
       <div className={styles.dashWrapper}>
         <header style={{ marginBottom: '40px' }}>
           <h1 className={styles.dashTitle}>
