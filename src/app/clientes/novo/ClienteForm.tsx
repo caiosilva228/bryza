@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useActionState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { salvarCliente, atualizarCliente, initialClienteActionState } from '../actions';
@@ -31,6 +31,7 @@ export function ClienteForm({
   
   const [cidades, setCidades] = useState<string[]>([]);
   const [isLoadingCep, setIsLoadingCep] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   const ESTADOS = [
@@ -129,25 +130,35 @@ export function ClienteForm({
     ? atualizarCliente.bind(null, initialData.id)
     : salvarCliente;
 
-  const [actionState, formAction, isPending] = useActionState(submitAction, initialClienteActionState);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (isSubmitting) return;
 
-  useEffect(() => {
-    if (!actionState.message) return;
+    setIsSubmitting(true);
+    const form = e.currentTarget;
+    const fd = new FormData(form);
 
-    if (actionState.success) {
-      toast.success(actionState.message);
-      const timer = window.setTimeout(() => {
+    try {
+      const result = await submitAction(initialClienteActionState, fd);
+
+      if (result.success) {
+        toast.success(result.message);
+        form.reset();
         router.replace('/clientes');
-      }, 450);
+        return;
+      }
 
-      return () => window.clearTimeout(timer);
+      toast.error(result.message);
+    } catch (error) {
+      console.error('Erro ao salvar cliente:', error);
+      toast.error('Erro inesperado ao cadastrar o cliente.');
+    } finally {
+      setIsSubmitting(false);
     }
-
-    toast.error(actionState.message);
-  }, [actionState.message, actionState.success, router]);
+  };
 
   return (
-    <form action={formAction}>
+    <form onSubmit={handleSubmit}>
       <datalist id="estados-list">
         {ESTADOS.map(uf => <option key={uf} value={uf} />)}
       </datalist>
@@ -342,7 +353,7 @@ export function ClienteForm({
         </Link>
         <button
           type="submit"
-          disabled={isPending}
+          disabled={isSubmitting}
           style={{
             backgroundColor: 'var(--color-primary)',
             color: 'white',
@@ -351,16 +362,16 @@ export function ClienteForm({
             borderRadius: '8px',
             fontFamily: 'var(--font-headline)',
             fontWeight: 700,
-            cursor: isPending ? 'not-allowed' : 'pointer',
+            cursor: isSubmitting ? 'not-allowed' : 'pointer',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
           }}
-          onMouseEnter={e => { if (!isPending) e.currentTarget.style.opacity = '0.92'; }}
+          onMouseEnter={e => { if (!isSubmitting) e.currentTarget.style.opacity = '0.92'; }}
           onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
         >
-          <span className="material-symbols-outlined">{isPending ? 'hourglass_top' : 'save'}</span>
-          {isPending ? 'Salvando...' : initialData ? 'Atualizar Cliente' : 'Salvar Cadastro'}
+          <span className="material-symbols-outlined">{isSubmitting ? 'hourglass_top' : 'save'}</span>
+          {isSubmitting ? 'Salvando...' : initialData ? 'Atualizar Cliente' : 'Salvar Cadastro'}
         </button>
       </div>
     </form>
