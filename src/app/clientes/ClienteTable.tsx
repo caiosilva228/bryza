@@ -8,7 +8,6 @@ import { formatDate } from '@/utils/format';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import Pagination from '@/components/ui/Pagination';
 import { toast } from 'sonner';
-import { excluirClienteAction } from './actions';
 
 
 interface ClienteTableProps {
@@ -167,12 +166,17 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
 
     setDeletingId(cliente.id);
     try {
-      const result = await excluirClienteAction(cliente.id);
-      if (result.success) {
-        toast.success(result.message);
+      const response = await fetch(`/api/clientes?id=${cliente.id}`, {
+        method: 'DELETE',
+      });
+      
+      const result = await response.json().catch(() => null);
+
+      if (response.ok && result?.success) {
+        toast.success(result.message || 'Cliente excluído com sucesso.');
         router.refresh();
       } else {
-        toast.error(result.message);
+        toast.error(result?.message || 'Erro ao excluir o cliente.');
       }
     } catch (error) {
       console.error('Erro ao excluir cliente:', error);

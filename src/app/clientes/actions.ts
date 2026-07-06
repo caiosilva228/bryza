@@ -136,68 +136,6 @@ export async function atualizarCliente(
   }
 }
 
-export async function excluirClienteAction(clienteId: string): Promise<ClienteActionState> {
-  try {
-    const profile = await getCurrentProfile();
-
-    if (!profile || profile.role !== 'admin') {
-      return {
-        success: false,
-        message: 'Apenas administradores podem excluir clientes.',
-      };
-    }
-
-    const supabase = await createClient();
-
-    const { count: vendasCount, error: vendasError } = await supabase
-      .from('vendas')
-      .select('*', { count: 'exact', head: true })
-      .eq('cliente_id', clienteId);
-
-    if (vendasError) {
-      console.error('Erro ao verificar vendas vinculadas ao cliente:', vendasError);
-      return {
-        success: false,
-        message: 'Não foi possível verificar vínculos do cliente.',
-      };
-    }
-
-    if ((vendasCount || 0) > 0) {
-      return {
-        success: false,
-        message: 'Este cliente possui vendas vinculadas e não pode ser excluído.',
-      };
-    }
-
-    const { error } = await supabase
-      .from('clientes')
-      .delete()
-      .eq('id', clienteId);
-
-    if (error) {
-      console.error('Erro ao excluir cliente:', error);
-      return {
-        success: false,
-        message: 'Erro ao excluir o cliente.',
-      };
-    }
-
-    revalidatePath('/clientes');
-    revalidatePath('/');
-
-    return {
-      success: true,
-      message: 'Cliente excluído com sucesso.',
-    };
-  } catch (error) {
-    console.error('Erro inesperado ao excluir cliente:', error);
-    return {
-      success: false,
-      message: 'Erro inesperado ao excluir o cliente.',
-    };
-  }
-}
-
 export async function getVendasPorClienteAction(clienteId: string) {
   const { getVendasByCliente } = await import('@/services/vendas');
   return await getVendasByCliente(clienteId);

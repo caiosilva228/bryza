@@ -145,3 +145,75 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return NextResponse.json({ success: false, message: 'Usuário não autenticado.' }, { status: 401 });
+    }
+
+    const profile = await getProfileByUserId(userId);
+    if (!profile || profile.role !== 'admin') {
+      return NextResponse.json({ success: false, message: 'Apenas administradores podem excluir clientes.' }, { status: 403 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const clienteId = searchParams.get('id');
+
+    if (!clienteId) {
+      return NextResponse.json({ success: false, message: 'ID do cliente não fornecido.' }, { status: 400 });
+    }
+
+    const supabase = createServiceClient();
+
+    // 1. Verificar se possui vendas vinculadas
+    const { count: vendasCount, error: vendasError } = await supabase
+      .from('vendas')
+      .select('*', { count: 'exact', head: true })
+      .eq('cliente_id', clienteId);
+
+    if (vendasError) {
+      console.error('Erro ao verificar vendas:', vendasError);
+      return NextResponse.json({ success: false, message: 'Erro ao verificar vínculos do cliente.' }, { status: 500 });
+    }
+
+    if ((vendasCount || 0) > 0) {
+      return NextResponse.json({ success: false, message: 'Este cliente possui vendas vinculadas e não pode ser excluído.' }, { status: 400 });
+    }
+
+    // 2. Excluir do funil_leads (pois não tem ON DELETE CASCADE)
+    const { error: funilError } = await supabase
+      .from('funil_leads')
+      .delete()
+      .eq('cliente_id', clienteId);
+
+    if (funilError) {
+      console.error('Erro ao excluir do funil de leads:', funilError);
+      return NextResponse.json({ success: false, message: 'Erro ao excluir dados de funil do cliente.' }, { status: 500 });
+    }
+
+    // 3. Excluir do banco
+    const { error } = await supabase
+      .from('clientes')
+      .delete()
+      .eq('id', clienteId);
+
+    if (error) {
+      console.error('Erro ao excluir cliente:', error);
+      return NextResponse.json({ success: false, message: 'Erro ao excluir o cliente.' }, { status: 500 });
+    }
+
+    revalidatePath('/clientes');
+    revalidatePath('/');
+
+    return NextResponse.json({ success: true, message: 'Cliente excluído com sucesso.' });
+  } catch (error) {
+    console.error('Erro inesperado ao excluir cliente:', error);
+    return NextResponse.json(
+      { success: false, message: error instanceof Error ? error.message : 'Erro inesperado ao excluir o cliente.' },
+      { status: 500 }
+    );
+  }
+}
+
