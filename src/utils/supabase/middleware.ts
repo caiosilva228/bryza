@@ -33,8 +33,13 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Redirect users away from protected routes if not authenticated
+  const isApiRoute = request.nextUrl.pathname.startsWith('/api/');
   const isAuthRoute = request.nextUrl.pathname.startsWith('/login');
   
+  if (isApiRoute) {
+    return supabaseResponse;
+  }
+
   if (!user && !isAuthRoute && request.nextUrl.pathname !== '/login') {
     return NextResponse.redirect(new URL('/login', request.url));
   }

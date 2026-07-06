@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect, useActionState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { salvarCliente, atualizarCliente, initialClienteActionState } from '../actions';
 import { Cliente } from '@/models/types';
 import { toast } from 'sonner';
 
@@ -31,8 +30,8 @@ export function ClienteForm({
   
   const [cidades, setCidades] = useState<string[]>([]);
   const [isLoadingCep, setIsLoadingCep] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  const lastToastMessageRef = useRef('');
 
   const ESTADOS = [
     "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", 
@@ -125,30 +124,43 @@ export function ClienteForm({
     color: 'var(--color-on-surface-variant)'
   };
 
-  // Determinar a action baseada no modo (Novo ou Editar)
-  const submitAction = initialData
-    ? atualizarCliente.bind(null, initialData.id)
-    : salvarCliente;
-  const [actionState, formAction, isPending] = useActionState(submitAction, initialClienteActionState);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (isSubmitting) return;
 
-  useEffect(() => {
-    if (!actionState.message || actionState.message === lastToastMessageRef.current) return;
-    lastToastMessageRef.current = actionState.message;
+    setIsSubmitting(true);
 
-    if (actionState.success) {
-      toast.success(actionState.message);
-      const timer = window.setTimeout(() => {
-        router.replace('/clientes');
-      }, 450);
+    try {
+      const form = e.currentTarget;
+      const formData = new FormData(form);
 
-      return () => window.clearTimeout(timer);
+      if (initialData?.id) {
+        formData.set('cliente_id', initialData.id);
+      }
+
+      const response = await fetch('/api/clientes', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok || !result?.success) {
+        throw new Error(result?.message || 'Erro inesperado ao cadastrar o cliente.');
+      }
+
+      toast.success(result.message || 'Cliente cadastrado com sucesso.');
+      router.replace('/clientes');
+    } catch (error) {
+      console.error('Erro ao salvar cliente:', error);
+      toast.error(error instanceof Error ? error.message : 'Erro inesperado ao cadastrar o cliente.');
+    } finally {
+      setIsSubmitting(false);
     }
-
-    toast.error(actionState.message);
-  }, [actionState.message, actionState.success, router]);
+  };
 
   return (
-    <form action={formAction}>
+    <form onSubmit={handleSubmit}>
       <datalist id="estados-list">
         {ESTADOS.map(uf => <option key={uf} value={uf} />)}
       </datalist>
@@ -343,7 +355,7 @@ export function ClienteForm({
         </Link>
         <button
           type="submit"
-          disabled={isPending}
+          disabled={isSubmitting}
           style={{
             backgroundColor: 'var(--color-primary)',
             color: 'white',
@@ -352,16 +364,16 @@ export function ClienteForm({
             borderRadius: '8px',
             fontFamily: 'var(--font-headline)',
             fontWeight: 700,
-            cursor: isPending ? 'not-allowed' : 'pointer',
+            cursor: isSubmitting ? 'not-allowed' : 'pointer',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
           }}
-          onMouseEnter={e => { if (!isPending) e.currentTarget.style.opacity = '0.92'; }}
+          onMouseEnter={e => { if (!isSubmitting) e.currentTarget.style.opacity = '0.92'; }}
           onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
         >
-          <span className="material-symbols-outlined">{isPending ? 'hourglass_top' : 'save'}</span>
-          {isPending ? 'Salvando...' : initialData ? 'Atualizar Cliente' : 'Salvar Cadastro'}
+          <span className="material-symbols-outlined">{isSubmitting ? 'hourglass_top' : 'save'}</span>
+          {isSubmitting ? 'Salvando...' : initialData ? 'Atualizar Cliente' : 'Salvar Cadastro'}
         </button>
       </div>
     </form>
