@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useActionState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { salvarCliente, atualizarCliente } from '../actions';
+import { salvarCliente, atualizarCliente, initialClienteActionState } from '../actions';
 import { Cliente } from '@/models/types';
+import { toast } from 'sonner';
 
 export function ClienteForm({ 
   profile, 
@@ -29,6 +31,7 @@ export function ClienteForm({
   
   const [cidades, setCidades] = useState<string[]>([]);
   const [isLoadingCep, setIsLoadingCep] = useState(false);
+  const router = useRouter();
 
   const ESTADOS = [
     "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", 
@@ -122,9 +125,26 @@ export function ClienteForm({
   };
 
   // Determinar a action baseada no modo (Novo ou Editar)
-  const formAction = initialData 
-    ? atualizarCliente.bind(null, initialData.id) 
+  const submitAction = initialData
+    ? atualizarCliente.bind(null, initialData.id)
     : salvarCliente;
+
+  const [actionState, formAction, isPending] = useActionState(submitAction, initialClienteActionState);
+
+  useEffect(() => {
+    if (!actionState.message) return;
+
+    if (actionState.success) {
+      toast.success(actionState.message);
+      const timer = window.setTimeout(() => {
+        router.replace('/clientes');
+      }, 450);
+
+      return () => window.clearTimeout(timer);
+    }
+
+    toast.error(actionState.message);
+  }, [actionState.message, actionState.success, router]);
 
   return (
     <form action={formAction}>
@@ -320,21 +340,27 @@ export function ClienteForm({
         }}>
           Cancelar
         </Link>
-        <button type="submit" style={{
-          backgroundColor: 'var(--color-primary)',
-          color: 'white',
-          border: 'none',
-          padding: '12px 24px',
-          borderRadius: '8px',
-          fontFamily: 'var(--font-headline)',
-          fontWeight: 700,
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          <span className="material-symbols-outlined">save</span>
-          {initialData ? 'Atualizar Cliente' : 'Salvar Cadastro'}
+        <button
+          type="submit"
+          disabled={isPending}
+          style={{
+            backgroundColor: 'var(--color-primary)',
+            color: 'white',
+            border: 'none',
+            padding: '12px 24px',
+            borderRadius: '8px',
+            fontFamily: 'var(--font-headline)',
+            fontWeight: 700,
+            cursor: isPending ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+          onMouseEnter={e => { if (!isPending) e.currentTarget.style.opacity = '0.92'; }}
+          onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
+        >
+          <span className="material-symbols-outlined">{isPending ? 'hourglass_top' : 'save'}</span>
+          {isPending ? 'Salvando...' : initialData ? 'Atualizar Cliente' : 'Salvar Cadastro'}
         </button>
       </div>
     </form>
