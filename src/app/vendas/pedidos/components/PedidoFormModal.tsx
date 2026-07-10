@@ -938,7 +938,10 @@ export default function PedidoFormModal({
                 type="date" 
                 value={agendamentoDate}
                 onChange={e => setAgendamentoDate(e.target.value)}
-                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', outline: 'none' }}
+                onClick={e => {
+                  try { e.currentTarget.showPicker(); } catch(err) {}
+                }}
+                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', outline: 'none', cursor: 'pointer' }}
               />
             </div>
 
@@ -948,7 +951,10 @@ export default function PedidoFormModal({
                 type="time" 
                 value={agendamentoTime}
                 onChange={e => setAgendamentoTime(e.target.value)}
-                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', outline: 'none' }}
+                onClick={e => {
+                  try { e.currentTarget.showPicker(); } catch(err) {}
+                }}
+                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', outline: 'none', cursor: 'pointer' }}
               />
             </div>
 
