@@ -166,6 +166,90 @@ export const converterAgendamentoEmPedido = async (agendamentoId: string) => {
   return pedidoData;
 };
 
+export const retornarPedidoParaAgendamento = async (pedidoId: string, dataAgendamentoIso: string) => {
+  const supabase = await createClient();
+
+  // 1. Buscar o pedido e seus itens
+  const { data: pedido, error: pedidoError } = await supabase
+    .from('pedidos')
+    .select(`
+      *,
+      itens:pedido_itens(*)
+    `)
+    .eq('id', pedidoId)
+    .single();
+
+  if (pedidoError || !pedido) throw new Error('Pedido não encontrado para retorno.');
+
+  // 2. Criar o agendamento
+  const agendamentoPayload = {
+    data_agendamento: dataAgendamentoIso,
+    status: 'agendado',
+    cliente_id: pedido.cliente_id,
+    vendedor_id: pedido.vendedor_id,
+    valor_total: pedido.valor_total,
+    desconto_tipo: pedido.desconto_tipo,
+    desconto_valor: pedido.desconto_valor,
+    desconto_aplicado: pedido.desconto_aplicado,
+    forma_pagamento: pedido.forma_pagamento,
+    observacoes: pedido.observacoes,
+    nome_cliente: pedido.nome_cliente,
+    telefone_cliente: pedido.telefone_cliente,
+    endereco_entrega: pedido.endereco_entrega,
+    bairro: pedido.bairro,
+    cidade: pedido.cidade,
+    estado: pedido.estado,
+    cep: pedido.cep,
+    nome_vendedor: pedido.nome_vendedor,
+    codigo_vendedor: pedido.codigo_vendedor,
+  };
+
+  const { data: agendamentoData, error: agendamentoError } = await supabase
+    .from('agendamentos')
+    .insert([agendamentoPayload])
+    .select()
+    .single();
+
+  if (agendamentoError) throw agendamentoError;
+
+  // 3. Criar os itens de agendamento
+  const agendamentoItens = (pedido.itens || []).map((item: any) => ({
+    agendamento_id: agendamentoData.id,
+    produto_id: item.produto_id,
+    quantidade: item.quantidade,
+    preco_unitario: item.preco_unitario,
+    subtotal: item.subtotal,
+    desconto_tipo: item.desconto_tipo,
+    desconto_valor: item.desconto_valor,
+    desconto_aplicado: item.desconto_aplicado,
+  }));
+
+  if (agendamentoItens.length > 0) {
+    const { error: itensError } = await supabase
+      .from('agendamento_itens')
+      .insert(agendamentoItens);
+
+    if (itensError) {
+      await supabase.from('agendamentos').delete().eq('id', agendamentoData.id);
+      throw itensError;
+    }
+  }
+
+  // 4. Deletar o pedido (o DELETE CASCADE vai remover de pedido_itens, e a trigger do banco vai liberar a reserva de estoque automaticamente)
+  const { error: deleteError } = await supabase
+    .from('pedidos')
+    .delete()
+    .eq('id', pedidoId);
+
+  if (deleteError) {
+    // Tenta reverter o agendamento criado
+    await supabase.from('agendamentos').delete().eq('id', agendamentoData.id);
+    throw deleteError;
+  }
+
+  return agendamentoData;
+};
+
 export const cancelarAgendamento = async (agendamentoId: string) => {
   const supabase = await createClient();
   const { error } = await supabase

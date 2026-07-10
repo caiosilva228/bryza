@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Pedido, PedidoItem, StatusPedido } from '@/models/types';
 import { updatePedidoStatus, getPedidoById } from '../actions';
+import { retornarPedidoParaAgendamentoAction } from '../../agendamentos/actions';
 import { statusWorkflow } from '../constants/workflow';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toast } from 'sonner';
@@ -21,6 +22,33 @@ export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onCl
   const [pedido, setPedido] = useState<Pedido>(pedidoInitial);
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // Retornar para agendamento
+  const [isRetornarOpen, setIsRetornarOpen] = useState(false);
+  const [retornarDate, setRetornarDate] = useState('');
+  const [retornarTime, setRetornarTime] = useState('');
+
+  const handleRetornarAgendamento = async () => {
+    if (!retornarDate || !retornarTime) {
+      toast.error('Informe a data e o horário do agendamento.');
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      const dataIso = new Date(`${retornarDate}T${retornarTime}:00`).toISOString();
+      await retornarPedidoParaAgendamentoAction(pedido.id, dataIso);
+      toast.success('Pedido retornado para agendamento com sucesso!');
+      setIsRetornarOpen(false);
+      onUpdate();
+      onClose();
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao retornar para agendamento.');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const subtotalBruto = itens.reduce((acc, item) => acc + (item.quantidade * item.preco_unitario), 0);
   const descontoItens = itens.reduce((acc, item) => acc + (Number(item.desconto_aplicado) || 0), 0);
   const descontoPedido = Number(pedido.desconto_aplicado) || 0;
@@ -292,32 +320,61 @@ export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onCl
             CANCELAR PEDIDO
           </button>
 
-          {/* Botão de editar — só em aguardando_preparacao */}
-          {pedido.status_pedido === 'aguardando_preparacao' && onEdit && (
-            <button
-              disabled={isUpdating}
-              onClick={() => { onEdit(pedido); onClose(); }}
-              style={{
-                background: 'none',
-                border: '1px solid #f59e0b',
-                color: '#f59e0b',
-                fontSize: '12px',
-                fontWeight: 700,
-                padding: '8px 12px',
-                borderRadius: '4px',
-                textTransform: 'uppercase',
-                cursor: isUpdating ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(245, 158, 11, 0.08)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>edit</span>
-              EDITAR PEDIDO
-            </button>
+          {/* Botões do Meio — só em aguardando_preparacao */}
+          {pedido.status_pedido === 'aguardando_preparacao' && (
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {onEdit && (
+                <button
+                  disabled={isUpdating}
+                  onClick={() => { onEdit(pedido); onClose(); }}
+                  style={{
+                    background: 'none',
+                    border: '1px solid #f59e0b',
+                    color: '#f59e0b',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    padding: '8px 12px',
+                    borderRadius: '4px',
+                    textTransform: 'uppercase',
+                    cursor: isUpdating ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(245, 158, 11, 0.08)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>edit</span>
+                  EDITAR PEDIDO
+                </button>
+              )}
+
+              <button
+                disabled={isUpdating}
+                onClick={() => setIsRetornarOpen(true)}
+                style={{
+                  background: 'none',
+                  border: '1px solid var(--color-primary)',
+                  color: 'var(--color-primary)',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  padding: '8px 12px',
+                  borderRadius: '4px',
+                  textTransform: 'uppercase',
+                  cursor: isUpdating ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-primary-container)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>event</span>
+                RETORNAR PARA AGENDAMENTO
+              </button>
+            </div>
           )}
           
           <div style={{ display: 'flex', gap: '12px' }}>
@@ -365,6 +422,57 @@ export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onCl
           </div>
         </div>
       </div>
+
+      {isRetornarOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ backgroundColor: 'var(--color-surface)', padding: '24px', borderRadius: '16px', width: '100%', maxWidth: '400px', boxShadow: '0 24px 48px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: 800 }}>Converter de volta para Agendamento</h3>
+            
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-outline)', marginBottom: '8px' }}>Data da Entrega</label>
+              <input 
+                type="date" 
+                value={retornarDate}
+                onChange={e => setRetornarDate(e.target.value)}
+                onClick={e => {
+                  try { e.currentTarget.showPicker(); } catch(err) {}
+                }}
+                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', outline: 'none', cursor: 'pointer' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-outline)', marginBottom: '8px' }}>Horário (Aproximado)</label>
+              <input 
+                type="time" 
+                value={retornarTime}
+                onChange={e => setRetornarTime(e.target.value)}
+                onClick={e => {
+                  try { e.currentTarget.showPicker(); } catch(err) {}
+                }}
+                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', outline: 'none', cursor: 'pointer' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button 
+                onClick={() => setIsRetornarOpen(false)}
+                style={{ flex: 1, padding: '10px', border: '1px solid var(--color-outline-variant)', borderRadius: '8px', background: 'transparent', cursor: 'pointer', fontWeight: 600 }}
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={handleRetornarAgendamento}
+                disabled={isUpdating || !retornarDate || !retornarTime}
+                style={{ flex: 1, padding: '10px', border: 'none', borderRadius: '8px', background: 'var(--color-primary)', color: 'white', cursor: (isUpdating || !retornarDate || !retornarTime) ? 'not-allowed' : 'pointer', fontWeight: 600, opacity: (isUpdating || !retornarDate || !retornarTime) ? 0.7 : 1 }}
+              >
+                {isUpdating ? 'Convertendo...' : 'Converter'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

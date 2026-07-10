@@ -7,9 +7,24 @@ import {
   createAgendamento,
   converterAgendamentoEmPedido,
   cancelarAgendamento,
+  retornarPedidoParaAgendamento,
   AgendamentoInput,
 } from '@/services/agendamentos';
 import { AgendamentoItem } from '@/models/types';
+
+export async function retornarPedidoParaAgendamentoAction(pedidoId: string, dataAgendamentoIso: string) {
+  try {
+    const data = await retornarPedidoParaAgendamento(pedidoId, dataAgendamentoIso);
+    revalidatePath('/vendas/pedidos');
+    revalidatePath('/vendas/agendamentos');
+    revalidatePath('/estoque');
+    revalidatePath('/');
+    return data;
+  } catch (error) {
+    console.error('Erro ao retornar pedido para agendamento:', error);
+    throw new Error('Falha ao retornar pedido para agendamento.');
+  }
+}
 
 export async function getAgendamentosAction() {
   try {
