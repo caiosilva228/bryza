@@ -32,9 +32,11 @@ export default async function VendasPage(props: {
   const vendasRaw = await getVendas(startDate, endDate);
   const vendas = Array.isArray(vendasRaw) ? vendasRaw : [];
 
-  const faturamentoTotal = vendas.reduce((acc, venda) => acc + (Number(venda.valor_total) || 0), 0);
-  const ticketMedio = vendas.length > 0 ? faturamentoTotal / vendas.length : 0;
-  const clientesUnicos = new Set(vendas.map((venda) => venda.cliente_id)).size;
+  const vendasAtivas = vendas.filter((v) => v.status_venda !== 'cancelado');
+
+  const faturamentoTotal = vendasAtivas.reduce((acc, venda) => acc + (Number(venda.valor_total) || 0), 0);
+  const ticketMedio = vendasAtivas.length > 0 ? faturamentoTotal / vendasAtivas.length : 0;
+  const clientesUnicos = new Set(vendasAtivas.map((venda) => venda.cliente_id)).size;
 
   const statsCards: {
     label: string;
@@ -66,7 +68,7 @@ export default async function VendasPage(props: {
     },
     {
       label: 'VENDAS TOTAIS',
-      value: vendas.length,
+      value: vendasAtivas.length,
       suffix: 'Transações',
       icon: 'calendar_today',
       colorHint: 'default',
