@@ -285,6 +285,287 @@ function DayModal({
   );
 }
 
+// ── StatusListModal ───────────────────────────────────────────────────────────
+function StatusListModal({
+  status,
+  agendamentos,
+  year,
+  month,
+  onClose,
+  onUpdated,
+}: {
+  status: 'agendado' | 'convertido' | 'cancelado';
+  agendamentos: Agendamento[];
+  year: number;
+  month: number;
+  onClose: () => void;
+  onUpdated: () => void;
+}) {
+  const [loading, setLoading] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const titleMap = {
+    agendado: 'Agendamentos Ativos',
+    convertido: 'Agendamentos Convertidos',
+    cancelado: 'Agendamentos Cancelados',
+  };
+
+  const iconMap = {
+    agendado: 'event',
+    convertido: 'task_alt',
+    cancelado: 'cancel',
+  };
+
+  const colorMap = {
+    agendado: 'var(--color-primary)',
+    convertido: '#1b5e20',
+    cancelado: 'var(--color-error)',
+  };
+
+  const handleConverter = async (id: string) => {
+    setLoading(id);
+    try {
+      await converterAgendamentoAction(id);
+      toast.success('Agendamento convertido em pedido com sucesso!');
+      onUpdated();
+      onClose();
+    } catch (e: any) {
+      toast.error(e.message || 'Erro ao converter.');
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  const handleCancelar = async (id: string) => {
+    if (!confirm('Deseja cancelar este agendamento?')) return;
+    setLoading(id);
+    try {
+      await cancelarAgendamentoAction(id);
+      toast.success('Agendamento cancelado.');
+      onUpdated();
+      onClose();
+    } catch {
+      toast.error('Erro ao cancelar.');
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  const displayMonthYear = `${MONTHS[month]} ${year}`;
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '20px',
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          backgroundColor: 'var(--color-surface)',
+          borderRadius: '24px',
+          width: '100%',
+          maxWidth: '640px',
+          maxHeight: '80vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.25)',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div style={{
+          padding: '24px 28px',
+          borderBottom: '1px solid var(--color-outline-variant)',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          backgroundColor: 'var(--color-surface-container-lowest)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '40px', height: '40px', borderRadius: '12px',
+              backgroundColor: status === 'agendado' ? 'var(--color-primary-container)' : status === 'convertido' ? '#e8f5e9' : 'var(--color-error-container)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <span className="material-symbols-outlined" style={{ color: colorMap[status], fontSize: '22px' }}>
+                {iconMap[status]}
+              </span>
+            </div>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
+                {titleMap[status]}
+              </h2>
+              <p style={{ margin: 0, fontSize: '13px', color: 'var(--color-outline)' }}>
+                {displayMonthYear} · {agendamentos.length} item(ns)
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              width: '36px', height: '36px', borderRadius: '50%',
+              border: 'none', backgroundColor: 'var(--color-surface-container-high)',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
+          </button>
+        </div>
+
+        {/* List */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 28px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {agendamentos.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '48px', color: 'var(--color-outline)' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '48px', opacity: 0.3 }}>event_busy</span>
+              <p style={{ marginTop: '12px' }}>Nenhum item nesta lista para este mês.</p>
+            </div>
+          ) : (
+            agendamentos.map(ag => {
+              const dateObj = new Date(ag.data_agendamento);
+              const displayDate = `${padStart(dateObj.getDate())}/${padStart(dateObj.getMonth() + 1)}/${dateObj.getFullYear()}`;
+              const hora = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+              const isExpanded = expandedId === ag.id;
+
+              return (
+                <div key={ag.id} style={{
+                  border: '1px solid var(--color-outline-variant)',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  backgroundColor: 'var(--color-surface-container-lowest)',
+                }}>
+                  {/* Card header */}
+                  <div
+                    onClick={() => setExpandedId(isExpanded ? null : ag.id)}
+                    style={{
+                      padding: '16px 20px',
+                      cursor: 'pointer',
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      backgroundColor: isExpanded ? 'var(--color-surface-container-low)' : 'transparent',
+                    }}
+                  >
+                    <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                      <div style={{
+                        width: '42px', height: '42px', borderRadius: '12px',
+                        backgroundColor: 'var(--color-surface-container-high)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        flexShrink: 0,
+                      }}>
+                        <span className="material-symbols-outlined" style={{ color: 'var(--color-outline)', fontSize: '22px' }}>schedule</span>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--color-on-surface)' }}>
+                          {ag.nome_cliente || ag.cliente?.nome || '—'}
+                        </div>
+                        <div style={{ fontSize: '12px', color: 'var(--color-outline)', marginTop: '2px' }}>
+                          {displayDate} às {hora} · {ag.forma_pagamento.toUpperCase()}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ fontWeight: 800, fontSize: '15px', color: colorMap[status] }}>
+                        {formatCurrency(ag.valor_total)}
+                      </span>
+                      <span className="material-symbols-outlined" style={{
+                        fontSize: '20px', color: 'var(--color-outline)',
+                        transform: isExpanded ? 'rotate(180deg)' : 'none',
+                        transition: 'transform 0.2s',
+                      }}>expand_more</span>
+                    </div>
+                  </div>
+
+                  {/* Expanded details */}
+                  {isExpanded && (
+                    <div style={{
+                      padding: '16px 20px',
+                      borderTop: '1px solid var(--color-outline-variant)',
+                      backgroundColor: 'var(--color-surface-container-low)',
+                    }}>
+                      {/* Items */}
+                      {(ag.itens || []).length > 0 && (
+                        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '16px' }}>
+                          <thead>
+                            <tr>
+                              <th style={{ textAlign: 'left', fontSize: '11px', color: 'var(--color-outline)', fontWeight: 700, textTransform: 'uppercase', padding: '4px 0' }}>Produto</th>
+                              <th style={{ textAlign: 'center', fontSize: '11px', color: 'var(--color-outline)', fontWeight: 700, textTransform: 'uppercase', padding: '4px 0' }}>Qtd</th>
+                              <th style={{ textAlign: 'right', fontSize: '11px', color: 'var(--color-outline)', fontWeight: 700, textTransform: 'uppercase', padding: '4px 0' }}>Total</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {ag.itens!.map((item, idx) => (
+                              <tr key={idx}>
+                                <td style={{ fontSize: '13px', padding: '6px 0', fontWeight: 600 }}>{item.produto?.nome_produto || '—'}</td>
+                                <td style={{ fontSize: '13px', textAlign: 'center', color: 'var(--color-outline)' }}>{item.quantidade}</td>
+                                <td style={{ fontSize: '13px', textAlign: 'right', fontWeight: 700 }}>{formatCurrency(item.subtotal)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+
+                      {ag.observacoes && (
+                        <p style={{ fontSize: '12px', color: 'var(--color-outline)', marginBottom: '16px', fontStyle: 'italic' }}>
+                          Obs: {ag.observacoes}
+                        </p>
+                      )}
+
+                      {/* Actions (Only if status is 'agendado') */}
+                      {status === 'agendado' && (
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button
+                            onClick={() => handleConverter(ag.id)}
+                            disabled={loading === ag.id}
+                            style={{
+                              flex: 1,
+                              padding: '10px 16px',
+                              borderRadius: '10px',
+                              border: 'none',
+                              backgroundColor: 'var(--color-primary)',
+                              color: '#fff',
+                              fontWeight: 700,
+                              fontSize: '13px',
+                              cursor: loading === ag.id ? 'not-allowed' : 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                              opacity: loading === ag.id ? 0.7 : 1,
+                            }}
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>shopping_cart</span>
+                            {loading === ag.id ? 'Convertendo...' : 'Tornar Pedido'}
+                          </button>
+                          <button
+                            onClick={() => handleCancelar(ag.id)}
+                            disabled={loading === ag.id}
+                            style={{
+                              padding: '10px 16px',
+                              borderRadius: '10px',
+                              border: '1px solid var(--color-error)',
+                              backgroundColor: 'transparent',
+                              color: 'var(--color-error)',
+                              fontWeight: 700,
+                              fontSize: '13px',
+                              cursor: loading === ag.id ? 'not-allowed' : 'pointer',
+                              display: 'flex', alignItems: 'center', gap: '8px',
+                            }}
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>cancel</span>
+                            Cancelar
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Calendar ──────────────────────────────────────────────────────────────────
 interface Props {
   initialAgendamentos: Agendamento[];
@@ -298,6 +579,7 @@ export default function AgendamentoClientPage({ initialAgendamentos }: Props) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [dayAgendamentos, setDayAgendamentos] = useState<Agendamento[]>([]);
   const [loadingDay, setLoadingDay] = useState(false);
+  const [statusListModal, setStatusListModal] = useState<'agendado' | 'convertido' | 'cancelado' | null>(null);
 
   const refresh = async () => {
     try {
@@ -318,6 +600,14 @@ export default function AgendamentoClientPage({ initialAgendamentos }: Props) {
     });
     return map;
   }, [agendamentos]);
+
+  // Filter agendamentos of current viewed month and year
+  const currentMonthAgendamentos = useMemo(() => {
+    return agendamentos.filter(a => {
+      const d = new Date(a.data_agendamento);
+      return d.getFullYear() === year && d.getMonth() === month;
+    });
+  }, [agendamentos, year, month]);
 
   // Calendar grid
   const firstDay = new Date(year, month, 1).getDay();
@@ -366,33 +656,52 @@ export default function AgendamentoClientPage({ initialAgendamentos }: Props) {
         {[
           {
             label: 'Agendados',
-            value: agendamentos.filter(a => a.status === 'agendado').length,
+            status: 'agendado',
+            value: currentMonthAgendamentos.filter(a => a.status === 'agendado').length,
             icon: 'event',
             color: 'var(--color-primary)',
             bg: 'var(--color-primary-container)',
           },
           {
             label: 'Convertidos',
-            value: agendamentos.filter(a => a.status === 'convertido').length,
+            status: 'convertido',
+            value: currentMonthAgendamentos.filter(a => a.status === 'convertido').length,
             icon: 'task_alt',
             color: '#1b5e20',
             bg: '#e8f5e9',
           },
           {
             label: 'Cancelados',
-            value: agendamentos.filter(a => a.status === 'cancelado').length,
+            status: 'cancelado',
+            value: currentMonthAgendamentos.filter(a => a.status === 'cancelado').length,
             icon: 'cancel',
             color: 'var(--color-error)',
             bg: 'var(--color-error-container)',
           },
         ].map(s => (
-          <div key={s.label} style={{
-            backgroundColor: 'var(--color-surface)',
-            border: '1px solid var(--color-outline-variant)',
-            borderRadius: '20px',
-            padding: '20px 24px',
-            display: 'flex', alignItems: 'center', gap: '16px',
-          }}>
+          <div 
+            key={s.label} 
+            onClick={() => setStatusListModal(s.status as any)}
+            style={{
+              backgroundColor: 'var(--color-surface)',
+              border: '1px solid var(--color-outline-variant)',
+              borderRadius: '20px',
+              padding: '20px 24px',
+              display: 'flex', alignItems: 'center', gap: '16px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.05)';
+              e.currentTarget.style.backgroundColor = 'var(--color-surface-container-low)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.backgroundColor = 'var(--color-surface)';
+            }}
+          >
             <div style={{
               width: '48px', height: '48px', borderRadius: '14px',
               backgroundColor: s.bg,
@@ -549,6 +858,18 @@ export default function AgendamentoClientPage({ initialAgendamentos }: Props) {
           agendamentos={loadingDay ? [] : dayAgendamentos}
           onClose={() => setSelectedDate(null)}
           onConverted={refresh}
+        />
+      )}
+
+      {/* Stats list modal */}
+      {statusListModal && (
+        <StatusListModal
+          status={statusListModal}
+          agendamentos={currentMonthAgendamentos.filter(a => a.status === statusListModal)}
+          year={year}
+          month={month}
+          onClose={() => setStatusListModal(null)}
+          onUpdated={refresh}
         />
       )}
     </div>

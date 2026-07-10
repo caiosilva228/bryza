@@ -169,7 +169,50 @@ export const converterAgendamentoEmPedido = async (agendamentoId: string) => {
 export const retornarPedidoParaAgendamento = async (pedidoId: string, dataAgendamentoIso: string) => {
   const supabase = await createClient();
 
-  // 1. Buscar o pedido e seus itens
+  // 1. Verificar se existe um agendamento original convertido para este pedido
+  const { data: agendamentoOriginal, error: searchOriginalError } = await supabase
+    .from('agendamentos')
+    .select('id')
+    .eq('pedido_id', pedidoId)
+    .single();
+
+  if (!searchOriginalError && agendamentoOriginal) {
+    // 2a. Reutilizar o agendamento original: atualizar para 'agendado', nova data e limpar pedido_id
+    const { error: updateOriginalError } = await supabase
+      .from('agendamentos')
+      .update({
+        status: 'agendado',
+        data_agendamento: dataAgendamentoIso,
+        pedido_id: null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', agendamentoOriginal.id);
+
+    if (updateOriginalError) throw updateOriginalError;
+
+    // Deletar o pedido para liberar o estoque reservado
+    const { error: deleteError } = await supabase
+      .from('pedidos')
+      .delete()
+      .eq('id', pedidoId);
+
+    if (deleteError) {
+      // Reverter alteração do agendamento em caso de erro na deleção
+      await supabase
+        .from('agendamentos')
+        .update({
+          status: 'convertido',
+          pedido_id: pedidoId,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', agendamentoOriginal.id);
+      throw deleteError;
+    }
+
+    return { id: agendamentoOriginal.id };
+  }
+
+  // 1b. Caso não haja agendamento original (pedido direto), buscar dados do pedido
   const { data: pedido, error: pedidoError } = await supabase
     .from('pedidos')
     .select(`
@@ -181,7 +224,7 @@ export const retornarPedidoParaAgendamento = async (pedidoId: string, dataAgenda
 
   if (pedidoError || !pedido) throw new Error('Pedido não encontrado para retorno.');
 
-  // 2. Criar o agendamento
+  // 2b. Criar novo agendamento
   const agendamentoPayload = {
     data_agendamento: dataAgendamentoIso,
     status: 'agendado',
@@ -212,7 +255,7 @@ export const retornarPedidoParaAgendamento = async (pedidoId: string, dataAgenda
 
   if (agendamentoError) throw agendamentoError;
 
-  // 3. Criar os itens de agendamento
+  // 3b. Criar os itens de agendamento
   const agendamentoItens = (pedido.itens || []).map((item: any) => ({
     agendamento_id: agendamentoData.id,
     produto_id: item.produto_id,
@@ -235,14 +278,13 @@ export const retornarPedidoParaAgendamento = async (pedidoId: string, dataAgenda
     }
   }
 
-  // 4. Deletar o pedido (o DELETE CASCADE vai remover de pedido_itens, e a trigger do banco vai liberar a reserva de estoque automaticamente)
+  // 4b. Deletar o pedido
   const { error: deleteError } = await supabase
     .from('pedidos')
     .delete()
     .eq('id', pedidoId);
 
   if (deleteError) {
-    // Tenta reverter o agendamento criado
     await supabase.from('agendamentos').delete().eq('id', agendamentoData.id);
     throw deleteError;
   }
