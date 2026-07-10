@@ -148,3 +148,24 @@ export const getVendasByCliente = async (clienteId: string): Promise<VendaWithIt
     })),
   })) as VendaWithItens[];
 };
+
+export const getVendaById = async (id: string) => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('vendas')
+    .select(`
+      *,
+      cliente:clientes(nome, telefone, endereco, numero, bairro, cidade, estado, cep),
+      vendedor:profiles(nome, codigo_vendedor),
+      itens:venda_itens(
+        *,
+        produto:produtos(nome_produto, codigo_produto)
+      )
+    `)
+    .eq('id', id)
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
