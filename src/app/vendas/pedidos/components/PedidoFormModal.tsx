@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Cliente, Produto, Profile, PedidoItem, Pedido, TipoDesconto } from '@/models/types';
 import { savePedido, updatePedidoAction } from '../actions';
+import { criarAgendamentoAction } from '../../agendamentos/actions';
 import { formatCurrency } from '@/utils/format';
 import { toast } from 'sonner';
 import styles from './PedidoFormModal.module.css';
@@ -257,6 +258,11 @@ export default function PedidoFormModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [productSearch, setProductSearch] = useState('');
 
+  // Agendamento
+  const [isAgendamentoOpen, setIsAgendamentoOpen] = useState(false);
+  const [agendamentoDate, setAgendamentoDate] = useState('');
+  const [agendamentoTime, setAgendamentoTime] = useState('');
+
   // Pré-preenche o formulário quando um pedido for passado para edição
   useEffect(() => {
     if (isOpen && pedidoToEdit) {
@@ -431,8 +437,72 @@ export default function PedidoFormModal({
       onSuccess();
       onClose();
     } catch (error: any) {
-      console.error('Error saving order:', error);
-      toast.error('Erro ao salvar pedido: ' + (error.message || 'Erro desconhecido'));
+      toast.error(error.message || 'Erro ao processar o pedido.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAgendar = async () => {
+    if (!selectedClienteId || !selectedVendedorId || cart.length === 0) {
+      toast.error('Preencha cliente, vendedor e adicione itens.');
+      return;
+    }
+    if (!agendamentoDate || !agendamentoTime) {
+      toast.error('Informe a data e o horário do agendamento.');
+      return;
+    }
+
+    const clienteSelecionado = clientes.find(c => c.id === selectedClienteId);
+    const vendedorSelecionado = vendedores.find(v => v.id === selectedVendedorId);
+
+    setIsSubmitting(true);
+    try {
+      const dataIso = new Date(`${agendamentoDate}T${agendamentoTime}:00`).toISOString();
+      const agendamentoMeta = {
+        data_agendamento: dataIso,
+        cliente_id: selectedClienteId,
+        vendedor_id: selectedVendedorId,
+        valor_total: total,
+        desconto_tipo: orderDiscount.tipo,
+        desconto_valor: orderDiscount.valor,
+        desconto_aplicado: descontoPedidoAplicado,
+        forma_pagamento: formaPagamento,
+        observacoes,
+        nome_cliente: clienteSelecionado?.nome,
+        telefone_cliente: clienteSelecionado?.telefone,
+        endereco_entrega: clienteSelecionado?.endereco,
+        bairro: clienteSelecionado?.bairro,
+        cidade: clienteSelecionado?.cidade,
+        estado: clienteSelecionado?.estado,
+        cep: clienteSelecionado?.cep,
+        nome_vendedor: vendedorSelecionado?.nome,
+        codigo_vendedor: vendedorSelecionado?.codigo_vendedor || 0
+      };
+
+      const itensData = cart.map(item => {
+        const subtotalBrutoItem = roundCurrency(item.quantidade * item.preco_unitario);
+        const descontoAplicadoItem = calculateDiscountAmount(subtotalBrutoItem, item.tipo, item.valor, item.quantidade);
+
+        return {
+          produto_id: item.produtoId,
+          quantidade: item.quantidade,
+          preco_unitario: item.preco_unitario,
+          desconto_tipo: item.tipo,
+          desconto_valor: item.valor,
+          desconto_aplicado: descontoAplicadoItem,
+          subtotal: roundCurrency(subtotalBrutoItem - descontoAplicadoItem)
+        };
+      });
+
+      await criarAgendamentoAction(agendamentoMeta, itensData);
+
+      toast.success('Agendamento criado com sucesso!');
+      setIsAgendamentoOpen(false);
+      onSuccess();
+      onClose();
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao criar agendamento.');
     } finally {
       setIsSubmitting(false);
     }
@@ -829,11 +899,77 @@ export default function PedidoFormModal({
                     </>
                   )}
                 </button>
+                
+                {!isEditMode && (
+                  <button 
+                    type="button" 
+                    onClick={() => setIsAgendamentoOpen(true)}
+                    disabled={isSubmitting || cart.length === 0}
+                    style={{
+                      width: '100%', padding: '14px 16px', marginTop: '12px',
+                      backgroundColor: 'transparent',
+                      color: (isSubmitting || cart.length === 0) ? 'var(--color-outline-variant)' : 'var(--color-primary)', 
+                      fontSize: '14px', fontWeight: 700, borderRadius: '8px', transition: 'all 0.2s',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                      cursor: (isSubmitting || cart.length === 0) ? 'not-allowed' : 'pointer', 
+                      border: `1px solid ${(isSubmitting || cart.length === 0) ? 'var(--color-outline-variant)' : 'var(--color-primary)'}`
+                    }}
+                    onMouseEnter={e => { if (!isSubmitting && cart.length > 0) e.currentTarget.style.backgroundColor = 'var(--color-primary-container)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>event</span>
+                    Agendar Pedido
+                  </button>
+                )}
               </div>
             </div>
           </div>
         </form>
       </div>
+
+      {isAgendamentoOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ backgroundColor: 'var(--color-surface)', padding: '24px', borderRadius: '16px', width: '100%', maxWidth: '400px', boxShadow: '0 24px 48px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: 800 }}>Confirmar Agendamento</h3>
+            
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-outline)', marginBottom: '8px' }}>Data da Entrega</label>
+              <input 
+                type="date" 
+                value={agendamentoDate}
+                onChange={e => setAgendamentoDate(e.target.value)}
+                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', outline: 'none' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-outline)', marginBottom: '8px' }}>Horário (Aproximado)</label>
+              <input 
+                type="time" 
+                value={agendamentoTime}
+                onChange={e => setAgendamentoTime(e.target.value)}
+                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', outline: 'none' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button 
+                onClick={() => setIsAgendamentoOpen(false)}
+                style={{ flex: 1, padding: '10px', border: '1px solid var(--color-outline-variant)', borderRadius: '8px', background: 'transparent', cursor: 'pointer', fontWeight: 600 }}
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={handleAgendar}
+                disabled={isSubmitting || !agendamentoDate || !agendamentoTime}
+                style={{ flex: 1, padding: '10px', border: 'none', borderRadius: '8px', background: 'var(--color-primary)', color: 'white', cursor: (isSubmitting || !agendamentoDate || !agendamentoTime) ? 'not-allowed' : 'pointer', fontWeight: 600, opacity: (isSubmitting || !agendamentoDate || !agendamentoTime) ? 0.7 : 1 }}
+              >
+                {isSubmitting ? 'Salvando...' : 'Agendar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

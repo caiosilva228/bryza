@@ -58,6 +58,7 @@ export const Sidebar = () => {
       subItems: [
         { label: 'Finalizadas', path: '/vendas', icon: 'history' },
         { label: 'Pedidos', path: '/vendas/pedidos', icon: 'assignment' },
+        { label: 'Agendamentos', path: '/vendas/agendamentos', icon: 'calendar_month' },
       ]
     },
     { label: 'Produtos', path: '/produtos', icon: 'inventory' },

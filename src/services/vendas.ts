@@ -35,6 +35,10 @@ export const getVendas = async (startDate?: string, endDate?: string): Promise<V
 };
 
 export interface VendaWithItens extends Venda {
+  origem?: 'venda' | 'pedido';
+  numero_pedido?: string;
+  status_pedido?: string;
+  created_at?: string;
   venda_itens: {
     id: string;
     quantidade: number;
@@ -48,8 +52,8 @@ export interface VendaWithItens extends Venda {
 
 export const getVendasByCliente = async (clienteId: string): Promise<VendaWithItens[]> => {
   const supabase = await createClient();
-  
-  const { data, error } = await supabase
+
+  const { data: vendasData, error: vendasError } = await supabase
     .from('vendas')
     .select(`
       *,
@@ -64,10 +68,83 @@ export const getVendasByCliente = async (clienteId: string): Promise<VendaWithIt
     .eq('cliente_id', clienteId)
     .order('data_venda', { ascending: false });
 
-  if (error) {
-    console.error('Erro ao buscar vendas do cliente:', error);
+  if (vendasError) {
+    console.error('Erro ao buscar vendas do cliente:', vendasError);
     return [];
   }
 
-  return data as any[];
+  if (vendasData && vendasData.length > 0) {
+    return (vendasData as VendaWithItens[]).map(venda => ({
+      ...venda,
+      origem: 'venda',
+      venda_itens: venda.venda_itens || [],
+    }));
+  }
+
+  const { data: pedidosData, error: pedidosError } = await supabase
+    .from('pedidos')
+    .select(`
+      id,
+      cliente_id,
+      valor_total,
+      forma_pagamento,
+      status_pedido,
+      observacoes,
+      created_at,
+      updated_at,
+      numero_pedido,
+      nome_cliente,
+      telefone_cliente,
+      endereco_entrega,
+      bairro,
+      cidade,
+      estado,
+      cep,
+      complemento,
+      pedido_itens(
+        id,
+        quantidade,
+        preco_unitario,
+        subtotal,
+        produto:produtos(nome_produto)
+      )
+    `)
+    .eq('cliente_id', clienteId)
+    .order('created_at', { ascending: false });
+
+  if (pedidosError) {
+    console.error('Erro ao buscar pedidos do cliente:', pedidosError);
+    return [];
+  }
+
+  return (pedidosData || []).map((pedido: any) => ({
+    id: pedido.id,
+    cliente_id: pedido.cliente_id,
+    vendedor_id: '',
+    data_venda: pedido.created_at,
+    valor_total: pedido.valor_total,
+    forma_pagamento: pedido.forma_pagamento,
+    status_venda: pedido.status_pedido || 'finalizado',
+    observacoes: pedido.observacoes,
+    created_at: pedido.created_at,
+    updated_at: pedido.updated_at || pedido.created_at,
+    numero_pedido: pedido.numero_pedido,
+    nome_cliente: pedido.nome_cliente,
+    telefone_cliente: pedido.telefone_cliente,
+    endereco_entrega: pedido.endereco_entrega,
+    bairro: pedido.bairro,
+    cidade: pedido.cidade,
+    estado: pedido.estado,
+    cep: pedido.cep,
+    complemento: pedido.complemento,
+    status_pedido: pedido.status_pedido,
+    origem: 'pedido',
+    venda_itens: (pedido.pedido_itens || []).map((item: any) => ({
+      id: item.id,
+      quantidade: item.quantidade,
+      preco_unitario: item.preco_unitario,
+      subtotal: item.subtotal,
+      produto: item.produto,
+    })),
+  })) as VendaWithItens[];
 };

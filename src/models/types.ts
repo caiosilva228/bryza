@@ -1,6 +1,7 @@
 export type Role = 'admin' | 'vendedor' | 'logistica';
 export type StatusCliente = 'lead' | 'cliente' | 'recorrente' | 'inativo';
 export type TipoMovimento = 'entrada' | 'saida' | 'ajuste';
+export type StatusAgendamento = 'agendado' | 'convertido' | 'cancelado';
 export type OrigemMovimento = 'producao' | 'venda' | 'perda' | 'ajuste_manual';
 export type StatusVenda = 'pendente' | 'pago' | 'em_entrega' | 'finalizado' | 'cancelado';
 export type StatusEntrega = 'aguardando' | 'separado' | 'em_rota' | 'entregue' | 'nao_entregue';
@@ -289,3 +290,49 @@ export interface PedidoStats {
   entregues: number;
   finalizados: number;
 }
+
+// ── Agendamento ───────────────────────────────────────────────────────────────
+export interface AgendamentoItem {
+  produto_id: string;
+  quantidade: number;
+  preco_unitario: number;
+  subtotal: number;
+  desconto_tipo?: TipoDesconto;
+  desconto_valor?: number;
+  desconto_aplicado?: number;
+  produto?: { nome_produto: string; codigo_produto?: number | string };
+}
+
+export interface Agendamento {
+  id: string;
+  data_agendamento: string;   // ISO datetime — data/hora agendada
+  status: StatusAgendamento;
+  cliente_id: string;
+  vendedor_id: string;
+  valor_total: number;
+  desconto_tipo?: TipoDesconto;
+  desconto_valor?: number;
+  desconto_aplicado?: number;
+  forma_pagamento: 'dinheiro' | 'pix' | 'cartao';
+  observacoes?: string | null;
+  created_at: string;
+  updated_at: string;
+  pedido_id?: string | null;
+
+  // Desnormalizados
+  nome_cliente?: string;
+  telefone_cliente?: string;
+  endereco_entrega?: string;
+  bairro?: string;
+  cidade?: string;
+  estado?: string;
+  cep?: string;
+  nome_vendedor?: string;
+  codigo_vendedor?: number;
+
+  // Relacionais
+  cliente?: { nome: string; telefone: string };
+  vendedor?: { nome: string };
+  itens?: AgendamentoItem[];
+}
+

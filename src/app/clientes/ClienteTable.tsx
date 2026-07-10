@@ -325,6 +325,7 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
           {selectedIds.size} {selectedIds.size === 1 ? 'cliente selecionado' : 'clientes selecionados'}
         </span>
         <button 
+          type="button"
           onClick={baixarCSV}
           style={{ 
             backgroundColor: 'var(--color-primary)', 
@@ -471,7 +472,11 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                       <button
-                        onClick={() => setSelectedCliente(cliente)}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedCliente(cliente);
+                        }}
                         style={{
                           backgroundColor: 'var(--color-surface-container-high)',
                           border: '1px solid var(--color-outline-variant)',
@@ -672,7 +677,11 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
                       <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
                           <button 
-                            onClick={() => setSelectedCliente(cliente)}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedCliente(cliente);
+                            }}
                             style={{ 
                               backgroundColor: 'white', 
                               border: '1px solid #ccc', 

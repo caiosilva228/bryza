@@ -286,14 +286,16 @@ export default function ClienteInfoModal({ cliente, onClose }: ClienteInfoModalP
                           <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--color-primary)' }}>receipt_long</span>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontSize: '14px', fontWeight: 700 }}>{new Date(venda.data_venda).toLocaleDateString('pt-BR')}</span>
+                          <span style={{ fontSize: '14px', fontWeight: 700 }}>
+                            {new Date(venda.data_venda || venda.created_at || '').toLocaleDateString('pt-BR')}
+                          </span>
                           <span style={{ 
                             fontSize: '10px', 
                             fontWeight: 800,
                             color: 'var(--color-primary)',
                             textTransform: 'uppercase'
                           }}>
-                            {venda.status_venda}
+                            {venda.origem === 'pedido' ? (venda.status_pedido || 'pedido') : venda.status_venda}
                           </span>
                         </div>
                       </div>
