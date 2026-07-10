@@ -1,16 +1,17 @@
 'use server';
 
 import { createCliente, updateCliente } from '@/services/clientes';
+import { getVendasByCliente } from '@/services/vendas';
 import { getCurrentProfile } from '@/services/profiles';
 import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 
-export interface ClienteActionState {
+interface ClienteActionState {
   success: boolean;
   message: string;
 }
 
-export const initialClienteActionState: ClienteActionState = {
+const initialClienteActionState: ClienteActionState = {
   success: false,
   message: '',
 };
@@ -137,7 +138,6 @@ export async function atualizarCliente(
 }
 
 export async function getVendasPorClienteAction(clienteId: string) {
-  const { getVendasByCliente } = await import('@/services/vendas');
   return await getVendasByCliente(clienteId);
 }
 
