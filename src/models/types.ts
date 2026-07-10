@@ -9,6 +9,20 @@ export type EtapaFunil = 'amostra_entregue' | 'entrou_whatsapp' | 'testando' | '
 export type StatusPedido = 'aguardando_preparacao' | 'pronto_para_entrega' | 'em_rota' | 'entregue' | 'finalizado' | 'cancelado';
 export type TipoMeta = 'faturamento' | 'vendas' | 'clientes' | 'conversao' | 'entregas';
 
+// ── Logística ─────────────────────────────────────────────────────────────────
+export type DeliveryProblemType =
+  | 'cliente_nao_estava'
+  | 'endereco_errado'
+  | 'cliente_recusou'
+  | 'sem_dinheiro'
+  | 'pediu_reagendamento'
+  | 'produto_avariado'
+  | 'outro';
+
+export type PaymentCheckStatus = 'pendente' | 'confirmado' | 'divergente';
+
+export type DeliveryNextAction = 'keep' | 'back_to_ready' | 'cancel';
+
 export type NivelComissao = 'Bronze' | 'Prata' | 'Ouro';
 export type TipoDesconto = 'none' | 'percent' | 'fixed';
 
@@ -260,7 +274,28 @@ export interface Pedido {
   };
   // Itens do pedido (presente quando há join com pedido_itens)
   itens?: PedidoItem[];
+
+  // ── Campos de Logística (opcionais — requerem ALTER TABLE no Supabase) ──────
+  // ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS motorista TEXT;
+  // ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS rota TEXT;
+  // ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS delivery_started_at TIMESTAMPTZ;
+  // ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS delivered_at TIMESTAMPTZ;
+  // ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS finalized_at TIMESTAMPTZ;
+  // ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS payment_check_status TEXT DEFAULT 'pendente';
+  // ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS amount_received NUMERIC;
+  // ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS delivery_problem_type TEXT;
+  // ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS delivery_notes TEXT;
+  motorista?: string | null;
+  rota?: string | null;
+  delivery_started_at?: string | null;
+  delivered_at?: string | null;
+  finalized_at?: string | null;
+  payment_check_status?: PaymentCheckStatus | null;
+  amount_received?: number | null;
+  delivery_problem_type?: DeliveryProblemType | null;
+  delivery_notes?: string | null;
 }
+
 
 export interface PedidoItem {
   id: string;
