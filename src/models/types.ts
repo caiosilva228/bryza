@@ -55,6 +55,8 @@ export interface DeliveryRoute {
   created_at: string;
   updated_at?: string;
   
+  codigo_rota?: number;
+  
   // Agregados calculados no front/queries
   totalOrders?: number;
   totalAmount?: number;

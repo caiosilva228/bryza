@@ -22,7 +22,9 @@ import {
   reorderRouteOrdersAction,
   markRouteOrderAsDeliveredAction,
   markRouteOrderAsNotDeliveredAction,
-  getRouteByIdAction
+  getRouteByIdAction,
+  addOrdersToRouteAction,
+  removeOrderFromRouteAction
 } from './actions';
 
 interface Props {
@@ -235,6 +237,44 @@ export default function RotasClientPage({ initialRoutes, availableOrders, driver
     window.open(url, '_blank');
   };
 
+  const handleAddOrders = async (routeId: string, orderIds: string[]) => {
+    setLoading(true);
+    try {
+      await addOrdersToRouteAction(routeId, orderIds);
+      toast.success('Pedidos adicionados e rota reotimizada geograficamente!');
+      
+      // Atualizar a visualização local no Drawer
+      const fullRoute = await getRouteByIdAction(routeId);
+      setSelectedRoute(fullRoute as any);
+      
+      refreshUI();
+    } catch (e) {
+      toast.error('Erro ao adicionar pedidos.');
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveOrder = async (routeId: string, routeOrderId: string, orderId: string) => {
+    setLoading(true);
+    try {
+      await removeOrderFromRouteAction(routeId, routeOrderId, orderId);
+      toast.success('Pedido removido e rota reotimizada geograficamente!');
+      
+      // Atualizar a visualização local no Drawer
+      const fullRoute = await getRouteByIdAction(routeId);
+      setSelectedRoute(fullRoute as any);
+      
+      refreshUI();
+    } catch (e) {
+      toast.error('Erro ao remover pedido.');
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmitNotDelivered = async (reason: DeliveryProblemType, notes: string, nextAction: DeliveryNextAction) => {
     if (!notDeliveredOrder) return;
     setLoading(true);
@@ -335,6 +375,9 @@ export default function RotasClientPage({ initialRoutes, availableOrders, driver
         onMarkNotDelivered={(routeId, routeOrderId, orderId) => setNotDeliveredOrder({ routeId, routeOrderId, orderId })}
         onOpenManifest={(r) => setIsManifestOpen(true)}
         onOpenMap={handleOpenMap}
+        availableOrders={availableOrders}
+        onAddOrders={handleAddOrders}
+        onRemoveOrder={handleRemoveOrder}
         loading={loading}
       />
 

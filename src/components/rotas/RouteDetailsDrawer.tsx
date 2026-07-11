@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { DeliveryRoute, RouteOrder, RouteStatus } from '@/models/types';
+import { DeliveryRoute, RouteOrder, RouteStatus, Pedido } from '@/models/types';
 import { formatCurrency, formatDate, formatShortDate } from '@/utils/format';
 import { ROUTE_STATUS_CONFIG } from './RoutesTable';
+import AddOrdersToRouteModal from './AddOrdersToRouteModal';
 
 interface Props {
   route: (DeliveryRoute & { delivery_route_orders?: RouteOrder[] }) | null;
@@ -18,14 +19,20 @@ interface Props {
   onMarkNotDelivered: (routeId: string, routeOrderId: string, orderId: string) => void; // abre o modal
   onOpenManifest: (route: DeliveryRoute) => void;
   onOpenMap: (route: DeliveryRoute & { delivery_route_orders?: RouteOrder[] }) => void;
+  availableOrders?: Pedido[];
+  onAddOrders?: (routeId: string, orderIds: string[]) => Promise<void>;
+  onRemoveOrder?: (routeId: string, routeOrderId: string, orderId: string) => Promise<void>;
   loading?: boolean;
 }
 
 export default function RouteDetailsDrawer({
   route, open, onClose,
   onUpdateStatus, onStartRoute, onFinishRoute, onCancelRoute, onReorder,
-  onMarkDelivered, onMarkNotDelivered, onOpenManifest, onOpenMap, loading
+  onMarkDelivered, onMarkNotDelivered, onOpenManifest, onOpenMap,
+  availableOrders, onAddOrders, onRemoveOrder, loading
 }: Props) {
+  const [isAddOrdersOpen, setIsAddOrdersOpen] = useState(false);
+
   if (!open || !route) return null;
 
   const statusCfg = ROUTE_STATUS_CONFIG[route.status] ?? ROUTE_STATUS_CONFIG['Planejada'];
@@ -75,7 +82,10 @@ export default function RouteDetailsDrawer({
                   {formatShortDate(route.date + 'T00:00:00')}
                 </span>
               </div>
-              <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 800, fontFamily: 'var(--font-headline)' }}>{route.name}</h2>
+              <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 800, fontFamily: 'var(--font-headline)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '15px', color: 'var(--color-outline)', fontWeight: 600, fontFamily: 'monospace' }}>#{route.codigo_rota}</span>
+                {route.name}
+              </h2>
             </div>
             <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
               <span className="material-symbols-outlined" style={{ fontSize: '24px', color: 'var(--color-on-surface-variant)' }}>close</span>
@@ -133,6 +143,12 @@ export default function RouteDetailsDrawer({
             </button>
           )}
 
+          {isFinalizada && (
+            <button disabled={loading} onClick={() => onUpdateStatus(route.id, 'Em Andamento')} style={{ ...actionBtnStyle, backgroundColor: '#fff', color: 'var(--color-on-surface)', borderColor: 'var(--color-outline-variant)' }}>
+              <span className="material-symbols-outlined">restart_alt</span> Retornar para Em Andamento
+            </button>
+          )}
+
           {canEditStatus && (
             <button disabled={loading} onClick={() => onCancelRoute(route.id)} style={{ ...actionBtnStyle, marginLeft: 'auto', color: '#ef4444' }}>
               Cancelar
@@ -142,7 +158,31 @@ export default function RouteDetailsDrawer({
 
         {/* Content (Orders) */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '24px', backgroundColor: 'var(--color-surface)' }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: 800 }}>Pedidos na Rota ({orders.length})</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800 }}>Pedidos na Rota ({orders.length})</h3>
+            {(route.status === 'Planejada' || route.status === 'Separando Produtos' || route.status === 'Pronta para Sair' || route.status === 'Em Andamento' || route.status.startsWith('Finalizada')) && onAddOrders && (
+              <button 
+                onClick={() => setIsAddOrdersOpen(true)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  backgroundColor: 'var(--color-primary-container)',
+                  color: 'var(--color-on-primary-container)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '6px 12px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-headline)'
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>add</span>
+                Adicionar Pedido
+              </button>
+            )}
+          </div>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {orders.map((ro, idx) => {
@@ -209,6 +249,27 @@ export default function RouteDetailsDrawer({
                         <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>chat</span> WhatsApp
                       </a>
                     )}
+
+                    {onRemoveOrder && (
+                      <button 
+                        onClick={() => {
+                          if (confirm(`Deseja realmente remover o pedido #${p.numero_pedido} desta rota?`)) {
+                            onRemoveOrder(route.id, ro.id, p.id);
+                          }
+                        }}
+                        disabled={loading}
+                        style={{ 
+                          ...actionBtnStyle, 
+                          color: 'var(--color-error)', 
+                          borderColor: 'rgba(186, 26, 26, 0.2)',
+                          backgroundColor: 'rgba(186, 26, 26, 0.03)',
+                          marginLeft: 'auto'
+                        }}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
+                        Remover da Rota
+                      </button>
+                    )}
                     
                     {isEmAndamento && isPendente && (
                       <>
@@ -227,6 +288,20 @@ export default function RouteDetailsDrawer({
           </div>
         </div>
       </div>
+      {isAddOrdersOpen && (
+        <AddOrdersToRouteModal
+          open={isAddOrdersOpen}
+          onClose={() => setIsAddOrdersOpen(false)}
+          availableOrders={availableOrders || []}
+          onSubmit={async (orderIds) => {
+            if (onAddOrders) {
+              await onAddOrders(route.id, orderIds);
+              setIsAddOrdersOpen(false);
+            }
+          }}
+          loading={loading}
+        />
+      )}
     </div>
   );
 }

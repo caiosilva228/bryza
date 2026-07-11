@@ -336,6 +336,7 @@ export const updateRouteStatus = async (id: string, status: RouteStatus) => {
 
   if (status === 'Em Andamento') {
     updates.started_at = new Date().toISOString();
+    updates.finished_at = null; // Limpa a data de finalização ao reabrir a rota
   } else if (status === 'Finalizada' || status === 'Finalizada com Pendências') {
     updates.finished_at = new Date().toISOString();
   }
@@ -499,4 +500,142 @@ export const finishRoute = async (routeId: string) => {
   const status = (pendingOrders && pendingOrders.length > 0) ? 'Finalizada com Pendências' : 'Finalizada';
   
   await updateRouteStatus(routeId, status);
+};
+
+export const reoptimizeRouteSequence = async (routeId: string) => {
+  const supabase = await createClient();
+
+  // Buscar todos os pedidos da rota
+  const { data: routeOrders, error: fetchError } = await supabase
+    .from('delivery_route_orders')
+    .select('id, order_id, status, sequence, pedido:pedidos(id, cliente:clientes(latitude, longitude))')
+    .eq('route_id', routeId);
+
+  if (fetchError || !routeOrders) return;
+
+  const ordersWithCoords: { id: string; lat: number; lng: number }[] = [];
+  const ordersWithoutCoords: string[] = [];
+
+  routeOrders.forEach((ro: any) => {
+    // Apenas pedidos ativas entram na otimização geográfica
+    if (ro.status === 'Pendente' || ro.status === 'Em Rota') {
+      const lat = ro.pedido?.cliente?.latitude;
+      const lng = ro.pedido?.cliente?.longitude;
+      if (lat !== null && lat !== undefined && lng !== null && lng !== undefined && Number(lat) !== 0 && Number(lng) !== 0) {
+        ordersWithCoords.push({ id: ro.id, lat: Number(lat), lng: Number(lng) });
+      } else {
+        ordersWithoutCoords.push(ro.id);
+      }
+    } else {
+      ordersWithoutCoords.push(ro.id);
+    }
+  });
+
+  if (ordersWithCoords.length > 0) {
+    // Ponto de partida padrão: Centro de Distribuição em Brasília
+    const optimizedIds = optimizeRouteSequencing(ordersWithCoords, -15.793889, -47.882778);
+    const finalOrderedIds = [...optimizedIds, ...ordersWithoutCoords];
+
+    // Atualizar as sequências no banco
+    for (let i = 0; i < finalOrderedIds.length; i++) {
+      await supabase
+        .from('delivery_route_orders')
+        .update({ sequence: i + 1 })
+        .eq('id', finalOrderedIds[i]);
+    }
+  }
+};
+
+export const addOrdersToRoute = async (routeId: string, orderIds: string[]) => {
+  const supabase = await createClient();
+
+  // 1. Buscar o maior sequence atual da rota
+  const { data: currentOrders, error: fetchError } = await supabase
+    .from('delivery_route_orders')
+    .select('sequence')
+    .eq('route_id', routeId);
+
+  if (fetchError) throw fetchError;
+
+  let maxSequence = 0;
+  if (currentOrders && currentOrders.length > 0) {
+    maxSequence = Math.max(...currentOrders.map(o => o.sequence || 0));
+  }
+
+  // 2. Inserir os novos pedidos na rota
+  const newRouteOrders = orderIds.map((orderId, index) => ({
+    route_id: routeId,
+    order_id: orderId,
+    sequence: maxSequence + index + 1,
+    status: 'Pendente' as RouteOrderStatus,
+  }));
+
+  const { error: insertError } = await supabase
+    .from('delivery_route_orders')
+    .insert(newRouteOrders);
+
+  if (insertError) throw insertError;
+
+  // 3. Atualizar status dos pedidos adicionados para 'em_rota' se a rota já estiver 'Em Andamento'
+  // (Caso a rota já tenha iniciado, o pedido já entra ativo na rota)
+  const { data: routeInfo } = await supabase
+    .from('delivery_routes')
+    .select('status')
+    .eq('id', routeId)
+    .single();
+
+  if (routeInfo) {
+    if (routeInfo.status === 'Em Andamento') {
+      // Marcar as ordens adicionadas como 'Em Rota'
+      await supabase
+        .from('delivery_route_orders')
+        .update({ status: 'Em Rota' as RouteOrderStatus })
+        .eq('route_id', routeId)
+        .in('order_id', orderIds);
+
+      // Marcar os pedidos no banco como 'em_rota'
+      await supabase
+        .from('pedidos')
+        .update({ status_pedido: 'em_rota' })
+        .in('id', orderIds);
+    } else if (routeInfo.status.startsWith('Finalizada')) {
+      // Marcar os pedidos no banco como 'em_rota'
+      await supabase
+        .from('pedidos')
+        .update({ status_pedido: 'em_rota' })
+        .in('id', orderIds);
+
+      // Atualizar status da rota para 'Finalizada com Pendências'
+      await updateRouteStatus(routeId, 'Finalizada com Pendências');
+    }
+  }
+
+  // 4. Reotimizar toda a rota geograficamente
+  await reoptimizeRouteSequence(routeId);
+};
+
+export const removeOrderFromRoute = async (routeId: string, routeOrderId: string, orderId: string) => {
+  const supabase = await createClient();
+
+  // 1. Deletar a associação na tabela de rotas
+  const { error: deleteError } = await supabase
+    .from('delivery_route_orders')
+    .delete()
+    .eq('id', routeOrderId);
+
+  if (deleteError) throw deleteError;
+
+  // 2. Voltar o status do pedido para 'pronto_para_entrega'
+  const { error: updateError } = await supabase
+    .from('pedidos')
+    .update({
+      status_pedido: 'pronto_para_entrega',
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', orderId);
+
+  if (updateError) throw updateError;
+
+  // 3. Reotimizar o sequenciamento dos pedidos que restaram
+  await reoptimizeRouteSequence(routeId);
 };

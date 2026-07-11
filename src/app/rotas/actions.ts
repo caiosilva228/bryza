@@ -60,3 +60,15 @@ export async function markRouteOrderAsNotDeliveredAction(
 export async function getRouteByIdAction(id: string) {
   return await routesService.fetchRouteById(id);
 }
+
+export async function addOrdersToRouteAction(routeId: string, orderIds: string[]) {
+  await routesService.addOrdersToRoute(routeId, orderIds);
+  revalidatePath('/rotas');
+  revalidatePath('/logistica');
+}
+
+export async function removeOrderFromRouteAction(routeId: string, routeOrderId: string, orderId: string) {
+  await routesService.removeOrderFromRoute(routeId, routeOrderId, orderId);
+  revalidatePath('/rotas');
+  revalidatePath('/logistica');
+}

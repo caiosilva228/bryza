@@ -86,12 +86,12 @@ export default function RouteManifestModal({ route, open, onClose }: Props) {
           <div style={{ borderBottom: '2px solid #000', paddingBottom: '16px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
             <div>
               <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 900, textTransform: 'uppercase' }}>Romaneio de Carga</h1>
-              <h2 style={{ margin: '4px 0 0', fontSize: '16px', fontWeight: 700 }}>Rota: {route.name}</h2>
+              <h2 style={{ margin: '4px 0 0', fontSize: '16px', fontWeight: 700 }}>Rota: #{route.codigo_rota} — {route.name}</h2>
             </div>
             <div style={{ textAlign: 'right', fontSize: '13px', fontWeight: 600 }}>
               <p style={{ margin: 0 }}>Data: {formatShortDate(route.date + 'T00:00:00')}</p>
               <p style={{ margin: '4px 0 0' }}>Motorista: {route.driver_name || 'Sem motorista definido'}</p>
-              <p style={{ margin: '4px 0 0' }}>ID: {route.id.split('-')[0].toUpperCase()}</p>
+              <p style={{ margin: '4px 0 0' }}>CÓDIGO: R-{route.codigo_rota}</p>
             </div>
           </div>
 

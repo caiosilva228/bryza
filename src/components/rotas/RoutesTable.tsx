@@ -66,9 +66,11 @@ export default function RoutesTable({ routes, onViewDetails }: Props) {
                     onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--color-surface-container-low)'}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
                   
-                  {/* Nome da Rota */}
                   <td style={{ padding: '12px 16px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-primary)' }}>{r.name}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', fontFamily: 'monospace' }}>#{r.codigo_rota}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-primary)' }}>{r.name}</span>
+                    </div>
                   </td>
 
                   {/* Data */}
