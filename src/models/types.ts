@@ -23,6 +23,60 @@ export type PaymentCheckStatus = 'pendente' | 'confirmado' | 'divergente';
 
 export type DeliveryNextAction = 'keep' | 'back_to_ready' | 'cancel';
 
+export type RouteStatus =
+  | 'Planejada'
+  | 'Separando Produtos'
+  | 'Pronta para Sair'
+  | 'Em Andamento'
+  | 'Finalizada'
+  | 'Finalizada com Pendências'
+  | 'Cancelada';
+
+export type RouteOrderStatus =
+  | 'Pendente'
+  | 'Em Rota'
+  | 'Entregue'
+  | 'Não Entregue'
+  | 'Cancelado';
+
+export interface DeliveryRoute {
+  id: string;
+  name: string;
+  date: string;
+  status: RouteStatus;
+  driver_id?: string | null;
+  driver_name?: string | null;
+  city?: string | null;
+  neighborhoods?: string[] | null;
+  departure_time?: string | null;
+  started_at?: string | null;
+  finished_at?: string | null;
+  notes?: string | null;
+  created_at: string;
+  updated_at?: string;
+  
+  // Agregados calculados no front/queries
+  totalOrders?: number;
+  totalAmount?: number;
+  totalDelivered?: number;
+  totalPending?: number;
+  totalProblems?: number;
+}
+
+export interface RouteOrder {
+  id: string;
+  route_id: string;
+  order_id: string;
+  sequence: number;
+  status: RouteOrderStatus;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+
+  // Join com o pedido
+  pedido?: Pedido;
+}
+
 export type NivelComissao = 'Bronze' | 'Prata' | 'Ouro';
 export type TipoDesconto = 'none' | 'percent' | 'fixed';
 
@@ -317,6 +371,7 @@ export interface PedidoItem {
 }
 
 export type Usuario = Profile;
+export type Driver = Profile;
 
 export interface PedidoStats {
   total: number;
