@@ -324,6 +324,8 @@ export interface Pedido {
     estado: string;
     endereco: string;
     numero: string;
+    latitude?: number | null;
+    longitude?: number | null;
   };
   vendedor?: {
     nome: string;

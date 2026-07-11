@@ -6,14 +6,21 @@ import { Pedido } from '@/models/types';
 export function generateGoogleMapsRouteUrl(pedidos: Pedido[]): string {
   if (pedidos.length === 0) return 'https://www.google.com/maps';
 
-  // Usar endereços do cliente ou do pedido
+  // Usar coordenadas geográficas (latitude, longitude) se disponíveis, com fallback para o endereço textual
   const addresses = pedidos.map(p => {
+    const lat = p.cliente?.latitude;
+    const lng = p.cliente?.longitude;
+    
+    if (lat !== null && lat !== undefined && lng !== null && lng !== undefined && Number(lat) !== 0 && Number(lng) !== 0) {
+      return `${lat},${lng}`;
+    }
+
     let addr = p.cliente?.endereco || p.endereco_entrega || '';
     if (p.cliente?.numero) addr += `, ${p.cliente.numero}`;
     if (p.cliente?.bairro || p.bairro) addr += ` - ${p.cliente?.bairro || p.bairro}`;
     if (p.cliente?.cidade || p.cidade) addr += `, ${p.cliente?.cidade || p.cidade}`;
-    return encodeURIComponent(addr.trim());
-  }).filter(a => a.length > 0);
+    return addr.trim();
+  }).filter(a => a.length > 0).map(a => encodeURIComponent(a));
 
   if (addresses.length === 0) return 'https://www.google.com/maps';
 

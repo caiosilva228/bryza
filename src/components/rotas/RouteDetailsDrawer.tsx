@@ -106,7 +106,7 @@ export default function RouteDetailsDrawer({
           </button>
           
           <button onClick={() => onOpenMap(route)} style={actionBtnStyle}>
-            <span className="material-symbols-outlined">map</span> Google Maps
+            <span className="material-symbols-outlined">map</span> Rota no Mapa
           </button>
 
           {route.status === 'Planejada' && (

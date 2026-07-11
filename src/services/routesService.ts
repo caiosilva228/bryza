@@ -114,7 +114,7 @@ export const fetchRouteById = async (id: string) => {
         *,
         pedido:pedidos(
           *,
-          cliente:clientes(nome, telefone, bairro, cidade, estado, endereco, numero),
+          cliente:clientes(nome, telefone, bairro, cidade, estado, endereco, numero, latitude, longitude),
           vendedor:profiles(nome),
           itens:pedido_itens(
             *,
