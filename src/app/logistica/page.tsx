@@ -98,22 +98,21 @@ export default function LogisticaPage() {
 
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             {/* Rota — Em breve */}
-            <button
-              disabled
-              title="Em breve: criação de rotas"
+            <a
+              href="/rotas"
               style={{
                 display: 'flex', alignItems: 'center', gap: '8px',
                 padding: '11px 18px', borderRadius: '12px',
-                border: '1px dashed var(--color-outline-variant)',
-                backgroundColor: 'transparent',
-                color: 'var(--color-outline)',
+                border: '1px solid var(--color-primary)',
+                backgroundColor: 'rgba(0,86,117,0.06)',
+                color: 'var(--color-primary)',
+                textDecoration: 'none',
                 fontFamily: 'var(--font-headline)', fontWeight: 700, fontSize: '14px',
-                cursor: 'not-allowed', opacity: 0.7,
               }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>map</span>
-              Rotas — Em breve
-            </button>
+              Rotas
+            </a>
 
             <a
               href="/vendas/pedidos"
