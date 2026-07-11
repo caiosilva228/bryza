@@ -640,7 +640,7 @@ export default function AgendamentoClientPage({ initialAgendamentos }: Props) {
   const todayStr = `${today.getFullYear()}-${padStart(today.getMonth() + 1)}-${padStart(today.getDate())}`;
 
   return (
-    <div style={{ padding: '32px', maxWidth: '1000px', margin: '0 auto' }}>
+    <div className="page-wrapper" style={{ maxWidth: '1000px', margin: '0 auto' }}>
       {/* Page header */}
       <div style={{ marginBottom: '32px' }}>
         <h1 style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-on-surface)', letterSpacing: '-0.02em', marginBottom: '8px' }}>
@@ -652,7 +652,7 @@ export default function AgendamentoClientPage({ initialAgendamentos }: Props) {
       </div>
 
       {/* Stats bar */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '32px' }}>
+      <div className="summary-cards-grid three-cols">
         {[
           {
             label: 'Agendados',
@@ -682,37 +682,15 @@ export default function AgendamentoClientPage({ initialAgendamentos }: Props) {
           <div 
             key={s.label} 
             onClick={() => setStatusListModal(s.status as any)}
-            style={{
-              backgroundColor: 'var(--color-surface)',
-              border: '1px solid var(--color-outline-variant)',
-              borderRadius: '20px',
-              padding: '20px 24px',
-              display: 'flex', alignItems: 'center', gap: '16px',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.05)';
-              e.currentTarget.style.backgroundColor = 'var(--color-surface-container-low)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-              e.currentTarget.style.backgroundColor = 'var(--color-surface)';
-            }}
+            className="summary-card"
+            style={{ cursor: 'pointer' }}
           >
-            <div style={{
-              width: '48px', height: '48px', borderRadius: '14px',
-              backgroundColor: s.bg,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
-            }}>
-              <span className="material-symbols-outlined" style={{ color: s.color, fontSize: '26px' }}>{s.icon}</span>
+            <div className="summary-card-icon-wrapper" style={{ backgroundColor: s.bg }}>
+              <span className="material-symbols-outlined" style={{ color: s.color, fontSize: '22px' }}>{s.icon}</span>
             </div>
-            <div>
-              <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</div>
-              <div style={{ fontSize: '28px', fontWeight: 900, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+            <div className="summary-card-content">
+              <div className="summary-card-label">{s.label}</div>
+              <div className="summary-card-value" style={{ color: s.color }}>{s.value}</div>
             </div>
           </div>
         ))}
@@ -790,10 +768,8 @@ export default function AgendamentoClientPage({ initialAgendamentos }: Props) {
               <div
                 key={idx}
                 onClick={() => isValid && handleDayClick(dayNum)}
+                className="calendar-day-cell"
                 style={{
-                  minHeight: '72px',
-                  borderRadius: '14px',
-                  padding: '10px',
                   cursor: isValid ? 'pointer' : 'default',
                   backgroundColor: isToday
                     ? 'var(--color-primary-container)'
@@ -805,26 +781,15 @@ export default function AgendamentoClientPage({ initialAgendamentos }: Props) {
                     : count > 0
                     ? '1px solid rgba(var(--color-primary-rgb, 0,102,204), 0.2)'
                     : '1px solid transparent',
-                  transition: 'all 0.15s',
                   opacity: isValid ? 1 : 0,
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   gap: '6px',
-                }}
-                onMouseEnter={e => {
-                  if (isValid) e.currentTarget.style.backgroundColor = 'var(--color-surface-container-low)';
-                }}
-                onMouseLeave={e => {
-                  if (!isValid) return;
-                  e.currentTarget.style.backgroundColor = isToday
-                    ? 'var(--color-primary-container)'
-                    : count > 0
-                    ? 'rgba(var(--color-primary-rgb, 0,102,204), 0.06)'
-                    : 'transparent';
+                  justifyContent: 'center',
                 }}
               >
-                <span style={{
+                <span className="day-number" style={{
                   fontSize: '14px',
                   fontWeight: isToday ? 900 : 600,
                   color: isToday ? 'var(--color-primary)' : 'var(--color-on-surface)',
@@ -832,7 +797,7 @@ export default function AgendamentoClientPage({ initialAgendamentos }: Props) {
                   {isValid ? dayNum : ''}
                 </span>
                 {count > 0 && (
-                  <div style={{
+                  <div className="day-badge" style={{
                     backgroundColor: 'var(--color-primary)',
                     color: '#fff',
                     borderRadius: '20px',

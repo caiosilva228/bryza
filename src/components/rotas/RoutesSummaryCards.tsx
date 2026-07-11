@@ -71,37 +71,21 @@ export default function RoutesSummaryCards({ routes }: Props) {
   ];
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-      gap: '16px',
-      marginBottom: '32px',
-    }}>
+    <div className="summary-cards-grid">
       {cards.map((card, i) => (
-        <div key={i} style={{
-          backgroundColor: 'var(--color-surface)',
-          border: '1px solid var(--color-outline-variant)',
-          borderRadius: '16px',
-          padding: '20px',
-          display: 'flex', flexDirection: 'column', gap: '12px',
-          boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-        }}>
-          <div style={{
-            width: 40, height: 40, borderRadius: '10px',
-            backgroundColor: card.bg,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '22px', color: card.color }}>{card.icon}</span>
+        <div key={i} className="summary-card">
+          <div className="summary-card-icon-wrapper" style={{ backgroundColor: card.bg }}>
+            <span className="material-symbols-outlined" style={{ color: card.color }}>{card.icon}</span>
           </div>
-          <div>
-            <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <div className="summary-card-content">
+            <p className="summary-card-label">
               {card.label}
             </p>
-            <p style={{ margin: '4px 0 0', fontSize: '24px', fontWeight: 900, fontFamily: 'var(--font-headline)', color: 'var(--color-on-surface)' }}>
+            <p className="summary-card-value">
               {card.value}
             </p>
             {card.sub && (
-              <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'var(--color-on-surface-variant)' }}>{card.sub}</p>
+              <p className="summary-card-sub">{card.sub}</p>
             )}
           </div>
         </div>
