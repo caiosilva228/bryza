@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Pedido, Driver } from '@/models/types';
 import { formatCurrency } from '@/utils/format';
 
@@ -35,6 +35,8 @@ const inputStyle = {
 };
 
 export default function CreateRouteModal({ open, onClose, availableOrders, drivers, onSubmit, loading }: Props) {
+  const dateRef = useRef<HTMLInputElement>(null);
+  const timeRef = useRef<HTMLInputElement>(null);
   const [step, setStep] = useState(1);
 
   // Form Fields
@@ -161,11 +163,25 @@ export default function CreateRouteModal({ open, onClose, availableOrders, drive
               <div style={{ display: 'flex', gap: '16px' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Data <span style={{ color: 'var(--color-error)' }}>*</span></label>
-                  <input type="date" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
+                  <input 
+                    ref={dateRef}
+                    type="date" 
+                    value={date} 
+                    onChange={e => setDate(e.target.value)} 
+                    onClick={() => dateRef.current?.showPicker()}
+                    style={{ ...inputStyle, cursor: 'pointer' }} 
+                  />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Previsão de Saída</label>
-                  <input type="time" value={departureTime} onChange={e => setDepartureTime(e.target.value)} style={inputStyle} />
+                  <input 
+                    ref={timeRef}
+                    type="time" 
+                    value={departureTime} 
+                    onChange={e => setDepartureTime(e.target.value)} 
+                    onClick={() => timeRef.current?.showPicker()}
+                    style={{ ...inputStyle, cursor: 'pointer' }} 
+                  />
                 </div>
               </div>
 
