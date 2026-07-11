@@ -85,7 +85,7 @@ export default function RouteDetailsDrawer({
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
             <div style={{ backgroundColor: 'var(--color-surface)', padding: '12px', borderRadius: '10px', border: '1px solid var(--color-outline-variant)' }}>
               <p style={{ margin: 0, fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Motorista</p>
-              <p style={{ margin: '2px 0 0', fontSize: '13px', fontWeight: 700 }}>{route.driver_name || '—'}</p>
+              <p style={{ margin: '2px 0 0', fontSize: '13px', fontWeight: 700 }}>{route.driver_name || 'Sem motorista definido'}</p>
             </div>
             <div style={{ backgroundColor: 'var(--color-surface)', padding: '12px', borderRadius: '10px', border: '1px solid var(--color-outline-variant)' }}>
               <p style={{ margin: 0, fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Previsão de Saída</p>
@@ -183,6 +183,12 @@ export default function RouteDetailsDrawer({
                           {p.cliente?.endereco || p.endereco_entrega || 'Endereço não informado'}
                           {p.cliente?.numero ? `, ${p.cliente.numero}` : ''} - {p.cliente?.bairro || p.bairro}
                         </p>
+                        {p.itens && p.itens.length > 0 && (
+                          <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'var(--color-on-surface)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>inventory_2</span>
+                            {p.itens.map(item => `${item.quantidade}x ${item.produto?.nome_produto || 'Produto'}`).join(', ')}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>

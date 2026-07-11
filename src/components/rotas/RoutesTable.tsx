@@ -78,7 +78,7 @@ export default function RoutesTable({ routes, onViewDetails }: Props) {
 
                   {/* Motorista */}
                   <td style={{ padding: '12px 16px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 600 }}>{r.driver_name || '—'}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 600 }}>{r.driver_name || 'Sem motorista definido'}</span>
                   </td>
 
                   {/* Região */}

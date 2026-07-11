@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { logout } from '@/app/login/actions';
@@ -10,12 +10,26 @@ interface MobileDrawerProps {
   onClose: () => void;
 }
 
-const DRAWER_ROUTES = [
+interface Route {
+  label: string;
+  path?: string;
+  icon: string;
+  subItems?: { label: string; path: string; icon: string }[];
+}
+
+const DRAWER_ROUTES: Route[] = [
   { label: 'Dashboard', path: '/', icon: 'dashboard' },
   { label: 'Metas', path: '/metas', icon: 'flag' },
   { label: 'CRM / Clientes', path: '/clientes', icon: 'group' },
-  { label: 'Vendas Finalizadas', path: '/vendas', icon: 'history' },
-  { label: 'Pedidos', path: '/vendas/pedidos', icon: 'assignment' },
+  { 
+    label: 'Vendas', 
+    icon: 'shopping_cart',
+    subItems: [
+      { label: 'Finalizadas', path: '/vendas', icon: 'history' },
+      { label: 'Pedidos', path: '/vendas/pedidos', icon: 'assignment' },
+      { label: 'Agendamentos', path: '/vendas/agendamentos', icon: 'calendar_month' },
+    ]
+  },
   { label: 'Produtos', path: '/produtos', icon: 'inventory' },
   { label: 'Estoque', path: '/estoque', icon: 'inventory_2' },
   { label: 'Logística', path: '/logistica', icon: 'local_shipping' },
@@ -26,6 +40,7 @@ const DRAWER_ROUTES = [
 
 export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
   const pathname = usePathname();
+  const [openMenus, setOpenMenus] = useState<string[]>(['Vendas']);
 
   // Fechar ao pressionar Escape
   useEffect(() => {
@@ -45,6 +60,12 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
   const isActive = (path: string) => {
     if (path === '/') return pathname === '/';
     return pathname.startsWith(path);
+  };
+
+  const toggleMenu = (label: string) => {
+    setOpenMenus(prev => 
+      prev.includes(label) ? prev.filter(m => m !== label) : [...prev, label]
+    );
   };
 
   return (
@@ -119,47 +140,108 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
         {/* Nav Links */}
         <nav style={{ flex: 1, padding: '8px 0' }}>
           {DRAWER_ROUTES.map((route) => {
-            const active = isActive(route.path);
+            const isParentActive = route.subItems?.some(sub => pathname === sub.path);
+            const active = route.path === pathname || isParentActive;
+            const hasSubItems = !!route.subItems;
+            const isOpenMenu = openMenus.includes(route.label);
+
             return (
-              <Link
-                key={route.path}
-                href={route.path}
-                onClick={onClose}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '14px',
-                  padding: '14px 20px',
-                  margin: '2px 8px',
-                  borderRadius: '12px',
-                  textDecoration: 'none',
-                  color: active
-                    ? 'var(--color-on-primary-container)'
-                    : 'var(--color-on-surface-variant)',
-                  backgroundColor: active
-                    ? 'var(--color-primary-container)'
-                    : 'transparent',
-                  fontWeight: active ? 700 : 500,
-                  fontSize: '15px',
-                  fontFamily: 'var(--font-headline)',
-                  transition: 'background-color 0.15s ease',
-                  WebkitTapHighlightColor: 'transparent',
-                  minHeight: '48px',
-                }}
-              >
-                <span
-                  className="material-symbols-outlined"
-                  style={{
-                    fontSize: '22px',
-                    fontVariationSettings: active
-                      ? "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24"
-                      : "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",
-                  }}
-                >
-                  {route.icon}
-                </span>
-                {route.label}
-              </Link>
+              <div key={route.label}>
+                {hasSubItems ? (
+                  <div
+                    onClick={() => toggleMenu(route.label)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '14px 20px',
+                      margin: '2px 8px',
+                      borderRadius: '12px',
+                      color: active ? 'var(--color-on-primary-container)' : 'var(--color-on-surface-variant)',
+                      backgroundColor: active ? 'var(--color-primary-container)' : 'transparent',
+                      fontWeight: active ? 700 : 500,
+                      fontSize: '15px',
+                      fontFamily: 'var(--font-headline)',
+                      cursor: 'pointer',
+                      minHeight: '48px',
+                      WebkitTapHighlightColor: 'transparent',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>{route.icon}</span>
+                      <span>{route.label}</span>
+                    </div>
+                    <span className="material-symbols-outlined" style={{
+                      fontSize: '20px',
+                      transition: 'transform 0.2s',
+                      transform: isOpenMenu ? 'rotate(180deg)' : 'rotate(0deg)'
+                    }}>
+                      expand_more
+                    </span>
+                  </div>
+                ) : (
+                  <Link
+                    href={route.path!}
+                    onClick={onClose}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '14px',
+                      padding: '14px 20px',
+                      margin: '2px 8px',
+                      borderRadius: '12px',
+                      textDecoration: 'none',
+                      color: active ? 'var(--color-on-primary-container)' : 'var(--color-on-surface-variant)',
+                      backgroundColor: active ? 'var(--color-primary-container)' : 'transparent',
+                      fontWeight: active ? 700 : 500,
+                      fontSize: '15px',
+                      fontFamily: 'var(--font-headline)',
+                      transition: 'background-color 0.15s ease',
+                      WebkitTapHighlightColor: 'transparent',
+                      minHeight: '48px',
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>{route.icon}</span>
+                    {route.label}
+                  </Link>
+                )}
+
+                {hasSubItems && isOpenMenu && (
+                  <div style={{ marginLeft: '24px', borderLeft: '1px solid var(--color-outline-variant)', marginBottom: '8px' }}>
+                    {route.subItems!.map(sub => {
+                      const isSubActive = pathname === sub.path;
+                      return (
+                        <Link
+                          key={sub.path}
+                          href={sub.path}
+                          onClick={onClose}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            padding: '10px 16px',
+                            marginLeft: '12px',
+                            borderRadius: '8px',
+                            textDecoration: 'none',
+                            backgroundColor: isSubActive ? 'var(--color-secondary-container)' : 'transparent',
+                            color: isSubActive ? 'var(--color-on-secondary-container)' : 'var(--color-on-surface-variant)',
+                            fontWeight: isSubActive ? 700 : 500,
+                            fontSize: '13px',
+                            fontFamily: 'var(--font-headline)',
+                            transition: 'background-color 0.15s ease',
+                            WebkitTapHighlightColor: 'transparent',
+                            minHeight: '36px',
+                            marginBottom: '2px'
+                          }}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{sub.icon}</span>
+                          {sub.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>

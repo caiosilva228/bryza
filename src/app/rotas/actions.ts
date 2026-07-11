@@ -56,3 +56,7 @@ export async function markRouteOrderAsNotDeliveredAction(
   revalidatePath('/rotas');
   revalidatePath('/logistica');
 }
+
+export async function getRouteByIdAction(id: string) {
+  return await routesService.fetchRouteById(id);
+}

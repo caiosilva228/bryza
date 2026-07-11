@@ -21,7 +21,8 @@ import {
   cancelRouteAction,
   reorderRouteOrdersAction,
   markRouteOrderAsDeliveredAction,
-  markRouteOrderAsNotDeliveredAction
+  markRouteOrderAsNotDeliveredAction,
+  getRouteByIdAction
 } from './actions';
 
 interface Props {
@@ -252,6 +253,21 @@ export default function RotasClientPage({ initialRoutes, availableOrders, driver
     }
   };
 
+  const handleViewDetails = async (route: DeliveryRoute) => {
+    setLoading(true);
+    try {
+      console.log("route", route);
+      const fullRoute = await getRouteByIdAction(route.id);
+      console.log("routeOrders", fullRoute?.delivery_route_orders);
+      setSelectedRoute(fullRoute as any);
+    } catch (e) {
+      toast.error('Erro ao carregar detalhes da rota.');
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
@@ -293,7 +309,7 @@ export default function RotasClientPage({ initialRoutes, availableOrders, driver
 
       <RoutesTable 
         routes={filteredRoutes} 
-        onViewDetails={setSelectedRoute} 
+        onViewDetails={handleViewDetails} 
       />
 
       {/* Modals & Drawers */}

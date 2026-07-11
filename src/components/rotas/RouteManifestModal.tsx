@@ -90,7 +90,7 @@ export default function RouteManifestModal({ route, open, onClose }: Props) {
             </div>
             <div style={{ textAlign: 'right', fontSize: '13px', fontWeight: 600 }}>
               <p style={{ margin: 0 }}>Data: {formatShortDate(route.date + 'T00:00:00')}</p>
-              <p style={{ margin: '4px 0 0' }}>Motorista: {route.driver_name || 'Não definido'}</p>
+              <p style={{ margin: '4px 0 0' }}>Motorista: {route.driver_name || 'Sem motorista definido'}</p>
               <p style={{ margin: '4px 0 0' }}>ID: {route.id.split('-')[0].toUpperCase()}</p>
             </div>
           </div>

@@ -13,7 +13,7 @@ export default async function RotasPage() {
   const [routes, availableOrders, driversRes] = await Promise.all([
     fetchRoutes(),
     fetchAvailableOrdersForRoute(),
-    (await createClient()).from('profiles').select('id, nome').eq('role', 'logistica')
+    (await createClient()).from('profiles').select('id, nome').eq('ativo', true)
   ]);
 
   const drivers = driversRes.data as Driver[] || [];

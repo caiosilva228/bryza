@@ -136,6 +136,8 @@ export interface Cliente {
     codigo_vendedor?: number;
   } | null;
   observacoes?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   
   // Métricas
   total_compras: number;

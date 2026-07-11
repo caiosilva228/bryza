@@ -30,6 +30,21 @@ export interface UpdateRouteInput {
   notes?: string;
 }
 
+function parseMoneyValue(value: unknown): number {
+  if (typeof value === "number") return value;
+  if (typeof value === "string") {
+    const normalized = value
+      .replace("R$", "")
+      .replace(/\./g, "")
+      .replace(",", ".")
+      .trim();
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+}
+
 export const fetchRoutes = async (filters?: {
   status?: string;
   driver_id?: string;
@@ -43,7 +58,11 @@ export const fetchRoutes = async (filters?: {
     .from('delivery_routes')
     .select(`
       *,
-      delivery_route_orders(id)
+      delivery_route_orders(
+        id,
+        order_id,
+        pedido:pedidos(valor_total)
+      )
     `)
     .order('created_at', { ascending: false });
 
@@ -69,10 +88,20 @@ export const fetchRoutes = async (filters?: {
   const { data, error } = await query;
   if (error) throw error;
 
-  return data.map(route => ({
-    ...route,
-    totalOrders: route.delivery_route_orders?.length || 0,
-  })) as DeliveryRoute[];
+  return data.map(route => {
+    let totalAmount = 0;
+    const orders = route.delivery_route_orders || [];
+    orders.forEach((ro: any) => {
+      const amount = parseMoneyValue(ro.pedido?.valor_total);
+      totalAmount += amount;
+    });
+
+    return {
+      ...route,
+      totalOrders: orders.length,
+      totalAmount,
+    };
+  }) as DeliveryRoute[];
 };
 
 export const fetchRouteById = async (id: string) => {
@@ -108,7 +137,7 @@ export const fetchRouteById = async (id: string) => {
   let totalProblems = 0;
 
   routeOrders.forEach((ro: any) => {
-    const amount = ro.pedido?.valor_total || 0;
+    const amount = parseMoneyValue(ro.pedido?.valor_total);
     totalAmount += amount;
     
     if (ro.status === 'Entregue') {
@@ -167,6 +196,52 @@ export const fetchAvailableOrdersForRoute = async () => {
   return availablePedidos as Pedido[];
 };
 
+function getDistanceHaversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Raio da Terra em km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+interface OrderGeocoded {
+  id: string;
+  lat: number;
+  lng: number;
+}
+
+function optimizeRouteSequencing(orders: OrderGeocoded[], startLat: number = -15.793889, startLng: number = -47.882778): string[] {
+  const unvisited = [...orders];
+  const orderedIds: string[] = [];
+  
+  let currentLat = startLat;
+  let currentLng = startLng;
+
+  while (unvisited.length > 0) {
+    let closestIndex = 0;
+    let minDistance = Infinity;
+
+    for (let i = 0; i < unvisited.length; i++) {
+      const dist = getDistanceHaversine(currentLat, currentLng, unvisited[i].lat, unvisited[i].lng);
+      if (dist < minDistance) {
+        minDistance = dist;
+        closestIndex = i;
+      }
+    }
+
+    const nextOrder = unvisited.splice(closestIndex, 1)[0];
+    orderedIds.push(nextOrder.id);
+    currentLat = nextOrder.lat;
+    currentLng = nextOrder.lng;
+  }
+
+  return orderedIds;
+}
+
 export const createDeliveryRoute = async (input: CreateRouteInput) => {
   const supabase = await createClient();
   
@@ -191,7 +266,36 @@ export const createDeliveryRoute = async (input: CreateRouteInput) => {
   if (routeError) throw routeError;
 
   if (input.orderIds && input.orderIds.length > 0) {
-    const routeOrders = input.orderIds.map((orderId, index) => ({
+    // 1. Buscar dados dos clientes para obter latitude e longitude de cada pedido
+    const { data: pedidosData, error: pedidosError } = await supabase
+      .from('pedidos')
+      .select('id, cliente:clientes(latitude, longitude)')
+      .in('id', input.orderIds);
+
+    let orderedOrderIds = [...input.orderIds];
+
+    if (!pedidosError && pedidosData) {
+      const ordersWithCoords: { id: string; lat: number; lng: number }[] = [];
+      const ordersWithoutCoords: string[] = [];
+
+      pedidosData.forEach((p: any) => {
+        const lat = p.cliente?.latitude;
+        const lng = p.cliente?.longitude;
+        if (lat !== null && lat !== undefined && lng !== null && lng !== undefined) {
+          ordersWithCoords.push({ id: p.id, lat: Number(lat), lng: Number(lng) });
+        } else {
+          ordersWithoutCoords.push(p.id);
+        }
+      });
+
+      if (ordersWithCoords.length > 0) {
+        // Ponto de partida padrão: Centro de Distribuição em Brasília (Bryza CD)
+        const optimizedIds = optimizeRouteSequencing(ordersWithCoords, -15.793889, -47.882778);
+        orderedOrderIds = [...optimizedIds, ...ordersWithoutCoords];
+      }
+    }
+
+    const routeOrders = orderedOrderIds.map((orderId, index) => ({
       route_id: newRoute.id,
       order_id: orderId,
       sequence: index + 1,
