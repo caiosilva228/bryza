@@ -369,7 +369,7 @@ export default function PedidoFormModal({
   };
 
   const updateItemDiscountType = (produtoId: string, tipo: TipoDesconto) => {
-    setCart(cart.map(item => item.produtoId === produtoId ? { ...item, tipo, valor: tipo === 'none' ? 0 : item.valor } : item));
+    setCart(cart.map(item => item.produtoId === produtoId ? { ...item, tipo, valor: tipo === 'none' ? 0 : (item.valor === 0 ? '' : item.valor) } : item));
   };
 
   const updateItemDiscountValue = (produtoId: string, valor: number | '') => {
@@ -377,7 +377,7 @@ export default function PedidoFormModal({
   };
 
   const updateOrderDiscountType = (tipo: TipoDesconto) => {
-    setOrderDiscount(current => ({ tipo, valor: tipo === 'none' ? 0 : current.valor }));
+    setOrderDiscount(current => ({ tipo, valor: tipo === 'none' ? 0 : (current.valor === 0 ? '' : current.valor) }));
   };
 
   const updateOrderDiscountValue = (valor: number | '') => {
