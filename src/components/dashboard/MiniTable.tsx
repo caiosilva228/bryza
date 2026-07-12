@@ -1,4 +1,5 @@
-import React from 'react';
+'use client';
+import React, { useState, useMemo } from 'react';
 
 interface MiniTableColumn {
   header: string;
@@ -16,6 +17,54 @@ interface MiniTableProps {
 }
 
 export function MiniTable({ title, data, columns, emptyMessage = 'Nenhum dado encontrado', className = '' }: MiniTableProps) {
+  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+
+  const sortedData = useMemo(() => {
+    if (!sortConfig || !data) return data;
+    
+    const sorted = [...data];
+    sorted.sort((a, b) => {
+      let aValue: any = a[sortConfig.key];
+      let bValue: any = b[sortConfig.key];
+      
+      if (aValue === null || aValue === undefined) aValue = '';
+      if (bValue === null || bValue === undefined) bValue = '';
+      
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+    
+    return sorted;
+  }, [data, sortConfig]);
+
+  const requestSort = (key: string) => {
+    if (sortConfig && sortConfig.key === key) {
+      if (sortConfig.direction === 'asc') {
+        setSortConfig({ key, direction: 'desc' });
+      } else {
+        setSortConfig(null);
+      }
+    } else {
+      setSortConfig({ key, direction: 'asc' });
+    }
+  };
+
+  const getSortIcon = (columnKey: string) => {
+    if (sortConfig && sortConfig.key === columnKey) {
+      return (
+        <span className="material-symbols-outlined" style={{ fontSize: '14px', marginLeft: '4px', verticalAlign: 'middle', color: 'var(--color-primary)' }}>
+          {sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}
+        </span>
+      );
+    }
+    return (
+      <span className="material-symbols-outlined" style={{ fontSize: '14px', marginLeft: '4px', verticalAlign: 'middle', color: 'var(--color-outline-variant)' }}>
+        unfold_more
+      </span>
+    );
+  };
+
   return (
     <div 
       style={{
@@ -60,10 +109,14 @@ export function MiniTable({ title, data, columns, emptyMessage = 'Nenhum dado en
                     color: 'var(--color-outline)',
                     fontWeight: 500,
                     fontSize: '12px',
-                    borderBottom: '1px solid var(--color-surface-container)'
+                    borderBottom: '1px solid var(--color-surface-container)',
+                    cursor: 'pointer',
+                    userSelect: 'none'
                   }}
+                  onClick={() => requestSort(col.accessor)}
                 >
                   {col.header}
+                  {getSortIcon(col.accessor)}
                 </th>
               ))}
             </tr>
@@ -76,7 +129,7 @@ export function MiniTable({ title, data, columns, emptyMessage = 'Nenhum dado en
                 </td>
               </tr>
             ) : (
-              data.map((row, rowIdx) => (
+              sortedData.map((row, rowIdx) => (
                 <tr key={rowIdx} className="hover-bg-low" style={{ borderBottom: '1px solid var(--color-surface-container-low)', transition: 'background-color 0.2s' }}>
                   {columns.map((col, colIdx) => (
                     <td 

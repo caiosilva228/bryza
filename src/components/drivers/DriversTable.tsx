@@ -1,4 +1,5 @@
 'use client';
+import { useState, useMemo } from 'react';
 import type { Driver } from '@/models/types';
 import {
   VEHICLE_TYPE_LABELS, DRIVER_STATUS_LABELS,
@@ -18,6 +19,54 @@ const statusColors: Record<string, { bg: string; color: string }> = {
 };
 
 export default function DriversTable({ drivers, onEdit, onViewDetails, onToggleStatus }: Props) {
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Driver, direction: 'asc' | 'desc' } | null>(null);
+
+  const sortedDrivers = useMemo(() => {
+    if (!sortConfig) return drivers;
+    
+    const sorted = [...drivers];
+    sorted.sort((a, b) => {
+      let aValue: any = a[sortConfig.key];
+      let bValue: any = b[sortConfig.key];
+      
+      if (aValue === null || aValue === undefined) aValue = '';
+      if (bValue === null || bValue === undefined) bValue = '';
+      
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+    
+    return sorted;
+  }, [drivers, sortConfig]);
+
+  const requestSort = (key: keyof Driver) => {
+    if (sortConfig && sortConfig.key === key) {
+      if (sortConfig.direction === 'asc') {
+        setSortConfig({ key, direction: 'desc' });
+      } else {
+        setSortConfig(null);
+      }
+    } else {
+      setSortConfig({ key, direction: 'asc' });
+    }
+  };
+
+  const getSortIcon = (columnKey: keyof Driver) => {
+    if (sortConfig && sortConfig.key === columnKey) {
+      return (
+        <span className="material-symbols-outlined" style={{ fontSize: '14px', marginLeft: '4px', verticalAlign: 'middle', color: 'var(--color-primary)' }}>
+          {sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}
+        </span>
+      );
+    }
+    return (
+      <span className="material-symbols-outlined" style={{ fontSize: '14px', marginLeft: '4px', verticalAlign: 'middle', color: 'var(--color-outline-variant)' }}>
+        unfold_more
+      </span>
+    );
+  };
+
   if (drivers.length === 0) {
     return (
       <div style={{
@@ -38,18 +87,34 @@ export default function DriversTable({ drivers, onEdit, onViewDetails, onToggleS
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
           <thead style={{ backgroundColor: 'var(--color-surface-container-highest)' }}>
             <tr>
-              {['Motorista', 'Veículo', 'Cidade', 'Modelo de Remuneração', 'Status', 'Ações'].map(h => (
-                <th key={h} style={{
+              {[
+                { label: 'Motorista', key: 'full_name' },
+                { label: 'Veículo', key: 'vehicle_type' },
+                { label: 'Cidade', key: 'city' },
+                { label: 'Modelo de Remuneração', key: 'compensation_type' },
+                { label: 'Status', key: 'status' }
+              ].map(col => (
+                <th key={col.key} style={{
                   padding: '12px 16px', textAlign: 'left', fontSize: '11px',
                   fontWeight: 800, color: 'var(--color-on-surface-variant)',
                   textTransform: 'uppercase', letterSpacing: '0.06em',
                   borderBottom: '1px solid var(--color-outline-variant)',
-                }}>{h}</th>
+                  cursor: 'pointer', userSelect: 'none'
+                }} onClick={() => requestSort(col.key as keyof Driver)}>
+                  {col.label}
+                  {getSortIcon(col.key as keyof Driver)}
+                </th>
               ))}
+              <th style={{
+                  padding: '12px 16px', textAlign: 'left', fontSize: '11px',
+                  fontWeight: 800, color: 'var(--color-on-surface-variant)',
+                  textTransform: 'uppercase', letterSpacing: '0.06em',
+                  borderBottom: '1px solid var(--color-outline-variant)'
+                }}>Ações</th>
             </tr>
           </thead>
           <tbody>
-            {drivers.map((driver, i) => {
+            {sortedDrivers.map((driver, i) => {
               const sc = statusColors[driver.status] || statusColors.inactive;
               const isLast = i === drivers.length - 1;
               return (

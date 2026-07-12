@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { DeliveryRoute } from '@/models/types';
 import { formatCurrency, formatDate, formatShortDate } from '@/utils/format';
 
@@ -20,6 +20,54 @@ interface Props {
 }
 
 export default function RoutesTable({ routes, onViewDetails }: Props) {
+  const [sortConfig, setSortConfig] = useState<{ key: keyof DeliveryRoute, direction: 'asc' | 'desc' } | null>(null);
+
+  const sortedRoutes = useMemo(() => {
+    if (!sortConfig) return routes;
+    
+    const sorted = [...routes];
+    sorted.sort((a, b) => {
+      let aValue: any = a[sortConfig.key];
+      let bValue: any = b[sortConfig.key];
+      
+      if (aValue === null || aValue === undefined) aValue = '';
+      if (bValue === null || bValue === undefined) bValue = '';
+      
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+    
+    return sorted;
+  }, [routes, sortConfig]);
+
+  const requestSort = (key: keyof DeliveryRoute) => {
+    if (sortConfig && sortConfig.key === key) {
+      if (sortConfig.direction === 'asc') {
+        setSortConfig({ key, direction: 'desc' });
+      } else {
+        setSortConfig(null);
+      }
+    } else {
+      setSortConfig({ key, direction: 'asc' });
+    }
+  };
+
+  const getSortIcon = (columnKey: keyof DeliveryRoute) => {
+    if (sortConfig && sortConfig.key === columnKey) {
+      return (
+        <span className="material-symbols-outlined" style={{ fontSize: '14px', marginLeft: '4px', verticalAlign: 'middle', color: 'var(--color-primary)' }}>
+          {sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}
+        </span>
+      );
+    }
+    return (
+      <span className="material-symbols-outlined" style={{ fontSize: '14px', marginLeft: '4px', verticalAlign: 'middle', color: 'var(--color-outline-variant)' }}>
+        unfold_more
+      </span>
+    );
+  };
+
   if (routes.length === 0) {
     return (
       <div style={{
@@ -47,18 +95,31 @@ export default function RoutesTable({ routes, onViewDetails }: Props) {
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '900px' }}>
           <thead>
             <tr style={{ backgroundColor: 'var(--color-surface-container-highest)', borderBottom: '1px solid var(--color-outline-variant)' }}>
-              {['Rota', 'Data', 'Motorista', 'Região', 'Pedidos', 'Valor Total', 'Status', 'Ações'].map(col => (
-                <th key={col} style={{
+              {[
+                { label: 'Rota', key: 'name' },
+                { label: 'Data', key: 'date' },
+                { label: 'Motorista', key: 'driver_name' },
+                { label: 'Região', key: 'city' },
+                { label: 'Pedidos', key: 'totalOrders' },
+                { label: 'Valor Total', key: 'totalAmount' },
+                { label: 'Status', key: 'status' }
+              ].map(col => (
+                <th key={col.key} style={{
                   padding: '12px 16px', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em',
-                  color: 'var(--color-on-surface-variant)', textAlign: 'left', whiteSpace: 'nowrap'
-                }}>
-                  {col}
+                  color: 'var(--color-on-surface-variant)', textAlign: 'left', whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none'
+                }} onClick={() => requestSort(col.key as keyof DeliveryRoute)}>
+                  {col.label}
+                  {getSortIcon(col.key as keyof DeliveryRoute)}
                 </th>
               ))}
+              <th style={{
+                  padding: '12px 16px', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em',
+                  color: 'var(--color-on-surface-variant)', textAlign: 'left', whiteSpace: 'nowrap'
+                }}>Ações</th>
             </tr>
           </thead>
           <tbody>
-            {routes.map(r => {
+            {sortedRoutes.map(r => {
               const statusCfg = ROUTE_STATUS_CONFIG[r.status] ?? ROUTE_STATUS_CONFIG['Planejada'];
               const dateStr = r.date + 'T00:00:00';
               return (

@@ -155,6 +155,17 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
     return 'Ordenacao decrescente ativa. Clique para limpar.';
   };
 
+  const getWhatsAppLink = (cliente: Cliente) => {
+    if (!cliente.telefone) return '#';
+    const digits = cliente.telefone.replace(/\D/g, '');
+    if (!digits) return '#';
+    const num = digits.startsWith('55') ? digits : `55${digits}`;
+    const firstName = cliente.nome.split(' ')[0];
+    const capFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+    const msg = encodeURIComponent(`Olá, ${capFirstName}! `);
+    return `https://wa.me/${num}?text=${msg}`;
+  };
+
   const handleDeleteCliente = async (cliente: Cliente) => {
     if (!isAdmin) return;
 
@@ -496,18 +507,18 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
                         <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>visibility</span>
                         Ver
                       </button>
-                      {isAdmin && (
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteCliente(cliente)}
-                          disabled={deletingId === cliente.id}
+                      {cliente.telefone ? (
+                        <a
+                          href={getWhatsAppLink(cliente)}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           style={{
-                            backgroundColor: 'var(--color-error-container)',
-                            border: '1px solid rgba(239,68,68,0.18)',
+                            backgroundColor: '#e8f5e9',
+                            border: '1px solid #c8e6c9',
                             borderRadius: '8px',
-                            padding: '8px 12px',
-                            color: 'var(--color-error)',
-                            cursor: deletingId === cliente.id ? 'not-allowed' : 'pointer',
+                            padding: '8px 14px',
+                            color: '#2e7d32',
+                            textDecoration: 'none',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '6px',
@@ -515,13 +526,33 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
                             fontSize: '12px',
                             minHeight: '40px',
                             WebkitTapHighlightColor: 'transparent',
-                            opacity: deletingId === cliente.id ? 0.7 : 1,
                           }}
                         >
-                          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
-                            {deletingId === cliente.id ? 'hourglass_top' : 'delete'}
-                          </span>
-                          Excluir
+                          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>chat</span>
+                          WhatsApp
+                        </a>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled
+                          style={{
+                            backgroundColor: 'var(--color-surface-container-high)',
+                            border: '1px solid var(--color-outline-variant)',
+                            borderRadius: '8px',
+                            padding: '8px 14px',
+                            color: 'var(--color-outline)',
+                            cursor: 'not-allowed',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            fontWeight: 700,
+                            fontSize: '12px',
+                            minHeight: '40px',
+                            WebkitTapHighlightColor: 'transparent',
+                          }}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>chat_bubble_off</span>
+                          Sem Nro
                         </button>
                       )}
                     </div>
@@ -700,31 +731,50 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
                             <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>visibility</span>
                             Detalhes
                           </button>
-                          {isAdmin && (
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteCliente(cliente)}
-                              disabled={deletingId === cliente.id}
+                          {cliente.telefone ? (
+                            <a
+                              href={getWhatsAppLink(cliente)}
+                              target="_blank"
+                              rel="noopener noreferrer"
                               style={{
-                                backgroundColor: 'var(--color-error-container)',
-                                border: '1px solid rgba(239,68,68,0.18)',
+                                backgroundColor: '#e8f5e9',
+                                border: '1px solid #c8e6c9',
                                 borderRadius: '4px',
                                 padding: '6px 12px',
-                                color: 'var(--color-error)',
-                                cursor: deletingId === cliente.id ? 'not-allowed' : 'pointer',
+                                color: '#2e7d32',
+                                textDecoration: 'none',
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '6px',
                                 fontWeight: 800,
                                 fontSize: '11px',
                                 textTransform: 'uppercase',
-                                opacity: deletingId === cliente.id ? 0.7 : 1,
                               }}
                             >
-                              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
-                                {deletingId === cliente.id ? 'hourglass_top' : 'delete'}
-                              </span>
-                              Excluir
+                              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>chat</span>
+                              WhatsApp
+                            </a>
+                          ) : (
+                            <button
+                              type="button"
+                              disabled
+                              style={{
+                                backgroundColor: 'var(--color-surface-container-high)',
+                                border: '1px solid var(--color-outline-variant)',
+                                borderRadius: '4px',
+                                padding: '6px 12px',
+                                color: 'var(--color-outline)',
+                                cursor: 'not-allowed',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                fontWeight: 800,
+                                fontSize: '11px',
+                                textTransform: 'uppercase',
+                              }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>chat_bubble_off</span>
+                              Sem Nro
                             </button>
                           )}
                         </div>
@@ -750,6 +800,9 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
         <ClienteInfoModal 
           cliente={selectedCliente} 
           onClose={() => setSelectedCliente(null)} 
+          isAdmin={isAdmin}
+          onDelete={() => handleDeleteCliente(selectedCliente)}
+          isDeleting={deletingId === selectedCliente.id}
         />
       )}
     </>

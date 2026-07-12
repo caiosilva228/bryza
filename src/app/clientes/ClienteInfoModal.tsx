@@ -10,9 +10,12 @@ import { getVendasPorClienteAction } from './actions';
 interface ClienteInfoModalProps {
   cliente: Cliente | null;
   onClose: () => void;
+  isAdmin?: boolean;
+  onDelete?: () => void;
+  isDeleting?: boolean;
 }
 
-export default function ClienteInfoModal({ cliente, onClose }: ClienteInfoModalProps) {
+export default function ClienteInfoModal({ cliente, onClose, isAdmin, onDelete, isDeleting }: ClienteInfoModalProps) {
   const [vendas, setVendas] = useState<VendaWithItens[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedVendaId, setExpandedVendaId] = useState<string | null>(null);
@@ -356,10 +359,53 @@ export default function ClienteInfoModal({ cliente, onClose }: ClienteInfoModalP
           backgroundColor: 'var(--color-surface-container-lowest)', 
           borderTop: '1px solid var(--color-outline-variant)',
           display: 'flex',
-          justifyContent: 'flex-end',
+          justifyContent: 'space-between',
           alignItems: 'center',
           gap: '16px'
         }}>
+          <div>
+            {isAdmin && onDelete && (
+              <button
+                type="button"
+                onClick={onDelete}
+                disabled={isDeleting}
+                style={{
+                  backgroundColor: 'var(--color-error-container)',
+                  border: '1px solid rgba(239,68,68,0.18)',
+                  borderRadius: '12px',
+                  padding: '12px 28px',
+                  color: 'var(--color-error)',
+                  cursor: isDeleting ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontWeight: 800,
+                  fontSize: '14px',
+                  opacity: isDeleting ? 0.7 : 1,
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isDeleting) {
+                    e.currentTarget.style.backgroundColor = 'var(--color-error)';
+                    e.currentTarget.style.color = 'white';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isDeleting) {
+                    e.currentTarget.style.backgroundColor = 'var(--color-error-container)';
+                    e.currentTarget.style.color = 'var(--color-error)';
+                  }
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
+                  {isDeleting ? 'hourglass_top' : 'delete'}
+                </span>
+                Excluir Cliente
+              </button>
+            )}
+          </div>
+          
+          <div style={{ display: 'flex', gap: '16px' }}>
           <button 
             onClick={onClose}
             style={{
@@ -400,6 +446,7 @@ export default function ClienteInfoModal({ cliente, onClose }: ClienteInfoModalP
             <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>edit_square</span>
             Editar Cadastro
           </Link>
+          </div>
         </div>
 
         <style jsx>{`

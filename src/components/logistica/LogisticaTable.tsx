@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Pedido } from '@/models/types';
 import { formatCurrency } from '@/utils/format';
 
@@ -51,6 +51,66 @@ export default function LogisticaTable({
   onRegistrarProblema,
   loadingId,
 }: Props) {
+  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+
+  const sortedPedidos = useMemo(() => {
+    if (!sortConfig) return pedidos;
+    
+    const sorted = [...pedidos];
+    sorted.sort((a, b) => {
+      let aValue: any = '';
+      let bValue: any = '';
+
+      switch (sortConfig.key) {
+        case 'pedido': aValue = a.numero_pedido; bValue = b.numero_pedido; break;
+        case 'cliente': aValue = a.cliente?.nome ?? a.nome_cliente ?? ''; bValue = b.cliente?.nome ?? b.nome_cliente ?? ''; break;
+        case 'telefone': aValue = a.cliente?.telefone ?? a.telefone_cliente ?? ''; bValue = b.cliente?.telefone ?? b.telefone_cliente ?? ''; break;
+        case 'destino': aValue = a.cliente?.bairro ?? a.bairro ?? ''; bValue = b.cliente?.bairro ?? b.bairro ?? ''; break;
+        case 'valor': aValue = a.valor_total; bValue = b.valor_total; break;
+        case 'pagamento': aValue = a.forma_pagamento; bValue = b.forma_pagamento; break;
+        case 'motorista': aValue = a.motorista; bValue = b.motorista; break;
+        case 'status': aValue = a.status_pedido; bValue = b.status_pedido; break;
+        default: break;
+      }
+      
+      if (aValue === null || aValue === undefined) aValue = '';
+      if (bValue === null || bValue === undefined) bValue = '';
+      
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+    
+    return sorted;
+  }, [pedidos, sortConfig]);
+
+  const requestSort = (key: string) => {
+    if (sortConfig && sortConfig.key === key) {
+      if (sortConfig.direction === 'asc') {
+        setSortConfig({ key, direction: 'desc' });
+      } else {
+        setSortConfig(null);
+      }
+    } else {
+      setSortConfig({ key, direction: 'asc' });
+    }
+  };
+
+  const getSortIcon = (columnKey: string) => {
+    if (sortConfig && sortConfig.key === columnKey) {
+      return (
+        <span className="material-symbols-outlined" style={{ fontSize: '14px', marginLeft: '4px', verticalAlign: 'middle', color: 'var(--color-primary)' }}>
+          {sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}
+        </span>
+      );
+    }
+    return (
+      <span className="material-symbols-outlined" style={{ fontSize: '14px', marginLeft: '4px', verticalAlign: 'middle', color: 'var(--color-outline-variant)' }}>
+        unfold_more
+      </span>
+    );
+  };
+
   if (pedidos.length === 0) {
     return (
       <div style={{
@@ -88,20 +148,36 @@ export default function LogisticaTable({
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '900px' }}>
           <thead>
             <tr style={{ backgroundColor: 'var(--color-surface-container-highest)', borderBottom: '1px solid var(--color-outline-variant)' }}>
-              {['Pedido', 'Cliente', 'Telefone', 'Destino', 'Valor', 'Pagamento', 'Motorista', 'Status', 'Ações'].map(col => (
-                <th key={col} style={{
+              {[
+                { label: 'Pedido', key: 'pedido' },
+                { label: 'Cliente', key: 'cliente' },
+                { label: 'Telefone', key: 'telefone' },
+                { label: 'Destino', key: 'destino' },
+                { label: 'Valor', key: 'valor' },
+                { label: 'Pagamento', key: 'pagamento' },
+                { label: 'Motorista', key: 'motorista' },
+                { label: 'Status', key: 'status' }
+              ].map(col => (
+                <th key={col.key} style={{
                   padding: '12px 16px', fontSize: '11px', fontWeight: 800,
                   textTransform: 'uppercase', letterSpacing: '0.06em',
                   color: 'var(--color-on-surface-variant)', textAlign: 'left',
-                  whiteSpace: 'nowrap',
-                }}>
-                  {col}
+                  whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none'
+                }} onClick={() => requestSort(col.key)}>
+                  {col.label}
+                  {getSortIcon(col.key)}
                 </th>
               ))}
+              <th style={{
+                  padding: '12px 16px', fontSize: '11px', fontWeight: 800,
+                  textTransform: 'uppercase', letterSpacing: '0.06em',
+                  color: 'var(--color-on-surface-variant)', textAlign: 'left',
+                  whiteSpace: 'nowrap'
+                }}>Ações</th>
             </tr>
           </thead>
           <tbody>
-            {pedidos.map(pedido => {
+            {sortedPedidos.map(pedido => {
               const statusCfg = STATUS_CONFIG[pedido.status_pedido] ?? {
                 label: pedido.status_pedido, color: '#64748b', bg: '#f1f5f9', icon: 'info',
               };
@@ -137,13 +213,13 @@ export default function LogisticaTable({
                   </td>
 
                   {/* Telefone */}
-                  <td style={{ padding: '12px 16px' }}>
+                  <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
                     {waLink ? (
                       <a
                         href={waLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ fontSize: '13px', color: '#25d366', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
+                        style={{ fontSize: '13px', color: '#25d366', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}
                       >
                         <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>chat</span>
                         {formatPhone(clienteTelefone)}
