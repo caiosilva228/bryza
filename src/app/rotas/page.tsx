@@ -2,21 +2,18 @@ import React from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import RotasClientPage from './RotasClientPage';
 import { fetchRoutes, fetchAvailableOrdersForRoute } from '@/services/routesService';
-import { createClient } from '@/utils/supabase/server';
-import { Driver } from '@/models/types';
+import { fetchActiveDrivers } from '@/services/driversService';
 
 export const metadata = {
   title: 'Rotas | BRYZA',
 };
 
 export default async function RotasPage() {
-  const [routes, availableOrders, driversRes] = await Promise.all([
+  const [routes, availableOrders, drivers] = await Promise.all([
     fetchRoutes(),
     fetchAvailableOrdersForRoute(),
-    (await createClient()).from('profiles').select('id, nome').eq('ativo', true)
+    fetchActiveDrivers(),
   ]);
-
-  const drivers = driversRes.data as Driver[] || [];
 
   return (
     <MainLayout>

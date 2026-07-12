@@ -57,6 +57,15 @@ export interface DeliveryRoute {
   
   codigo_rota?: number;
   
+  // Override de remuneração por rota
+  use_driver_default_compensation?: boolean | null;
+  compensation_model_override?: string | null;
+  amount_per_delivery_override?: number | null;
+  amount_per_route_override?: number | null;
+  daily_amount_override?: number | null;
+  pay_failed_attempt_override?: boolean | null;
+  amount_per_failed_override?: number | null;
+  
   // Agregados calculados no front/queries
   totalOrders?: number;
   totalAmount?: number;
@@ -383,7 +392,99 @@ export interface PedidoItem {
 }
 
 export type Usuario = Profile;
-export type Driver = Profile;
+
+// ── Motoristas ────────────────────────────────────────────────────────────────
+export type DriverStatus = 'active' | 'inactive';
+
+export type DriverCompensationModel =
+  | 'per_delivery'
+  | 'per_route'
+  | 'daily'
+  | 'per_delivery_plus_route';
+
+export type CompensationStatus = 'open' | 'approved' | 'paid';
+
+export type VehicleType = 'motorcycle' | 'car' | 'utility' | 'van' | 'other';
+
+export interface Driver {
+  id: string;
+  full_name: string;
+  phone: string;
+  city?: string | null;
+  vehicle_type?: VehicleType | null;
+  vehicle_model?: string | null;
+  vehicle_plate?: string | null;
+  status: DriverStatus;
+  notes?: string | null;
+  compensation_model: DriverCompensationModel;
+  amount_per_delivery?: number | null;
+  amount_per_route?: number | null;
+  daily_amount?: number | null;
+  pay_failed_attempt: boolean;
+  amount_per_failed_attempt?: number | null;
+  created_at: string;
+  updated_at?: string | null;
+}
+
+export interface DriverFormInput {
+  full_name: string;
+  phone: string;
+  city?: string;
+  vehicle_type?: VehicleType | null;
+  vehicle_model?: string;
+  vehicle_plate?: string;
+  status: DriverStatus;
+  notes?: string;
+  compensation_model: DriverCompensationModel;
+  amount_per_delivery?: number | null;
+  amount_per_route?: number | null;
+  daily_amount?: number | null;
+  pay_failed_attempt: boolean;
+  amount_per_failed_attempt?: number | null;
+}
+
+export interface DriverRouteCompensation {
+  id: string;
+  route_id: string;
+  driver_id: string;
+  compensation_model: DriverCompensationModel;
+  amount_per_delivery?: number | null;
+  amount_per_route?: number | null;
+  daily_amount?: number | null;
+  pay_failed_attempt: boolean;
+  amount_per_failed_attempt?: number | null;
+  completed_deliveries: number;
+  paid_failed_attempts: number;
+  base_amount: number;
+  deliveries_amount: number;
+  failed_attempts_amount: number;
+  calculated_amount: number;
+  manual_adjustment: number;
+  adjustment_reason?: string | null;
+  final_amount: number;
+  status: CompensationStatus;
+  approved_at?: string | null;
+  paid_at?: string | null;
+  notes?: string | null;
+  created_at: string;
+  updated_at?: string | null;
+  // Join
+  driver?: Driver;
+  route_name?: string;
+  route_date?: string;
+}
+
+export interface CompensationCalculationResult {
+  compensation_model: DriverCompensationModel;
+  completed_deliveries: number;
+  paid_failed_attempts: number;
+  base_amount: number;
+  deliveries_amount: number;
+  failed_attempts_amount: number;
+  calculated_amount: number;
+  manual_adjustment: number;
+  final_amount: number;
+}
 
 export interface PedidoStats {
   total: number;

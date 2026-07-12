@@ -34,6 +34,7 @@ const DRAWER_ROUTES: Route[] = [
   { label: 'Estoque', path: '/estoque', icon: 'inventory_2' },
   { label: 'Logística', path: '/logistica', icon: 'local_shipping' },
   { label: 'Rotas', path: '/rotas', icon: 'map' },
+  { label: 'Motoristas', path: '/motoristas', icon: 'directions_car' },
   { label: 'Vendedores', path: '/vendedores', icon: 'person_search' },
   { label: 'Perfil', path: '/perfil', icon: 'account_circle' },
 ];

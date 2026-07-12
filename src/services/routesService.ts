@@ -500,6 +500,15 @@ export const finishRoute = async (routeId: string) => {
   const status = (pendingOrders && pendingOrders.length > 0) ? 'Finalizada com Pendências' : 'Finalizada';
   
   await updateRouteStatus(routeId, status);
+
+  // Gerar remuneração do motorista automaticamente
+  try {
+    const { createOrUpdateRouteCompensation } = await import('./driversService');
+    await createOrUpdateRouteCompensation(routeId);
+  } catch {
+    // Se não houver motorista cadastrado na tabela drivers, ignora silenciosamente
+    // O aviso é exibido na UI pela ausência de compensation gerada
+  }
 };
 
 export const reoptimizeRouteSequence = async (routeId: string) => {

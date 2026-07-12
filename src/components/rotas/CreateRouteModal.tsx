@@ -112,7 +112,7 @@ export default function CreateRouteModal({ open, onClose, availableOrders, drive
     if (!name || !date || selectedOrders.size === 0) return;
     const d = drivers.find(drv => drv.id === driverId);
     await onSubmit({
-      name, date, driver_id: driverId || undefined, driver_name: d?.nome,
+      name, date, driver_id: driverId || undefined, driver_name: d?.full_name,
       city, departure_time: departureTime, notes, orderIds: Array.from(selectedOrders)
     });
   };
@@ -190,7 +190,7 @@ export default function CreateRouteModal({ open, onClose, availableOrders, drive
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Motorista</label>
                   <select value={driverId} onChange={e => setDriverId(e.target.value)} style={inputStyle}>
                     <option value="">(Nenhum / Definir depois)</option>
-                    {drivers.map(d => <option key={d.id} value={d.id}>{d.nome}</option>)}
+                    {drivers.map(d => <option key={d.id} value={d.id}>{d.full_name}</option>)}
                   </select>
                 </div>
                 <div style={{ flex: 1 }}>
