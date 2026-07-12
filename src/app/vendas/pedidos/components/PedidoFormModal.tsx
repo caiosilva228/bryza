@@ -26,7 +26,7 @@ interface SearchItem {
 
 interface DiscountState {
   tipo: TipoDesconto;
-  valor: number;
+  valor: number | '';
 }
 
 interface CartItemState extends DiscountState {
@@ -43,7 +43,7 @@ const DISCOUNT_OPTIONS: { value: TipoDesconto; label: string }[] = [
 
 const roundCurrency = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 
-const calculateDiscountAmount = (baseAmount: number, tipo: TipoDesconto, valor: number, quantity: number = 1) => {
+const calculateDiscountAmount = (baseAmount: number, tipo: TipoDesconto, valor: number | '', quantity: number = 1) => {
   const safeBase = roundCurrency(Math.max(0, Number(baseAmount) || 0));
   const safeValue = Math.max(0, Number(valor) || 0);
 
@@ -69,7 +69,7 @@ function DiscountControls({
   discount: DiscountState;
   appliedAmount: number;
   onTypeChange: (tipo: TipoDesconto) => void;
-  onValueChange: (valor: number) => void;
+  onValueChange: (valor: number | '') => void;
 }) {
   const isDisabled = discount.tipo === 'none';
 
@@ -106,7 +106,7 @@ function DiscountControls({
           step={discount.tipo === 'percent' ? '0.01' : '0.01'}
           disabled={isDisabled}
           value={isDisabled ? '' : discount.valor}
-          onChange={(e) => onValueChange(Number(e.target.value) || 0)}
+          onChange={(e) => onValueChange(e.target.value === '' ? '' : Number(e.target.value))}
           placeholder={discount.tipo === 'percent' ? '0,00%' : '0,00'}
           style={{
             width: '100%',
@@ -372,16 +372,16 @@ export default function PedidoFormModal({
     setCart(cart.map(item => item.produtoId === produtoId ? { ...item, tipo, valor: tipo === 'none' ? 0 : item.valor } : item));
   };
 
-  const updateItemDiscountValue = (produtoId: string, valor: number) => {
-    setCart(cart.map(item => item.produtoId === produtoId ? { ...item, valor: Math.max(0, valor) } : item));
+  const updateItemDiscountValue = (produtoId: string, valor: number | '') => {
+    setCart(cart.map(item => item.produtoId === produtoId ? { ...item, valor: valor === '' ? '' : Math.max(0, Number(valor)) } : item));
   };
 
   const updateOrderDiscountType = (tipo: TipoDesconto) => {
     setOrderDiscount(current => ({ tipo, valor: tipo === 'none' ? 0 : current.valor }));
   };
 
-  const updateOrderDiscountValue = (valor: number) => {
-    setOrderDiscount(current => ({ ...current, valor: Math.max(0, valor) }));
+  const updateOrderDiscountValue = (valor: number | '') => {
+    setOrderDiscount(current => ({ ...current, valor: valor === '' ? '' : Math.max(0, Number(valor)) }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -401,7 +401,7 @@ export default function PedidoFormModal({
         vendedor_id: selectedVendedorId,
         valor_total: total,
         desconto_tipo: orderDiscount.tipo,
-        desconto_valor: orderDiscount.valor,
+        desconto_valor: Number(orderDiscount.valor) || 0,
         desconto_aplicado: descontoPedidoAplicado,
         forma_pagamento: formaPagamento,
         observacoes,
@@ -426,7 +426,7 @@ export default function PedidoFormModal({
           quantidade: item.quantidade,
           preco_unitario: item.preco_unitario,
           desconto_tipo: item.tipo,
-          desconto_valor: item.valor,
+          desconto_valor: Number(item.valor) || 0,
           desconto_aplicado: descontoAplicadoItem,
           subtotal: roundCurrency(subtotalBrutoItem - descontoAplicadoItem)
         };
@@ -471,7 +471,7 @@ export default function PedidoFormModal({
         vendedor_id: selectedVendedorId,
         valor_total: total,
         desconto_tipo: orderDiscount.tipo,
-        desconto_valor: orderDiscount.valor,
+        desconto_valor: Number(orderDiscount.valor) || 0,
         desconto_aplicado: descontoPedidoAplicado,
         forma_pagamento: formaPagamento,
         observacoes,
@@ -495,7 +495,7 @@ export default function PedidoFormModal({
           quantidade: item.quantidade,
           preco_unitario: item.preco_unitario,
           desconto_tipo: item.tipo,
-          desconto_valor: item.valor,
+          desconto_valor: Number(item.valor) || 0,
           desconto_aplicado: descontoAplicadoItem,
           subtotal: roundCurrency(subtotalBrutoItem - descontoAplicadoItem)
         };
