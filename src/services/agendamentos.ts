@@ -302,3 +302,17 @@ export const cancelarAgendamento = async (agendamentoId: string) => {
   if (error) throw error;
   return { success: true };
 };
+
+export const reagendarAgendamento = async (agendamentoId: string, novaDataIso: string) => {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from('agendamentos')
+    .update({
+      data_agendamento: novaDataIso,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', agendamentoId);
+
+  if (error) throw error;
+  return { success: true };
+};

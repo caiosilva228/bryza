@@ -8,43 +8,102 @@ import { MetaCard } from '@/components/dashboard/MetaCard';
 import { DashboardAutoRefresh } from '@/components/dashboard/DashboardAutoRefresh';
 import { MetasService, calcularDiasUteisRestantes } from '@/services/metas';
 import { formatCurrency } from '@/utils/format';
-import { format, parseISO, subDays, startOfMonth, startOfYesterday } from 'date-fns';
+import { format, parseISO, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import styles from './page.module.css';
 
 export const revalidate = 0;
 
 interface PageProps {
-  searchParams: Promise<{ data?: string; periodo?: string }>;
+  searchParams: Promise<{ data?: string; periodo?: string; from?: string; to?: string; period?: string }>;
 }
 
 export default async function Home({ searchParams }: PageProps) {
-  const { data: paramData, periodo } = await searchParams;
+  const { data: paramData, periodo, from, to, period } = await searchParams;
 
-  // Resolve a data de referência a partir do preset ou do date picker
-  let referenceDateStr: string;
-  if (periodo === 'yesterday') {
-    referenceDateStr = startOfYesterday().toISOString();
-  } else if (periodo === '7d') {
-    referenceDateStr = subDays(new Date(), 7).toISOString();
-  } else if (periodo === '30d') {
-    referenceDateStr = subDays(new Date(), 30).toISOString();
-  } else if (periodo === 'month') {
-    referenceDateStr = startOfMonth(new Date()).toISOString();
+  const today = new Date();
+  let startDateStr = format(today, 'yyyy-MM-dd');
+  let endDateStr = format(today, 'yyyy-MM-dd');
+
+  if (from && to) {
+    startDateStr = from;
+    endDateStr = to;
+  } else if (from) {
+    startDateStr = from;
+    endDateStr = format(today, 'yyyy-MM-dd');
+  } else if (to) {
+    startDateStr = '2024-01-01';
+    endDateStr = to;
+  } else if (period) {
+    switch (period) {
+      case 'hoje':
+        startDateStr = format(today, 'yyyy-MM-dd');
+        endDateStr = format(today, 'yyyy-MM-dd');
+        break;
+      case 'ontem': {
+        const yesterday = subDays(today, 1);
+        startDateStr = format(yesterday, 'yyyy-MM-dd');
+        endDateStr = format(yesterday, 'yyyy-MM-dd');
+        break;
+      }
+      case 'ultimos_7_dias':
+        startDateStr = format(subDays(today, 6), 'yyyy-MM-dd');
+        endDateStr = format(today, 'yyyy-MM-dd');
+        break;
+      case 'ultimos_30_dias':
+        startDateStr = format(subDays(today, 29), 'yyyy-MM-dd');
+        endDateStr = format(today, 'yyyy-MM-dd');
+        break;
+      case 'este_mes':
+        startDateStr = format(startOfMonth(today), 'yyyy-MM-dd');
+        endDateStr = format(endOfMonth(today), 'yyyy-MM-dd');
+        break;
+      case 'mes_passado': {
+        const prevMonth = subMonths(today, 1);
+        startDateStr = format(startOfMonth(prevMonth), 'yyyy-MM-dd');
+        endDateStr = format(endOfMonth(prevMonth), 'yyyy-MM-dd');
+        break;
+      }
+      case 'maximo':
+        startDateStr = '2024-01-01';
+        endDateStr = format(today, 'yyyy-MM-dd');
+        break;
+    }
+  } else if (periodo) {
+    if (periodo === 'yesterday') {
+      const yesterday = subDays(today, 1);
+      startDateStr = format(yesterday, 'yyyy-MM-dd');
+      endDateStr = format(yesterday, 'yyyy-MM-dd');
+    } else if (periodo === '7d') {
+      startDateStr = format(subDays(today, 6), 'yyyy-MM-dd');
+      endDateStr = format(today, 'yyyy-MM-dd');
+    } else if (periodo === '30d') {
+      startDateStr = format(subDays(today, 29), 'yyyy-MM-dd');
+      endDateStr = format(today, 'yyyy-MM-dd');
+    } else if (periodo === 'month') {
+      startDateStr = format(startOfMonth(today), 'yyyy-MM-dd');
+      endDateStr = format(endOfMonth(today), 'yyyy-MM-dd');
+    }
   } else if (paramData) {
-    referenceDateStr = paramData;
-  } else {
-    referenceDateStr = new Date().toISOString();
+    startDateStr = paramData;
+    endDateStr = paramData;
   }
 
-  const dateObj = parseISO(referenceDateStr);
+  const dateObj = parseISO(endDateStr);
   const periodoMes = format(dateObj, 'yyyy-MM');
 
-  const stats = await DashboardService.getAdminStats(referenceDateStr);
+  const stats = await DashboardService.getAdminStats(startDateStr, endDateStr);
 
-  // Meta mensal do período selecionado
   const metaMensal = await MetasService.getMetaMensal(periodoMes);
   
   const { diasUteisTotal, diasUteisRestantes } = calcularDiasUteisRestantes(dateObj);
+
+  const isPeriodoHoje = startDateStr === endDateStr && startDateStr === format(today, 'yyyy-MM-dd');
+  const isPeriodoMes = period === 'este_mes' || (startDateStr === format(startOfMonth(today), 'yyyy-MM-dd') && endDateStr === format(endOfMonth(today), 'yyyy-MM-dd'));
+  
+  const labelFaturamentoPeriodo = isPeriodoHoje ? "FATURAMENTO HOJE" : isPeriodoMes ? "FATURAMENTO MÊS" : "FATURAMENTO NO PERÍODO";
+  const labelVendasPeriodo = isPeriodoHoje ? "Top Vendedores (Hoje)" : isPeriodoMes ? "Top Vendedores (Mês)" : "Top Vendedores (No Período)";
+  const labelProdutosPeriodo = isPeriodoHoje ? "Top Produtos (Hoje)" : isPeriodoMes ? "Top Produtos (Mês)" : "Top Produtos (No Período)";
+  const labelNovosClientes = isPeriodoHoje ? "NOVOS HOJE" : "NOVOS NO PERÍODO";
 
   return (
     <MainLayout>
@@ -74,15 +133,16 @@ export default async function Home({ searchParams }: PageProps) {
         {/* BLOCO 1 — FINANCEIRO */}
         <DashboardBlock title="Financeiro" icon="payments">
           <MetricCard 
-            label="HOJE" 
-            value={formatCurrency(stats.financeiro.faturamento_dia).replace('R$', '')} 
+            label={labelFaturamentoPeriodo} 
+            value={formatCurrency(stats.financeiro.faturamento_periodo || 0).replace('R$', '')} 
             prefix="R$"
-            suffix="Faturamento"
-            variation={stats.financeiro.variacoes.dia}
-            icon="today"
+            suffix={isPeriodoHoje ? "Faturamento Hoje" : isPeriodoMes ? "Faturamento Mês" : "Faturamento no Período"}
+            variation={stats.financeiro.variacao_periodo}
+            icon="date_range"
+            colorHint="primary"
           />
           <MetricCard 
-            label="SEMANA" 
+            label="ESTA SEMANA" 
             value={formatCurrency(stats.financeiro.faturamento_semana).replace('R$', '')} 
             prefix="R$"
             suffix="Faturamento"
@@ -99,7 +159,7 @@ export default async function Home({ searchParams }: PageProps) {
           />
           <MetricCard 
             label="PERFORMANCE" 
-            value={formatCurrency(stats.financeiro.ticket_medio).replace('R$', '')} 
+            value={formatCurrency(stats.financeiro.ticket_medio_periodo || stats.financeiro.ticket_medio).replace('R$', '')} 
             prefix="R$"
             suffix="Ticket Médio"
             icon="analytics"
@@ -134,15 +194,15 @@ export default async function Home({ searchParams }: PageProps) {
               />
               <MetricCard 
                 label="ENTREGUES" 
-                value={stats.pedidos.entregue_hoje} 
-                suffix="Hoje"
+                value={(isPeriodoHoje ? stats.pedidos.entregue_hoje : stats.pedidos.entregue_periodo) ?? 0} 
+                suffix={isPeriodoHoje ? "Hoje" : "No período"}
                 icon="inventory"
                 colorHint="tertiary"
               />
               <MetricCard 
                 label="FINALIZADOS" 
-                value={stats.pedidos.finalizados_hoje} 
-                suffix="Arquivo"
+                value={(isPeriodoHoje ? stats.pedidos.finalizados_hoje : stats.pedidos.finalizados_periodo) ?? 0} 
+                suffix={isPeriodoHoje ? "Hoje" : "No período"}
                 icon="task_alt"
                 colorHint="success"
               />
@@ -150,7 +210,7 @@ export default async function Home({ searchParams }: PageProps) {
             
             <div className={styles.dashMiniGrid}>
               <MiniTable 
-                title="Top Vendedores (Mês)" 
+                title={labelVendasPeriodo} 
                 data={stats.vendedores.ranking}
                 columns={[
                   { header: 'VENDEDOR', accessor: 'nome' },
@@ -159,7 +219,7 @@ export default async function Home({ searchParams }: PageProps) {
                 ]}
               />
               <MiniTable 
-                title="Top Produtos (Mês)" 
+                title={labelProdutosPeriodo} 
                 data={stats.estoque.top_produtos}
                 columns={[
                   { header: 'PRODUTO', accessor: 'nome_produto' },
@@ -172,7 +232,7 @@ export default async function Home({ searchParams }: PageProps) {
           {/* BLOCO CLIENTES & ALERTAS (COLUNA LATERAL) */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
             <DashboardBlock title="Performance de Clientes" icon="group" columns={2}>
-              <MetricCard label="NOVOS HOJE" value={stats.clientes.novos_hoje} suffix="Expansão" icon="person_add" />
+              <MetricCard label={labelNovosClientes} value={(isPeriodoHoje ? stats.clientes.novos_hoje : stats.clientes.novos_periodo) ?? 0} suffix={isPeriodoHoje ? "Expansão" : "No período"} icon="person_add" />
               <MetricCard label="ATIVOS MÊS" value={stats.clientes.ativos_mes} suffix="Retenção" icon="verified_user" />
               <MetricCard label="RECORRENTES" value={stats.clientes.recorrentes} suffix="Fidelidade" icon="repeat" />
               <MetricCard 

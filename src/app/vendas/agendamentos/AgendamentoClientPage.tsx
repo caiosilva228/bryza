@@ -7,6 +7,7 @@ import {
   getAgendamentosByDateAction,
   converterAgendamentoAction,
   cancelarAgendamentoAction,
+  reagendarAgendamentoAction,
 } from './actions';
 import { formatCurrency } from '@/utils/format';
 import { toast } from 'sonner';
@@ -40,6 +41,40 @@ function DayModal({
 }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  
+  const [reagendaId, setReagendaId] = useState<string | null>(null);
+  const [novaData, setNovaData] = useState<string>('');
+  const [novaHora, setNovaHora] = useState<string>('12:00');
+
+  const startReagenda = (ag: Agendamento) => {
+    setReagendaId(ag.id);
+    const dateObj = new Date(ag.data_agendamento);
+    const y = dateObj.getFullYear();
+    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const d = String(dateObj.getDate()).padStart(2, '0');
+    setNovaData(`${y}-${m}-${d}`);
+    
+    const hh = String(dateObj.getHours()).padStart(2, '0');
+    const mm = String(dateObj.getMinutes()).padStart(2, '0');
+    setNovaHora(`${hh}:${mm}`);
+  };
+
+  const handleReagendar = async (id: string) => {
+    if (!novaData) return toast.error('Selecione uma data.');
+    setLoading(id);
+    try {
+      const novaDataIso = `${novaData}T${novaHora || '12:00'}:00`;
+      await reagendarAgendamentoAction(id, novaDataIso);
+      toast.success('Agendamento reagendado com sucesso!');
+      onConverted();
+      onClose();
+    } catch {
+      toast.error('Erro ao reagendar agendamento.');
+    } finally {
+      setLoading(null);
+      setReagendaId(null);
+    }
+  };
 
   const [dateDay, month, year] = date.split('-').reverse().map(Number);
   const displayDate = `${padStart(dateDay)}/${padStart(month)}/${year}`;
@@ -110,7 +145,8 @@ function DayModal({
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div style={{
                 width: '40px', height: '40px', borderRadius: '12px',
-                backgroundColor: 'var(--color-primary-container)',
+                backgroundColor: '#fff',
+                border: '1px solid var(--color-outline-variant)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <span className="material-symbols-outlined" style={{ color: 'var(--color-primary)', fontSize: '22px' }}>
@@ -170,7 +206,8 @@ function DayModal({
                     <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
                       <div style={{
                         width: '42px', height: '42px', borderRadius: '12px',
-                        backgroundColor: 'var(--color-primary-container)',
+                        backgroundColor: '#fff',
+                        border: '1px solid var(--color-outline-variant)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         flexShrink: 0,
                       }}>
@@ -232,47 +269,166 @@ function DayModal({
                         </p>
                       )}
 
-                      {/* Actions */}
-                      <div style={{ display: 'flex', gap: '10px' }}>
-                        <button
-                          onClick={() => handleConverter(ag.id)}
-                          disabled={loading === ag.id}
-                          style={{
-                            flex: 1,
-                            padding: '10px 16px',
-                            borderRadius: '10px',
-                            border: 'none',
-                            backgroundColor: 'var(--color-primary)',
-                            color: '#fff',
-                            fontWeight: 700,
-                            fontSize: '13px',
-                            cursor: loading === ag.id ? 'not-allowed' : 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                            opacity: loading === ag.id ? 0.7 : 1,
-                          }}
-                        >
-                          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>shopping_cart</span>
-                          {loading === ag.id ? 'Convertendo...' : 'Tornar Pedido'}
-                        </button>
-                        <button
-                          onClick={() => handleCancelar(ag.id)}
-                          disabled={loading === ag.id}
-                          style={{
-                            padding: '10px 16px',
-                            borderRadius: '10px',
-                            border: '1px solid var(--color-error)',
-                            backgroundColor: 'transparent',
-                            color: 'var(--color-error)',
-                            fontWeight: 700,
-                            fontSize: '13px',
-                            cursor: loading === ag.id ? 'not-allowed' : 'pointer',
-                            display: 'flex', alignItems: 'center', gap: '8px',
-                          }}
-                        >
-                          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>cancel</span>
-                          Cancelar
-                        </button>
-                      </div>
+                      {/* Painel Reagendar Inline */}
+                      {reagendaId === ag.id ? (
+                        <div style={{
+                          marginTop: '8px',
+                          padding: '16px',
+                          borderRadius: '12px',
+                          backgroundColor: 'var(--color-surface-container-highest)',
+                          border: '1px solid var(--color-outline-variant)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '12px'
+                        }}>
+                          <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-on-surface)' }}>Escolha a nova data e hora:</div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                            <div>
+                              <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', marginBottom: '4px' }}>DATA</label>
+                              <input
+                                type="date"
+                                value={novaData}
+                                onChange={(e) => setNovaData(e.target.value)}
+                                onClick={(e) => {
+                                  try {
+                                    e.currentTarget.showPicker();
+                                  } catch {}
+                                }}
+                                style={{
+                                  width: '100%',
+                                  padding: '8px 10px',
+                                  borderRadius: '8px',
+                                  border: '1px solid var(--color-outline-variant)',
+                                  backgroundColor: 'var(--color-surface)',
+                                  color: 'var(--color-on-surface)',
+                                  fontSize: '13px',
+                                  fontWeight: 600,
+                                  outline: 'none',
+                                  cursor: 'pointer'
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', marginBottom: '4px' }}>HORA</label>
+                              <input
+                                type="time"
+                                value={novaHora}
+                                onChange={(e) => setNovaHora(e.target.value)}
+                                style={{
+                                  width: '100%',
+                                  padding: '8px 10px',
+                                  borderRadius: '8px',
+                                  border: '1px solid var(--color-outline-variant)',
+                                  backgroundColor: 'var(--color-surface)',
+                                  color: 'var(--color-on-surface)',
+                                  fontSize: '13px',
+                                  fontWeight: 600,
+                                  outline: 'none',
+                                  cursor: 'pointer'
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
+                            <button
+                              type="button"
+                              onClick={() => setReagendaId(null)}
+                              style={{
+                                padding: '8px 12px',
+                                borderRadius: '8px',
+                                border: 'none',
+                                backgroundColor: 'transparent',
+                                color: 'var(--color-outline)',
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Cancelar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleReagendar(ag.id)}
+                              disabled={loading === ag.id}
+                              style={{
+                                padding: '8px 16px',
+                                borderRadius: '8px',
+                                border: 'none',
+                                backgroundColor: 'var(--color-primary)',
+                                color: '#fff',
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                cursor: loading === ag.id ? 'not-allowed' : 'pointer',
+                                opacity: loading === ag.id ? 0.7 : 1
+                              }}
+                            >
+                              {loading === ag.id ? 'Salvando...' : 'Salvar'}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        /* Actions normais */
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button
+                            onClick={() => handleConverter(ag.id)}
+                            disabled={loading === ag.id}
+                            style={{
+                              flex: 1,
+                              padding: '10px 16px',
+                              borderRadius: '10px',
+                              border: 'none',
+                              backgroundColor: 'var(--color-primary)',
+                              color: '#fff',
+                              fontWeight: 700,
+                              fontSize: '13px',
+                              cursor: loading === ag.id ? 'not-allowed' : 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                              opacity: loading === ag.id ? 0.7 : 1,
+                            }}
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>shopping_cart</span>
+                            {loading === ag.id ? 'Convertendo...' : 'Tornar Pedido'}
+                          </button>
+                          
+                          <button
+                            onClick={() => startReagenda(ag)}
+                            disabled={loading === ag.id}
+                            style={{
+                              padding: '10px 16px',
+                              borderRadius: '10px',
+                              border: '1px solid var(--color-primary)',
+                              backgroundColor: '#fff',
+                              color: 'var(--color-primary)',
+                              fontWeight: 700,
+                              fontSize: '13px',
+                              cursor: loading === ag.id ? 'not-allowed' : 'pointer',
+                              display: 'flex', alignItems: 'center', gap: '8px',
+                            }}
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>schedule</span>
+                            Reagendar
+                          </button>
+
+                          <button
+                            onClick={() => handleCancelar(ag.id)}
+                            disabled={loading === ag.id}
+                            style={{
+                              padding: '10px 16px',
+                              borderRadius: '10px',
+                              border: '1px solid var(--color-error)',
+                              backgroundColor: 'transparent',
+                              color: 'var(--color-error)',
+                              fontWeight: 700,
+                              fontSize: '13px',
+                              cursor: loading === ag.id ? 'not-allowed' : 'pointer',
+                              display: 'flex', alignItems: 'center', gap: '8px',
+                            }}
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>cancel</span>
+                            Cancelar
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -685,7 +841,7 @@ export default function AgendamentoClientPage({ initialAgendamentos }: Props) {
             className="summary-card"
             style={{ cursor: 'pointer' }}
           >
-            <div className="summary-card-icon-wrapper" style={{ backgroundColor: s.bg }}>
+            <div className="summary-card-icon-wrapper" style={{ backgroundColor: '#fff', border: '1px solid var(--color-outline-variant)' }}>
               <span className="material-symbols-outlined" style={{ color: s.color, fontSize: '22px' }}>{s.icon}</span>
             </div>
             <div className="summary-card-content">
@@ -772,7 +928,7 @@ export default function AgendamentoClientPage({ initialAgendamentos }: Props) {
                 style={{
                   cursor: isValid ? 'pointer' : 'default',
                   backgroundColor: isToday
-                    ? 'var(--color-primary-container)'
+                    ? 'var(--color-primary)'
                     : count > 0
                     ? 'rgba(var(--color-primary-rgb, 0,102,204), 0.06)'
                     : 'transparent',
@@ -792,7 +948,7 @@ export default function AgendamentoClientPage({ initialAgendamentos }: Props) {
                 <span className="day-number" style={{
                   fontSize: '14px',
                   fontWeight: isToday ? 900 : 600,
-                  color: isToday ? 'var(--color-primary)' : 'var(--color-on-surface)',
+                  color: isToday ? '#fff' : 'var(--color-on-surface)',
                 }}>
                   {isValid ? dayNum : ''}
                 </span>

@@ -21,6 +21,10 @@ export default function ClienteFilter({ vendedores }: ClienteFilterProps) {
   const [cidadeValue, setCidadeValue] = useState(searchParams.get('cidade') || '');
   const [isPending, setIsPending] = useState(false);
 
+  // Estados de foco para evitar sobrescrever o valor do input enquanto o usuário digita
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [cidadeFocused, setCidadeFocused] = useState(false);
+
   // Filtros colapsáveis no mobile — começa fechado
   const [isOpen, setIsOpen] = useState(!isMobile);
 
@@ -29,11 +33,18 @@ export default function ClienteFilter({ vendedores }: ClienteFilterProps) {
     if (!isMobile) setIsOpen(true);
   }, [isMobile]);
 
-  // Sincronizar estados locais quando a URL mudar
+  // Sincronizar estados locais quando a URL mudar (apenas se o input respectivo não estiver focado)
   useEffect(() => {
-    setSearchValue(searchParams.get('search') || '');
-    setCidadeValue(searchParams.get('cidade') || '');
-  }, [searchParams]);
+    if (!searchFocused) {
+      setSearchValue(searchParams.get('search') || '');
+    }
+  }, [searchParams, searchFocused]);
+
+  useEffect(() => {
+    if (!cidadeFocused) {
+      setCidadeValue(searchParams.get('cidade') || '');
+    }
+  }, [searchParams, cidadeFocused]);
 
   // Função centralizada para atualizar a URL
   const updateURL = useCallback((updates: Record<string, string>) => {
@@ -170,6 +181,8 @@ export default function ClienteFilter({ vendedores }: ClienteFilterProps) {
                 value={searchValue}
                 placeholder="Ex: João ou C00001" 
                 onChange={(e) => setSearchValue(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
                 style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', fontSize: '14px' }} 
               />
             </div>
@@ -215,6 +228,8 @@ export default function ClienteFilter({ vendedores }: ClienteFilterProps) {
                 value={cidadeValue}
                 placeholder="Filtrar por cidade" 
                 onChange={(e) => setCidadeValue(e.target.value)}
+                onFocus={() => setCidadeFocused(true)}
+                onBlur={() => setCidadeFocused(false)}
                 style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', fontSize: '14px' }} 
               />
             </div>

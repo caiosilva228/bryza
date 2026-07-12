@@ -248,6 +248,9 @@ export interface AdminDashboardData {
       semana: number; // percentual em relação a semana passada
       mes: number; // percentual em relação ao mês passado
     };
+    faturamento_periodo?: number;
+    variacao_periodo?: number;
+    ticket_medio_periodo?: number;
   };
   pedidos: {
     aguardando_preparacao: number;
@@ -256,12 +259,15 @@ export interface AdminDashboardData {
     entregue_hoje: number;
     finalizados_hoje: number;
     pendentes_total: number; // total não finalizado/cancelado
+    entregue_periodo?: number;
+    finalizados_periodo?: number;
   };
   clientes: {
     novos_hoje: number;
     ativos_mes: number;
     recorrentes: number;
     inativos: number; // > 30 dias sem comprar
+    novos_periodo?: number;
   };
   vendedores: {
     ranking: {

@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { AdminDashboardData } from '@/models/types';
-import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subMonths, parseISO } from 'date-fns';
+import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subMonths, parseISO, differenceInDays } from 'date-fns';
 
 /**
  * Serviço central de métricas para o Dashboard Administrativo.
@@ -8,35 +8,46 @@ import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth,
  */
 export const DashboardService = {
   /**
-   * Obtém todas as métricas do dashboard para uma data de referência.
-   * Por padrão, a data de referência é "Hoje".
+   * Obtém todas as métricas do dashboard para uma faixa de datas (início e fim).
+   * Por padrão, se não informadas, assume o dia de hoje.
    */
-  async getAdminStats(referenceDate: string = new Date().toISOString()): Promise<AdminDashboardData> {
+  async getAdminStats(startDate?: string, endDate?: string): Promise<AdminDashboardData> {
     const supabase = await createClient();
-    const date = parseISO(referenceDate);
     
-    // Intervalos para Hoje
-    const dayStart = startOfDay(date).toISOString();
-    const dayEnd = endOfDay(date).toISOString();
-    
-    // Intervalos para Ontem (para variação)
-    const yesterdayStart = startOfDay(subDays(date, 1)).toISOString();
-    const yesterdayEnd = endOfDay(subDays(date, 1)).toISOString();
+    const today = new Date();
+    const defaultStart = startOfDay(today).toISOString();
+    const defaultEnd = endOfDay(today).toISOString();
 
-    // Intervalos para a Semana (Segunda a Domingo conforme pedido)
-    // weekStartsOn: 1 (Segunda-feira)
-    const weekStart = startOfWeek(date, { weekStartsOn: 1 }).toISOString();
-    const weekEnd = endOfWeek(date, { weekStartsOn: 1 }).toISOString();
+    const pStart = startDate ? startOfDay(parseISO(startDate)).toISOString() : defaultStart;
+    const pEnd = endDate ? endOfDay(parseISO(endDate)).toISOString() : defaultEnd;
     
-    const lastWeekStart = startOfWeek(subDays(date, 7), { weekStartsOn: 1 }).toISOString();
-    const lastWeekEnd = endOfWeek(subDays(date, 7), { weekStartsOn: 1 }).toISOString();
+    // Intervalos operacionais fixos para Hoje
+    const todayStart = startOfDay(today).toISOString();
+    const todayEnd = endOfDay(today).toISOString();
+    
+    // Intervalos para Ontem (para variação rápida de hoje)
+    const yesterdayStart = startOfDay(subDays(today, 1)).toISOString();
+    const yesterdayEnd = endOfDay(subDays(today, 1)).toISOString();
 
-    // Intervalos para o Mês
-    const monthStart = startOfMonth(date).toISOString();
-    const monthEnd = endOfMonth(date).toISOString();
-    
-    const lastMonthStart = startOfMonth(subMonths(date, 1)).toISOString();
-    const lastMonthEnd = endOfMonth(subMonths(date, 1)).toISOString();
+    // Intervalos para a Semana (Segunda a Domingo)
+    const weekStart = startOfWeek(today, { weekStartsOn: 1 }).toISOString();
+    const weekEnd = endOfWeek(today, { weekStartsOn: 1 }).toISOString();
+    const lastWeekStart = startOfWeek(subDays(today, 7), { weekStartsOn: 1 }).toISOString();
+    const lastWeekEnd = endOfWeek(subDays(today, 7), { weekStartsOn: 1 }).toISOString();
+
+    // Intervalos para o Mês de referência (baseado no final do período para meta mensal)
+    const refDate = endDate ? parseISO(endDate) : today;
+    const monthStart = startOfMonth(refDate).toISOString();
+    const monthEnd = endOfMonth(refDate).toISOString();
+    const lastMonthStart = startOfMonth(subMonths(refDate, 1)).toISOString();
+    const lastMonthEnd = endOfMonth(subMonths(refDate, 1)).toISOString();
+
+    // Período anterior equivalente para comparação
+    const parsedStart = parseISO(pStart);
+    const parsedEnd = parseISO(pEnd);
+    const diffDays = differenceInDays(parsedEnd, parsedStart) + 1;
+    const prevPeriodStart = subDays(parsedStart, diffDays).toISOString();
+    const prevPeriodEnd = subDays(parsedEnd, diffDays).toISOString();
 
     // 1. FINANCEIRO (Busca via RPC para performance)
     const [
@@ -45,25 +56,32 @@ export const DashboardService = {
       { data: fatSemanaData },
       { data: fatSemanaPassadaData },
       { data: fatMesData },
-      { data: fatMesPassadoData }
+      { data: fatMesPassadoData },
+      { data: fatPeriodoData },
+      { data: fatPeriodoAnteriorData }
     ] = await Promise.all([
-      supabase.rpc('get_faturamento_periodo', { p_inicio: dayStart, p_fim: dayEnd }),
+      supabase.rpc('get_faturamento_periodo', { p_inicio: todayStart, p_fim: todayEnd }),
       supabase.rpc('get_faturamento_periodo', { p_inicio: yesterdayStart, p_fim: yesterdayEnd }),
       supabase.rpc('get_faturamento_periodo', { p_inicio: weekStart, p_fim: weekEnd }),
       supabase.rpc('get_faturamento_periodo', { p_inicio: lastWeekStart, p_fim: lastWeekEnd }),
       supabase.rpc('get_faturamento_periodo', { p_inicio: monthStart, p_fim: monthEnd }),
       supabase.rpc('get_faturamento_periodo', { p_inicio: lastMonthStart, p_fim: lastMonthEnd }),
+      supabase.rpc('get_faturamento_periodo', { p_inicio: pStart, p_fim: pEnd }),
+      supabase.rpc('get_faturamento_periodo', { p_inicio: prevPeriodStart, p_fim: prevPeriodEnd }),
     ]);
 
     const faturamento_dia = Number(fatDiaData) || 0;
     const faturamento_semana = Number(fatSemanaData) || 0;
     const faturamento_mes = Number(fatMesData) || 0;
+    const faturamento_periodo = Number(fatPeriodoData) || 0;
+    const faturamento_periodo_anterior = Number(fatPeriodoAnteriorData) || 0;
     
     const var_dia = calculateVariation(faturamento_dia, Number(fatOntemData) || 0);
     const var_semana = calculateVariation(faturamento_semana, Number(fatSemanaPassadaData) || 0);
     const var_mes = calculateVariation(faturamento_mes, Number(fatMesPassadoData) || 0);
+    const var_periodo = calculateVariation(faturamento_periodo, faturamento_periodo_anterior);
 
-    // Ticket Médio (Vendas do mês)
+    // Ticket Médio do Mês (fallback de compatibilidade)
     const { count: totalVendasMes } = await supabase
       .from('vendas')
       .select('*', { count: 'exact', head: true })
@@ -73,8 +91,18 @@ export const DashboardService = {
 
     const ticket_medio = totalVendasMes ? (faturamento_mes / totalVendasMes) : 0;
 
-    // 2. PEDIDOS (Status operacional e eventos do dia)
-    // 2.1 Pedidos Pendentes (Snapshot atual - não filtrado por data do dia)
+    // Ticket Médio do Período
+    const { count: totalVendasPeriodo } = await supabase
+      .from('vendas')
+      .select('*', { count: 'exact', head: true })
+      .gte('data_venda', pStart)
+      .lte('data_venda', pEnd)
+      .not('status_venda', 'eq', 'cancelado');
+
+    const ticket_medio_periodo = totalVendasPeriodo ? (faturamento_periodo / totalVendasPeriodo) : 0;
+
+    // 2. PEDIDOS (Status operacional e eventos do período)
+    // 2.1 Pedidos Pendentes (Snapshot atual global)
     const { data: pedidosPendentes } = await supabase
       .from('pedidos')
       .select('status_pedido')
@@ -82,37 +110,55 @@ export const DashboardService = {
     
     const countStatus = (status: string) => pedidosPendentes?.filter(p => p.status_pedido === status).length || 0;
     
-    // 2.2 Eventos do Dia (Filtrados pelo intervalo selecionado)
-    // Entregues Hoje: usamos updated_at na tabela pedidos
+    // 2.2 Eventos do Dia
     const { count: entregue_hoje } = await supabase
       .from('pedidos')
       .select('*', { count: 'exact', head: true })
       .eq('status_pedido', 'entregue')
-      .gte('updated_at', dayStart)
-      .lte('updated_at', dayEnd);
+      .gte('updated_at', todayStart)
+      .lte('updated_at', todayEnd);
 
-    // Finalizados Hoje: usamos a tabela de vendas (garante sincronia com faturamento)
     const { count: finalizados_hoje } = await supabase
       .from('vendas')
       .select('*', { count: 'exact', head: true })
-      .gte('data_venda', dayStart)
-      .lte('data_venda', dayEnd);
+      .gte('data_venda', todayStart)
+      .lte('data_venda', todayEnd);
+
+    // 2.3 Eventos do Período
+    const { count: entregue_periodo } = await supabase
+      .from('pedidos')
+      .select('*', { count: 'exact', head: true })
+      .eq('status_pedido', 'entregue')
+      .gte('updated_at', pStart)
+      .lte('updated_at', pEnd);
+
+    const { count: finalizados_periodo } = await supabase
+      .from('vendas')
+      .select('*', { count: 'exact', head: true })
+      .gte('data_venda', pStart)
+      .lte('data_venda', pEnd);
 
     // 3. CLIENTES
     const { count: novosHoje } = await supabase
       .from('clientes')
       .select('*', { count: 'exact', head: true })
-      .gte('data_cadastro', dayStart)
-      .lte('data_cadastro', dayEnd);
+      .gte('data_cadastro', todayStart)
+      .lte('data_cadastro', todayEnd);
+
+    const { count: novosPeriodo } = await supabase
+      .from('clientes')
+      .select('*', { count: 'exact', head: true })
+      .gte('data_cadastro', pStart)
+      .lte('data_cadastro', pEnd);
 
     const { data: statsClientes } = await supabase
       .from('clientes')
       .select('status_cliente, total_compras');
 
-    // 4. VENDEDORES (Ranking via RPC)
+    // 4. VENDEDORES (Ranking no período)
     const { data: ranking } = await supabase.rpc('get_ranking_vendedores', { 
-      p_inicio: monthStart, 
-      p_fim: monthEnd 
+      p_inicio: pStart, 
+      p_fim: pEnd 
     });
 
     // 5. ESTOQUE
@@ -122,16 +168,15 @@ export const DashboardService = {
     
     const itens_baixo_estoque = produtosEstoque?.filter(p => p.estoque_atual <= p.estoque_minimo).length || 0;
 
-    // Top Produtos via RPC
+    // Top Produtos no período
     const { data: top_produtos } = await supabase.rpc('get_top_produtos', {
-      p_inicio: monthStart,
-      p_fim: monthEnd
+      p_inicio: pStart,
+      p_fim: pEnd
     });
 
-    // Itens parados (> 60 dias sem venda)
-    const sessentaDiasAtras = subDays(date, 60).toISOString();
+    // Itens parados (> 60 dias sem venda em relação a hoje)
+    const sessentaDiasAtras = subDays(today, 60).toISOString();
     
-    // Otimizando busca de vendidos para evitar sobrecarga
     const { data: vendasRecentes } = await supabase
       .from('vendas')
       .select('id')
@@ -152,6 +197,9 @@ export const DashboardService = {
         faturamento_semana,
         faturamento_mes,
         ticket_medio,
+        faturamento_periodo,
+        variacao_periodo: var_periodo,
+        ticket_medio_periodo,
         variacoes: {
           dia: var_dia,
           semana: var_semana,
@@ -164,10 +212,13 @@ export const DashboardService = {
         em_rota: countStatus('em_rota'),
         entregue_hoje: entregue_hoje || 0,
         finalizados_hoje: finalizados_hoje || 0,
+        entregue_periodo: entregue_periodo || 0,
+        finalizados_periodo: finalizados_periodo || 0,
         pendentes_total: pedidosPendentes?.length || 0
       },
       clientes: {
         novos_hoje: novosHoje || 0,
+        novos_periodo: novosPeriodo || 0,
         ativos_mes: statsClientes?.filter(c => c.total_compras > 0).length || 0,
         recorrentes: statsClientes?.filter(c => c.status_cliente === 'recorrente').length || 0,
         inativos: statsClientes?.filter(c => c.status_cliente === 'inativo').length || 0
@@ -181,7 +232,7 @@ export const DashboardService = {
         itens_parados
       },
       logistica: {
-        taxa_sucesso_entrega: 100, // Ajustar conforme dados reais de entregas vs falhas
+        taxa_sucesso_entrega: 100,
         pedidos_atrasados: 0,
         tempo_medio_preparacao_minutos: 0
       }

@@ -8,6 +8,7 @@ import {
   converterAgendamentoEmPedido,
   cancelarAgendamento,
   retornarPedidoParaAgendamento,
+  reagendarAgendamento,
   AgendamentoInput,
 } from '@/services/agendamentos';
 import { AgendamentoItem } from '@/models/types';
@@ -81,5 +82,17 @@ export async function cancelarAgendamentoAction(agendamentoId: string) {
   } catch (error) {
     console.error('Erro ao cancelar agendamento:', error);
     throw new Error('Falha ao cancelar agendamento.');
+  }
+}
+
+export async function reagendarAgendamentoAction(agendamentoId: string, novaDataIso: string) {
+  try {
+    const result = await reagendarAgendamento(agendamentoId, novaDataIso);
+    revalidatePath('/vendas/agendamentos');
+    revalidatePath('/');
+    return result;
+  } catch (error) {
+    console.error('Erro ao reagendar agendamento:', error);
+    throw new Error('Falha ao reagendar agendamento.');
   }
 }

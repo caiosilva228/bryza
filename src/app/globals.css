@@ -509,6 +509,10 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 32px;
 }
 
+.summary-cards-grid.three-cols {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .summary-card {
   background-color: var(--color-surface);
   border: 1px solid var(--color-outline-variant);

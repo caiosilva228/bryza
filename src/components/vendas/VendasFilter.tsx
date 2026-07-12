@@ -329,6 +329,11 @@ export function VendasFilter() {
                     setTempFrom(e.target.value);
                     setSelectedPreset('personalizado');
                   }}
+                  onClick={(e) => {
+                    try {
+                      e.currentTarget.showPicker();
+                    } catch {}
+                  }}
                   style={{
                     width: '100%',
                     padding: '10px 12px',
@@ -350,6 +355,11 @@ export function VendasFilter() {
                   onChange={(e) => {
                     setTempTo(e.target.value);
                     setSelectedPreset('personalizado');
+                  }}
+                  onClick={(e) => {
+                    try {
+                      e.currentTarget.showPicker();
+                    } catch {}
                   }}
                   style={{
                     width: '100%',
