@@ -40,11 +40,15 @@ export default function ProdutoTable({ produtos, onEdit, onToggleAtivo }: Produt
   }, [produtos, sortConfig]);
 
   const requestSort = (key: keyof Produto | 'disponivel') => {
-    let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
+    if (sortConfig && sortConfig.key === key) {
+      if (sortConfig.direction === 'asc') {
+        setSortConfig({ key, direction: 'desc' });
+      } else {
+        setSortConfig(null);
+      }
+    } else {
+      setSortConfig({ key, direction: 'asc' });
     }
-    setSortConfig({ key, direction });
   };
 
   const getSortIcon = (columnKey: keyof Produto | 'disponivel') => {
