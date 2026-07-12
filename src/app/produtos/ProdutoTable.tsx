@@ -48,10 +48,16 @@ export default function ProdutoTable({ produtos, onEdit, onToggleAtivo }: Produt
   };
 
   const getSortIcon = (columnKey: keyof Produto | 'disponivel') => {
-    if (!sortConfig || sortConfig.key !== columnKey) return null;
+    if (sortConfig && sortConfig.key === columnKey) {
+      return (
+        <span className="material-symbols-outlined" style={{ fontSize: '14px', marginLeft: '4px', verticalAlign: 'middle', color: 'var(--color-primary)' }}>
+          {sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}
+        </span>
+      );
+    }
     return (
-      <span className="material-symbols-outlined" style={{ fontSize: '14px', marginLeft: '4px', verticalAlign: 'middle' }}>
-        {sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}
+      <span className="material-symbols-outlined" style={{ fontSize: '14px', marginLeft: '4px', verticalAlign: 'middle', color: 'var(--color-outline-variant)' }}>
+        unfold_more
       </span>
     );
   };
