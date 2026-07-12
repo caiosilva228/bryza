@@ -19,6 +19,8 @@ export default function ClienteInfoModal({ cliente, onClose, isAdmin, onDelete, 
   const [vendas, setVendas] = useState<VendaWithItens[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedVendaId, setExpandedVendaId] = useState<string | null>(null);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [deleteNameConfirm, setDeleteNameConfirm] = useState('');
 
   useEffect(() => {
     if (cliente) {
@@ -361,92 +363,165 @@ export default function ClienteInfoModal({ cliente, onClose, isAdmin, onDelete, 
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          gap: '16px'
+          gap: '16px',
+          flexDirection: isDeleteConfirmOpen ? 'column' : 'row'
         }}>
-          <div>
-            {isAdmin && onDelete && (
-              <button
-                type="button"
-                onClick={onDelete}
-                disabled={isDeleting}
+          {!isDeleteConfirmOpen ? (
+            <>
+              <div>
+                {isAdmin && onDelete && (
+                  <button
+                    type="button"
+                    onClick={() => setIsDeleteConfirmOpen(true)}
+                    disabled={isDeleting}
+                    style={{
+                      backgroundColor: 'var(--color-error-container)',
+                      border: '1px solid rgba(239,68,68,0.18)',
+                      borderRadius: '12px',
+                      padding: '12px 28px',
+                      color: 'var(--color-error)',
+                      cursor: isDeleting ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontWeight: 800,
+                      fontSize: '14px',
+                      opacity: isDeleting ? 0.7 : 1,
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isDeleting) {
+                        e.currentTarget.style.backgroundColor = 'var(--color-error)';
+                        e.currentTarget.style.color = 'white';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isDeleting) {
+                        e.currentTarget.style.backgroundColor = 'var(--color-error-container)';
+                        e.currentTarget.style.color = 'var(--color-error)';
+                      }
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
+                      {isDeleting ? 'hourglass_top' : 'delete'}
+                    </span>
+                    Excluir Cliente
+                  </button>
+                )}
+              </div>
+              
+              <div style={{ display: 'flex', gap: '16px' }}>
+              <button 
+                onClick={onClose}
                 style={{
-                  backgroundColor: 'var(--color-error-container)',
-                  border: '1px solid rgba(239,68,68,0.18)',
-                  borderRadius: '12px',
                   padding: '12px 28px',
-                  color: 'var(--color-error)',
-                  cursor: isDeleting ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
+                  borderRadius: '12px',
+                  border: '1px solid var(--color-outline-variant)',
+                  backgroundColor: 'white',
+                  cursor: 'pointer',
                   fontWeight: 800,
                   fontSize: '14px',
-                  opacity: isDeleting ? 0.7 : 1,
+                  color: 'var(--color-on-surface-variant)',
                   transition: 'all 0.2s'
                 }}
-                onMouseEnter={(e) => {
-                  if (!isDeleting) {
-                    e.currentTarget.style.backgroundColor = 'var(--color-error)';
-                    e.currentTarget.style.color = 'white';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isDeleting) {
-                    e.currentTarget.style.backgroundColor = 'var(--color-error-container)';
-                    e.currentTarget.style.color = 'var(--color-error)';
-                  }
-                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-container-low)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
-                  {isDeleting ? 'hourglass_top' : 'delete'}
-                </span>
-                Excluir Cliente
+                Fechar
               </button>
-            )}
-          </div>
-          
-          <div style={{ display: 'flex', gap: '16px' }}>
-          <button 
-            onClick={onClose}
-            style={{
-              padding: '12px 28px',
-              borderRadius: '12px',
-              border: '1px solid var(--color-outline-variant)',
-              backgroundColor: 'white',
-              cursor: 'pointer',
-              fontWeight: 800,
-              fontSize: '14px',
-              color: 'var(--color-on-surface-variant)',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-container-low)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
-          >
-            Fechar
-          </button>
-          <Link 
-            href={`/clientes/${cliente.id}/editar`}
-            style={{
-              padding: '12px 28px',
-              borderRadius: '12px',
-              backgroundColor: 'var(--color-primary)',
-              color: 'white',
-              textDecoration: 'none',
-              fontWeight: 800,
-              fontSize: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              boxShadow: '0 8px 16px rgba(var(--color-primary-rgb), 0.2)',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>edit_square</span>
-            Editar Cadastro
-          </Link>
-          </div>
+              <Link 
+                href={`/clientes/${cliente.id}/editar`}
+                style={{
+                  padding: '12px 28px',
+                  borderRadius: '12px',
+                  backgroundColor: 'var(--color-primary)',
+                  color: 'white',
+                  textDecoration: 'none',
+                  fontWeight: 800,
+                  fontSize: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  boxShadow: '0 8px 16px rgba(var(--color-primary-rgb), 0.2)',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>edit_square</span>
+                Editar Cadastro
+              </Link>
+              </div>
+            </>
+          ) : (
+            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--color-error)' }}>
+                <span className="material-symbols-outlined">warning</span>
+                <span style={{ fontWeight: 800, fontSize: '15px' }}>Zona de Perigo - Exclusão de Cliente</span>
+              </div>
+              <p style={{ fontSize: '14px', color: 'var(--color-on-surface-variant)', margin: 0 }}>
+                Para excluir <strong>{cliente.nome.toUpperCase()}</strong>, digite o primeiro nome do cliente abaixo para autorizar:
+              </p>
+              
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  placeholder={`Digite "${cliente.nome.split(' ')[0]}"`}
+                  value={deleteNameConfirm}
+                  onChange={e => setDeleteNameConfirm(e.target.value)}
+                  style={{
+                    flex: 1,
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--color-outline)',
+                    fontSize: '14px',
+                    outline: 'none'
+                  }}
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsDeleteConfirmOpen(false);
+                    setDeleteNameConfirm('');
+                  }}
+                  style={{
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--color-outline-variant)',
+                    backgroundColor: 'white',
+                    cursor: 'pointer',
+                    fontWeight: 700,
+                    fontSize: '14px'
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (deleteNameConfirm.trim().toLowerCase() === cliente.nome.split(' ')[0].toLowerCase()) {
+                      onDelete?.();
+                    }
+                  }}
+                  disabled={isDeleting || deleteNameConfirm.trim().toLowerCase() !== cliente.nome.split(' ')[0].toLowerCase()}
+                  style={{
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: 'var(--color-error)',
+                    color: 'white',
+                    cursor: (isDeleting || deleteNameConfirm.trim().toLowerCase() !== cliente.nome.split(' ')[0].toLowerCase()) ? 'not-allowed' : 'pointer',
+                    fontWeight: 700,
+                    fontSize: '14px',
+                    opacity: (isDeleting || deleteNameConfirm.trim().toLowerCase() !== cliente.nome.split(' ')[0].toLowerCase()) ? 0.5 : 1
+                  }}
+                >
+                  {isDeleting ? 'Excluindo...' : 'Confirmar Exclusão'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         <style jsx>{`

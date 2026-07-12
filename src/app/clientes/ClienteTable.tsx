@@ -169,12 +169,6 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
   const handleDeleteCliente = async (cliente: Cliente) => {
     if (!isAdmin) return;
 
-    const confirmed = window.confirm(
-      `Excluir o cliente ${cliente.nome.toUpperCase()}? Esta ação não pode ser desfeita.`
-    );
-
-    if (!confirmed) return;
-
     setDeletingId(cliente.id);
     try {
       const response = await fetch(`/api/clientes?id=${cliente.id}`, {

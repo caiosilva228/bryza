@@ -184,7 +184,35 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Este cliente possui vendas vinculadas e não pode ser excluído.' }, { status: 400 });
     }
 
-    // 2. Excluir do funil_leads (pois não tem ON DELETE CASCADE)
+    // 2. Obter dados do cliente antes de excluir para salvar o backup
+    const { data: clienteToDelete, error: getError } = await supabase
+      .from('clientes')
+      .select('*')
+      .eq('id', clienteId)
+      .single();
+
+    if (getError || !clienteToDelete) {
+      console.error('Erro ao buscar cliente para backup:', getError);
+      return NextResponse.json({ success: false, message: 'Erro ao localizar dados do cliente.' }, { status: 404 });
+    }
+
+    // 3. Inserir na tabela de excluídos
+    const { error: backupError } = await supabase
+      .from('clientes_excluidos')
+      .insert({
+        cliente_id: clienteToDelete.id,
+        nome: clienteToDelete.nome,
+        telefone: clienteToDelete.telefone || null,
+        dados_completos: clienteToDelete,
+        excluido_por: userId
+      });
+
+    if (backupError) {
+      console.error('Erro ao fazer backup na tabela clientes_excluidos:', backupError);
+      return NextResponse.json({ success: false, message: 'Erro ao arquivar cliente antes da exclusão.' }, { status: 500 });
+    }
+
+    // 4. Excluir do funil_leads (pois não tem ON DELETE CASCADE)
     const { error: funilError } = await supabase
       .from('funil_leads')
       .delete()
@@ -195,7 +223,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Erro ao excluir dados de funil do cliente.' }, { status: 500 });
     }
 
-    // 3. Excluir do banco
+    // 5. Excluir do banco
     const { error } = await supabase
       .from('clientes')
       .delete()

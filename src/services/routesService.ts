@@ -249,12 +249,12 @@ export const createDeliveryRoute = async (input: CreateRouteInput) => {
     name: input.name,
     date: input.date,
     status: 'Planejada' as RouteStatus,
-    driver_id: input.driver_id,
-    driver_name: input.driver_name,
-    city: input.city,
-    neighborhoods: input.neighborhoods,
-    departure_time: input.departure_time,
-    notes: input.notes,
+    driver_id: input.driver_id || null,
+    driver_name: input.driver_name || null,
+    city: input.city || null,
+    neighborhoods: input.neighborhoods || null,
+    departure_time: input.departure_time || null,
+    notes: input.notes || null,
   };
 
   const { data: newRoute, error: routeError } = await supabase
@@ -263,7 +263,10 @@ export const createDeliveryRoute = async (input: CreateRouteInput) => {
     .select()
     .single();
 
-  if (routeError) throw routeError;
+  if (routeError) {
+    console.error("Error inserting delivery route:", routeError);
+    throw routeError;
+  }
 
   if (input.orderIds && input.orderIds.length > 0) {
     // 1. Buscar dados dos clientes para obter latitude e longitude de cada pedido
@@ -292,6 +295,8 @@ export const createDeliveryRoute = async (input: CreateRouteInput) => {
         // Ponto de partida padrão: Centro de Distribuição em Brasília (Bryza CD)
         const optimizedIds = optimizeRouteSequencing(ordersWithCoords, -15.793889, -47.882778);
         orderedOrderIds = [...optimizedIds, ...ordersWithoutCoords];
+      } else {
+        orderedOrderIds = [...ordersWithoutCoords];
       }
     }
 
@@ -307,6 +312,7 @@ export const createDeliveryRoute = async (input: CreateRouteInput) => {
       .insert(routeOrders);
 
     if (roError) {
+      console.error("Error inserting route orders:", roError, "Payload:", routeOrders);
       // Rollback manual (pois não estamos num rpc)
       await supabase.from('delivery_routes').delete().eq('id', newRoute.id);
       throw roError;

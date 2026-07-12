@@ -59,8 +59,26 @@ export default function CreateRouteModal({ open, onClose, availableOrders, drive
   const availableCities = useMemo(() => Array.from(new Set(availableOrders.map(o => o.cliente?.cidade || o.cidade || '').filter(Boolean))).sort(), [availableOrders]);
   const availableBairros = useMemo(() => Array.from(new Set(availableOrders.map(o => o.cliente?.bairro || o.bairro || '').filter(Boolean))).sort(), [availableOrders]);
 
+  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+
+  const requestSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key) {
+      if (sortConfig.direction === 'asc') direction = 'desc';
+      else { setSortConfig(null); return; }
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIcon = (key: string) => {
+    if (!sortConfig || sortConfig.key !== key) return <span className="material-symbols-outlined" style={{ fontSize: '14px', verticalAlign: 'middle', opacity: 0.3, marginLeft: '4px' }}>unfold_more</span>;
+    return <span className="material-symbols-outlined" style={{ fontSize: '14px', verticalAlign: 'middle', color: 'var(--color-primary)', marginLeft: '4px' }}>
+      {sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}
+    </span>;
+  };
+
   const filteredOrders = useMemo(() => {
-    let list = availableOrders;
+    let list = [...availableOrders];
     if (orderSearch) {
       const q = orderSearch.toLowerCase();
       list = list.filter(o => 
@@ -70,8 +88,29 @@ export default function CreateRouteModal({ open, onClose, availableOrders, drive
     }
     if (orderCity) list = list.filter(o => (o.cliente?.cidade || o.cidade) === orderCity);
     if (orderBairro) list = list.filter(o => (o.cliente?.bairro || o.bairro) === orderBairro);
+    
+    if (sortConfig) {
+      list.sort((a, b) => {
+        let valA: any = '';
+        let valB: any = '';
+        if (sortConfig.key === 'pedido') {
+          valA = a.numero_pedido || ''; valB = b.numero_pedido || '';
+        } else if (sortConfig.key === 'cliente') {
+          valA = a.cliente?.nome || a.nome_cliente || ''; valB = b.cliente?.nome || b.nome_cliente || '';
+        } else if (sortConfig.key === 'regiao') {
+          valA = a.cliente?.cidade || a.cidade || ''; valB = b.cliente?.cidade || b.cidade || '';
+        } else if (sortConfig.key === 'valor') {
+          valA = a.valor_total || 0; valB = b.valor_total || 0;
+        }
+
+        if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
     return list;
-  }, [availableOrders, orderSearch, orderCity, orderBairro]);
+  }, [availableOrders, orderSearch, orderCity, orderBairro, sortConfig]);
 
   useEffect(() => {
     if (open) {
@@ -235,10 +274,10 @@ export default function CreateRouteModal({ open, onClose, availableOrders, drive
                   <thead style={{ backgroundColor: 'var(--color-surface-container-highest)', borderBottom: '1px solid var(--color-outline-variant)' }}>
                     <tr>
                       <th style={{ padding: '10px 12px', width: '40px' }}></th>
-                      <th style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 800, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase' }}>Pedido</th>
-                      <th style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 800, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase' }}>Cliente</th>
-                      <th style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 800, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase' }}>Região</th>
-                      <th style={{ padding: '10px 12px', fontSize: '11px', fontWeight: 800, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase' }}>Valor</th>
+                      <th onClick={() => requestSort('pedido')} style={{ cursor: 'pointer', userSelect: 'none', padding: '10px 12px', fontSize: '11px', fontWeight: 800, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase' }}>Pedido {getSortIcon('pedido')}</th>
+                      <th onClick={() => requestSort('cliente')} style={{ cursor: 'pointer', userSelect: 'none', padding: '10px 12px', fontSize: '11px', fontWeight: 800, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase' }}>Cliente {getSortIcon('cliente')}</th>
+                      <th onClick={() => requestSort('regiao')} style={{ cursor: 'pointer', userSelect: 'none', padding: '10px 12px', fontSize: '11px', fontWeight: 800, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase' }}>Região {getSortIcon('regiao')}</th>
+                      <th onClick={() => requestSort('valor')} style={{ cursor: 'pointer', userSelect: 'none', padding: '10px 12px', fontSize: '11px', fontWeight: 800, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase' }}>Valor {getSortIcon('valor')}</th>
                     </tr>
                   </thead>
                   <tbody>
