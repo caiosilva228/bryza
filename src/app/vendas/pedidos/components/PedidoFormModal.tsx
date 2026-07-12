@@ -314,21 +314,27 @@ export default function PedidoFormModal({
 
   const total = roundCurrency(cartSummary.subtotalLiquido - descontoPedidoAplicado);
 
-  const clientesSearchItems = useMemo(() => clientes.map(c => ({
-    id: c.id,
-    display: `[${c.codigo_cliente?.toString().padStart(5, '0')}] ${c.nome}`,
-    search: `${c.id} ${c.codigo_cliente} ${c.nome}`,
-    code: c.codigo_cliente?.toString().padStart(5, '0') || '00000',
-    name: c.nome
-  })), [clientes]);
+  const clientesSearchItems = useMemo(() => clientes.map(c => {
+    const paddedCode = c.codigo_cliente?.toString().padStart(5, '0') || '00000';
+    return {
+      id: c.id,
+      display: `[${paddedCode}] ${c.nome}`,
+      search: `${c.codigo_cliente || ''} ${paddedCode} ${c.nome || ''}`,
+      code: paddedCode,
+      name: c.nome
+    };
+  }), [clientes]);
 
-  const vendedoresSearchItems = useMemo(() => vendedores.map(v => ({
-    id: v.id,
-    display: `[${v.codigo_vendedor?.toString().padStart(3, '0')}] ${v.nome}`,
-    search: `${v.id} ${v.codigo_vendedor} ${v.nome}`,
-    code: v.codigo_vendedor?.toString().padStart(3, '0') || '000',
-    name: v.nome
-  })), [vendedores]);
+  const vendedoresSearchItems = useMemo(() => vendedores.map(v => {
+    const paddedCode = v.codigo_vendedor?.toString().padStart(3, '0') || '000';
+    return {
+      id: v.id,
+      display: `[${paddedCode}] ${v.nome}`,
+      search: `${v.codigo_vendedor || ''} ${paddedCode} ${v.nome || ''}`,
+      code: paddedCode,
+      name: v.nome
+    };
+  }), [vendedores]);
 
   const addToCart = (produto: Produto) => {
     const existing = cart.find(c => c.produtoId === produto.id);
