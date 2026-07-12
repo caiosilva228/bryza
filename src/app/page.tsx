@@ -214,7 +214,7 @@ export default async function Home({ searchParams }: PageProps) {
                 data={stats.vendedores.ranking}
                 columns={[
                   { header: 'VENDEDOR', accessor: 'nome' },
-                  { header: 'TOTAL', accessor: 'faturamento', align: 'right', format: (v) => formatCurrency(v) },
+                  { header: 'TOTAL', accessor: 'faturamento', align: 'right', format: 'currency' },
                   { header: 'VENDAS', accessor: 'vendas_count', align: 'center' }
                 ]}
               />

@@ -1,11 +1,13 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 
+import { formatCurrency, formatDate, formatShortDate } from '@/utils/format';
+
 interface MiniTableColumn {
   header: string;
   accessor: string;
   align?: 'left' | 'right' | 'center';
-  format?: (value: any) => React.ReactNode;
+  format?: 'currency' | 'date' | 'shortDate' | ((value: any) => React.ReactNode);
 }
 
 interface MiniTableProps {
@@ -141,7 +143,15 @@ export function MiniTable({ title, data, columns, emptyMessage = 'Nenhum dado en
                         fontWeight: 500
                       }}
                     >
-                      {col.format ? col.format(row[col.accessor]) : row[col.accessor]}
+                      {col.format === 'currency' 
+                        ? formatCurrency(row[col.accessor]) 
+                        : col.format === 'date'
+                        ? formatDate(row[col.accessor])
+                        : col.format === 'shortDate'
+                        ? formatShortDate(row[col.accessor])
+                        : typeof col.format === 'function' 
+                        ? col.format(row[col.accessor]) 
+                        : row[col.accessor]}
                     </td>
                   ))}
                 </tr>
