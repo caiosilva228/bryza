@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Produto } from '@/models/types';
 
 interface EstoqueTableProps {
@@ -14,15 +14,60 @@ export const EstoqueTable = ({ produtos, onProdutoClick, onReservaClick }: Estoq
   const [filtroCategoria, setFiltroCategoria] = useState('');
   const [filtroStatus, setFiltroStatus] = useState('');
 
-  const produtosFiltrados = produtos.filter(p => {
-    const matchNome = (p.nome_produto || '').toLowerCase().includes(filtroNome.toLowerCase());
-    const matchCategoria = filtroCategoria === '' || p.categoria === filtroCategoria;
-    
-    const status = (p.estoque_atual - (p.estoque_reservado || 0)) <= 0 ? 'critico' : (p.estoque_atual - (p.estoque_reservado || 0)) <= p.estoque_minimo ? 'baixo' : 'ok';
-    const matchStatus = filtroStatus === '' || status === filtroStatus;
-    
-    return matchNome && matchCategoria && matchStatus;
-  });
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Produto | 'disponivel', direction: 'asc' | 'desc' } | null>(null);
+
+  const produtosFiltrados = useMemo(() => {
+    let result = produtos.filter(p => {
+      const matchNome = (p.nome_produto || '').toLowerCase().includes(filtroNome.toLowerCase());
+      const matchCategoria = filtroCategoria === '' || p.categoria === filtroCategoria;
+      
+      const status = (p.estoque_atual - (p.estoque_reservado || 0)) <= 0 ? 'critico' : (p.estoque_atual - (p.estoque_reservado || 0)) <= p.estoque_minimo ? 'baixo' : 'ok';
+      const matchStatus = filtroStatus === '' || status === filtroStatus;
+      
+      return matchNome && matchCategoria && matchStatus;
+    });
+
+    if (sortConfig !== null) {
+      result.sort((a, b) => {
+        let aValue: any = a[sortConfig.key as keyof Produto];
+        let bValue: any = b[sortConfig.key as keyof Produto];
+        
+        if (sortConfig.key === 'disponivel') {
+          aValue = a.estoque_atual - (a.estoque_reservado || 0);
+          bValue = b.estoque_atual - (b.estoque_reservado || 0);
+        }
+        
+        if (aValue === null || aValue === undefined) aValue = '';
+        if (bValue === null || bValue === undefined) bValue = '';
+        
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return result;
+  }, [produtos, filtroNome, filtroCategoria, filtroStatus, sortConfig]);
+
+  const requestSort = (key: keyof Produto | 'disponivel') => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIcon = (columnKey: keyof Produto | 'disponivel') => {
+    if (!sortConfig || sortConfig.key !== columnKey) return null;
+    return (
+      <span className="material-symbols-outlined" style={{ fontSize: '14px', marginLeft: '4px', verticalAlign: 'middle' }}>
+        {sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}
+      </span>
+    );
+  };
 
   const getStatusBadge = (p: Produto) => {
     const disponivel = p.estoque_atual - (p.estoque_reservado || 0);
@@ -106,13 +151,13 @@ export const EstoqueTable = ({ produtos, onProdutoClick, onReservaClick }: Estoq
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ backgroundColor: 'var(--color-surface-container-highest)', borderBottom: '1px solid var(--color-outline-variant)' }}>
-              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase' }}>Cod</th>
-              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase' }}>Produto</th>
-              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase' }}>Categoria</th>
-              <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase' }}>Físico (TOTAL)</th>
-              <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase' }}>Em Pedidos</th>
-              <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-primary)' }}>Disponível</th>
-              <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase' }}>Status</th>
+              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('codigo_produto')}>Cod{getSortIcon('codigo_produto')}</th>
+              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('nome_produto')}>Produto{getSortIcon('nome_produto')}</th>
+              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('categoria')}>Categoria{getSortIcon('categoria')}</th>
+              <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('estoque_atual')}>Físico (TOTAL){getSortIcon('estoque_atual')}</th>
+              <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('estoque_reservado')}>Em Pedidos{getSortIcon('estoque_reservado')}</th>
+              <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-primary)', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('disponivel')}>Disponível{getSortIcon('disponivel')}</th>
+              <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('disponivel')}>Status{getSortIcon('disponivel')}</th>
               <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase' }}>Ações</th>
             </tr>
           </thead>

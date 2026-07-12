@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useState, useMemo } from 'react';
 import { Produto } from '@/models/types';
 
 interface ProdutoTableProps {
@@ -9,6 +10,52 @@ interface ProdutoTableProps {
 }
 
 export default function ProdutoTable({ produtos, onEdit, onToggleAtivo }: ProdutoTableProps) {
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Produto | 'disponivel', direction: 'asc' | 'desc' } | null>(null);
+
+  const sortedProdutos = useMemo(() => {
+    let sortableItems = [...produtos];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        let aValue: any = a[sortConfig.key as keyof Produto];
+        let bValue: any = b[sortConfig.key as keyof Produto];
+        
+        if (sortConfig.key === 'disponivel') {
+          aValue = a.estoque_atual - (a.estoque_reservado || 0);
+          bValue = b.estoque_atual - (b.estoque_reservado || 0);
+        }
+        
+        if (aValue === null || aValue === undefined) aValue = '';
+        if (bValue === null || bValue === undefined) bValue = '';
+        
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [produtos, sortConfig]);
+
+  const requestSort = (key: keyof Produto | 'disponivel') => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIcon = (columnKey: keyof Produto | 'disponivel') => {
+    if (!sortConfig || sortConfig.key !== columnKey) return null;
+    return (
+      <span className="material-symbols-outlined" style={{ fontSize: '14px', marginLeft: '4px', verticalAlign: 'middle' }}>
+        {sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}
+      </span>
+    );
+  };
+
   const formatMoeda = (valor: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
   };
@@ -46,20 +93,20 @@ export default function ProdutoTable({ produtos, onEdit, onToggleAtivo }: Produt
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead style={{ backgroundColor: 'var(--color-surface-container-highest)', borderBottom: '1px solid var(--color-outline-variant)' }}>
             <tr>
-              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase' }}>Cod</th>
-              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase' }}>Produto</th>
-              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase' }}>Categoria</th>
-              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase' }}>Estoque</th>
-              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase' }}>Pedidos</th>
-              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase' }}>Disponível</th>
-              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase' }}>Custo</th>
-              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase' }}>Venda</th>
-              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase' }}>Status</th>
+              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('codigo_produto')}>Cod{getSortIcon('codigo_produto')}</th>
+              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('nome_produto')}>Produto{getSortIcon('nome_produto')}</th>
+              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('categoria')}>Categoria{getSortIcon('categoria')}</th>
+              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('estoque_atual')}>Estoque{getSortIcon('estoque_atual')}</th>
+              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('estoque_reservado')}>Pedidos{getSortIcon('estoque_reservado')}</th>
+              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('disponivel')}>Disponível{getSortIcon('disponivel')}</th>
+              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('custo_unitario')}>Custo{getSortIcon('custo_unitario')}</th>
+              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('preco_venda')}>Venda{getSortIcon('preco_venda')}</th>
+              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('ativo')}>Status{getSortIcon('ativo')}</th>
               <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', textAlign: 'right' }}>Ações</th>
             </tr>
           </thead>
           <tbody>
-            {produtos.map((p) => {
+            {sortedProdutos.map((p) => {
               const isLowStock = p.estoque_atual <= p.estoque_minimo;
 
               return (
@@ -168,7 +215,7 @@ export default function ProdutoTable({ produtos, onEdit, onToggleAtivo }: Produt
       </div>
 
       <div className="hide-desktop" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {produtos.map((p) => {
+        {sortedProdutos.map((p) => {
           const isLowStock = p.estoque_atual <= p.estoque_minimo;
           const disponivel = p.estoque_atual - (p.estoque_reservado || 0);
 
