@@ -475,7 +475,8 @@ export default function PedidoFormModal({
           return;
         }
         const dataIso = new Date(`${agendamentoDate}T${agendamentoTime}:00`).toISOString();
-        await updateAgendamentoAction(agendamentoToEdit.id, { ...pedidoMeta, data_agendamento: dataIso } as any, itensData as any);
+        const { complemento, ...agendamentoMeta } = pedidoMeta;
+        await updateAgendamentoAction(agendamentoToEdit.id, { ...agendamentoMeta, data_agendamento: dataIso } as any, itensData as any);
         toast.success('Agendamento atualizado com sucesso!');
       } else if (isEditMode && pedidoToEdit) {
         await updatePedidoAction(pedidoToEdit.id, pedidoMeta, itensData as any);
@@ -902,16 +903,17 @@ export default function PedidoFormModal({
                 )}
 
                 <div style={{ marginBottom: '8px' }}>
-                  <input 
-                    type="text" 
+                  <textarea 
                     className={styles.observationsField}
                     value={observacoes}
                     onChange={(e) => setObservacoes(e.target.value)}
                     placeholder="Observações (Opcional)"
+                    rows={2}
                     style={{
                       width: '100%', backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-outline-variant)',
                       borderRadius: '8px', padding: '6px 10px', fontSize: '13px', color: 'var(--color-on-surface)',
-                      outline: 'none', height: '32px',
+                      outline: 'none', height: '42px', resize: 'none', fontFamily: 'inherit',
+                      lineHeight: '1.3'
                     }}
                     onFocus={e => e.currentTarget.style.borderColor = 'var(--color-primary)'}
                     onBlur={e => e.currentTarget.style.borderColor = 'var(--color-outline-variant)'}
