@@ -316,3 +316,37 @@ export const reagendarAgendamento = async (agendamentoId: string, novaDataIso: s
   if (error) throw error;
   return { success: true };
 };
+
+export const updateAgendamento = async (
+  agendamentoId: string,
+  agendamentoData: Partial<AgendamentoInput>,
+  itens: Omit<AgendamentoItem, 'produto'>[]
+): Promise<{ success: boolean }> => {
+  const supabase = await createClient();
+  
+  // 1. Atualizar agendamento
+  const { error: updateError } = await supabase
+    .from('agendamentos')
+    .update({ ...agendamentoData, updated_at: new Date().toISOString() })
+    .eq('id', agendamentoId);
+    
+  if (updateError) throw updateError;
+  
+  // 2. Deletar itens antigos
+  const { error: deleteError } = await supabase
+    .from('agendamento_itens')
+    .delete()
+    .eq('agendamento_id', agendamentoId);
+    
+  if (deleteError) throw deleteError;
+  
+  // 3. Inserir novos itens
+  const itensComId = itens.map(item => ({ ...item, agendamento_id: agendamentoId }));
+  const { error: insertError } = await supabase
+    .from('agendamento_itens')
+    .insert(itensComId);
+    
+  if (insertError) throw insertError;
+  
+  return { success: true };
+};

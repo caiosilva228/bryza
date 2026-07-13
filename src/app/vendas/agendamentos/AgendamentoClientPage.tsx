@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Agendamento } from '@/models/types';
+import { Agendamento, Cliente, Produto, Profile } from '@/models/types';
 import {
   getAgendamentosAction,
   getAgendamentosByDateAction,
@@ -11,6 +11,7 @@ import {
 } from './actions';
 import { formatCurrency } from '@/utils/format';
 import { toast } from 'sonner';
+import PedidoFormModal from '../pedidos/components/PedidoFormModal';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 function isoToDateStr(iso: string) {
@@ -33,11 +34,13 @@ function DayModal({
   agendamentos,
   onClose,
   onConverted,
+  onDetailsSelect,
 }: {
   date: string;
   agendamentos: Agendamento[];
   onClose: () => void;
   onConverted: () => void;
+  onDetailsSelect: (ag: Agendamento) => void;
 }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -389,6 +392,24 @@ function DayModal({
                             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>shopping_cart</span>
                             {loading === ag.id ? 'Convertendo...' : 'Tornar Pedido'}
                           </button>
+
+                          <button
+                            onClick={() => onDetailsSelect(ag)}
+                            style={{
+                              padding: '10px 16px',
+                              borderRadius: '10px',
+                              border: '1px solid var(--color-outline-variant)',
+                              backgroundColor: '#fff',
+                              color: 'var(--color-on-surface-variant)',
+                              fontWeight: 700,
+                              fontSize: '13px',
+                              cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', gap: '8px',
+                            }}
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>info</span>
+                            Detalhes
+                          </button>
                           
                           <button
                             onClick={() => startReagenda(ag)}
@@ -449,6 +470,7 @@ function StatusListModal({
   month,
   onClose,
   onUpdated,
+  onDetailsSelect,
 }: {
   status: 'agendado' | 'convertido' | 'cancelado';
   agendamentos: Agendamento[];
@@ -456,6 +478,7 @@ function StatusListModal({
   month: number;
   onClose: () => void;
   onUpdated: () => void;
+  onDetailsSelect: (ag: Agendamento) => void;
 }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -690,6 +713,25 @@ function StatusListModal({
                             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>shopping_cart</span>
                             {loading === ag.id ? 'Convertendo...' : 'Tornar Pedido'}
                           </button>
+
+                          <button
+                            onClick={() => onDetailsSelect(ag)}
+                            style={{
+                              padding: '10px 16px',
+                              borderRadius: '10px',
+                              border: '1px solid var(--color-outline-variant)',
+                              backgroundColor: '#fff',
+                              color: 'var(--color-on-surface-variant)',
+                              fontWeight: 700,
+                              fontSize: '13px',
+                              cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', gap: '8px',
+                            }}
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>info</span>
+                            Detalhes
+                          </button>
+                          
                           <button
                             onClick={() => handleCancelar(ag.id)}
                             disabled={loading === ag.id}
@@ -723,11 +765,212 @@ function StatusListModal({
 }
 
 // ── Calendar ──────────────────────────────────────────────────────────────────
-interface Props {
-  initialAgendamentos: Agendamento[];
+function AgendamentoDetailsModal({
+  agendamento,
+  onClose,
+  onEdit,
+}: {
+  agendamento: Agendamento;
+  onClose: () => void;
+  onEdit: () => void;
+}) {
+  const dateObj = new Date(agendamento.data_agendamento);
+  const displayDate = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+  const hora = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const vendedorNome = agendamento.nome_vendedor || agendamento.vendedor?.nome || '—';
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1100,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '20px',
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          backgroundColor: 'var(--color-surface)',
+          borderRadius: '24px',
+          width: '100%',
+          maxWidth: '560px',
+          maxHeight: '85vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.25)',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div style={{
+          padding: '20px 24px',
+          borderBottom: '1px solid var(--color-outline-variant)',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          backgroundColor: 'var(--color-surface-container-lowest)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span className="material-symbols-outlined" style={{ color: 'var(--color-primary)', fontSize: '24px' }}>info</span>
+            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>Detalhes do Agendamento</h3>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              width: '32px', height: '32px', borderRadius: '50%',
+              border: 'none', backgroundColor: 'var(--color-surface-container-high)',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>close</span>
+          </button>
+        </div>
+
+        {/* Content */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+            <div>
+              <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Cliente</span>
+              <strong style={{ fontSize: '13px', color: 'var(--color-on-surface)' }}>{agendamento.nome_cliente || agendamento.cliente?.nome || '—'}</strong>
+              <span style={{ fontSize: '11px', color: 'var(--color-outline)', display: 'block', marginTop: '2px' }}>{agendamento.telefone_cliente || agendamento.cliente?.telefone || ''}</span>
+            </div>
+            <div>
+              <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Vendedor</span>
+              <strong style={{ fontSize: '13px', color: 'var(--color-on-surface)' }}>{vendedorNome}</strong>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '20px', padding: '12px 16px', backgroundColor: 'var(--color-surface-container-lowest)', borderRadius: '12px', border: '1px solid var(--color-outline-variant)' }}>
+            <div>
+              <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Data</span>
+              <span style={{ fontSize: '13px', fontWeight: 700 }}>{displayDate}</span>
+            </div>
+            <div>
+              <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Horário</span>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-primary)' }}>{hora}</span>
+            </div>
+            <div>
+              <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Pagamento</span>
+              <span style={{ fontSize: '13px', fontWeight: 700 }}>{agendamento.forma_pagamento.toUpperCase()}</span>
+            </div>
+          </div>
+
+          {(agendamento.endereco_entrega || agendamento.bairro || agendamento.cidade) && (
+            <div style={{ marginBottom: '20px' }}>
+              <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Endereço de Entrega</span>
+              <span style={{ fontSize: '13px', color: 'var(--color-on-surface)' }}>
+                {agendamento.endereco_entrega}
+                {agendamento.bairro && `, ${agendamento.bairro}`}
+                {agendamento.cidade && ` - ${agendamento.cidade}`}
+                {agendamento.estado && `/${agendamento.estado}`}
+                {agendamento.cep && ` (CEP: ${agendamento.cep})`}
+              </span>
+            </div>
+          )}
+
+          <div style={{ marginBottom: '20px' }}>
+            <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>Itens do Agendamento</span>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--color-outline-variant)' }}>
+                  <th style={{ textAlign: 'left', fontSize: '10px', color: 'var(--color-outline)', fontWeight: 700, textTransform: 'uppercase', padding: '6px 0' }}>Produto</th>
+                  <th style={{ textAlign: 'center', fontSize: '10px', color: 'var(--color-outline)', fontWeight: 700, textTransform: 'uppercase', padding: '6px 0', width: '60px' }}>Qtd</th>
+                  <th style={{ textAlign: 'right', fontSize: '10px', color: 'var(--color-outline)', fontWeight: 700, textTransform: 'uppercase', padding: '6px 0', width: '80px' }}>Unitário</th>
+                  <th style={{ textAlign: 'right', fontSize: '10px', color: 'var(--color-outline)', fontWeight: 700, textTransform: 'uppercase', padding: '6px 0', width: '100px' }}>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {agendamento.itens?.map((item, idx) => (
+                  <tr key={idx} style={{ borderBottom: '1px solid rgba(0,0,0,0.03)' }}>
+                    <td style={{ fontSize: '13px', padding: '8px 0', fontWeight: 600 }}>{item.produto?.nome_produto || '—'}</td>
+                    <td style={{ fontSize: '13px', textAlign: 'center', color: 'var(--color-outline)' }}>{item.quantidade}</td>
+                    <td style={{ fontSize: '13px', textAlign: 'right' }}>{formatCurrency(item.preco_unitario)}</td>
+                    <td style={{ fontSize: '13px', textAlign: 'right', fontWeight: 700 }}>{formatCurrency(item.subtotal)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div style={{
+            display: 'flex', flexDirection: 'column', gap: '6px',
+            padding: '16px', borderRadius: '12px',
+            backgroundColor: 'var(--color-surface-container-lowest)',
+            border: '1px solid var(--color-outline-variant)',
+            fontSize: '13px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-outline)' }}>
+              <span>Total Bruto</span>
+              <span>{formatCurrency(agendamento.valor_total + (agendamento.desconto_aplicado || 0))}</span>
+            </div>
+            {agendamento.desconto_aplicado && agendamento.desconto_aplicado > 0 ? (
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-primary)' }}>
+                <span>Desconto</span>
+                <span>- {formatCurrency(agendamento.desconto_aplicado)}</span>
+              </div>
+            ) : null}
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: '15px', marginTop: '6px', paddingTop: '6px', borderTop: '1px solid var(--color-outline-variant)' }}>
+              <span>Valor Total</span>
+              <span style={{ color: 'var(--color-primary)' }}>{formatCurrency(agendamento.valor_total)}</span>
+            </div>
+          </div>
+
+          {agendamento.observacoes && (
+            <div style={{ marginTop: '20px' }}>
+              <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Observações</span>
+              <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-outline)', fontStyle: 'italic' }}>
+                {agendamento.observacoes}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div style={{
+          padding: '16px 24px',
+          borderTop: '1px solid var(--color-outline-variant)',
+          display: 'flex', justifyContent: 'flex-end', gap: '12px',
+          backgroundColor: 'var(--color-surface-container-lowest)'
+        }}>
+          <button
+            onClick={onClose}
+            style={{
+              padding: '10px 20px', borderRadius: '10px',
+              border: '1px solid var(--color-outline-variant)',
+              backgroundColor: '#fff', color: 'var(--color-outline)',
+              fontWeight: 700, fontSize: '13px', cursor: 'pointer'
+            }}
+          >
+            Fechar
+          </button>
+          {agendamento.status === 'agendado' && (
+            <button
+              onClick={onEdit}
+              style={{
+                padding: '10px 20px', borderRadius: '10px',
+                border: 'none', backgroundColor: '#f59e0b', color: '#fff',
+                fontWeight: 700, fontSize: '13px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '8px'
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit</span>
+              Editar Agendamento
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
-export default function AgendamentoClientPage({ initialAgendamentos }: Props) {
+interface Props {
+  initialAgendamentos: Agendamento[];
+  clientes: Cliente[];
+  produtos: Produto[];
+  vendedores: Profile[];
+}
+
+export default function AgendamentoClientPage({ initialAgendamentos, clientes, produtos, vendedores }: Props) {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth()); // 0-indexed
@@ -736,6 +979,8 @@ export default function AgendamentoClientPage({ initialAgendamentos }: Props) {
   const [dayAgendamentos, setDayAgendamentos] = useState<Agendamento[]>([]);
   const [loadingDay, setLoadingDay] = useState(false);
   const [statusListModal, setStatusListModal] = useState<'agendado' | 'convertido' | 'cancelado' | null>(null);
+  const [detailsAgendamento, setDetailsAgendamento] = useState<Agendamento | null>(null);
+  const [editAgendamento, setEditAgendamento] = useState<Agendamento | null>(null);
 
   const refresh = async () => {
     try {
@@ -979,6 +1224,10 @@ export default function AgendamentoClientPage({ initialAgendamentos }: Props) {
           agendamentos={loadingDay ? [] : dayAgendamentos}
           onClose={() => setSelectedDate(null)}
           onConverted={refresh}
+          onDetailsSelect={(ag) => {
+            setSelectedDate(null);
+            setDetailsAgendamento(ag);
+          }}
         />
       )}
 
@@ -991,6 +1240,35 @@ export default function AgendamentoClientPage({ initialAgendamentos }: Props) {
           month={month}
           onClose={() => setStatusListModal(null)}
           onUpdated={refresh}
+          onDetailsSelect={(ag) => {
+            setStatusListModal(null);
+            setDetailsAgendamento(ag);
+          }}
+        />
+      )}
+
+      {/* Details modal */}
+      {detailsAgendamento && (
+        <AgendamentoDetailsModal
+          agendamento={detailsAgendamento}
+          onClose={() => setDetailsAgendamento(null)}
+          onEdit={() => {
+            setEditAgendamento(detailsAgendamento);
+            setDetailsAgendamento(null);
+          }}
+        />
+      )}
+
+      {/* Edit Form Modal */}
+      {editAgendamento && (
+        <PedidoFormModal
+          isOpen={true}
+          onClose={() => setEditAgendamento(null)}
+          onSuccess={refresh}
+          clientes={clientes}
+          produtos={produtos}
+          vendedores={vendedores}
+          agendamentoToEdit={editAgendamento}
         />
       )}
     </div>

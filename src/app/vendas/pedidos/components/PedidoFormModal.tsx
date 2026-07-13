@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Cliente, Produto, Profile, PedidoItem, Pedido, TipoDesconto } from '@/models/types';
+import { Cliente, Produto, Profile, PedidoItem, Pedido, TipoDesconto, Agendamento } from '@/models/types';
 import { savePedido, updatePedidoAction } from '../actions';
-import { criarAgendamentoAction } from '../../agendamentos/actions';
+import { criarAgendamentoAction, updateAgendamentoAction } from '../../agendamentos/actions';
 import { formatCurrency } from '@/utils/format';
 import { toast } from 'sonner';
 import styles from './PedidoFormModal.module.css';
@@ -14,6 +14,7 @@ interface Props {
   produtos: Produto[];
   vendedores: Profile[];
   pedidoToEdit?: Pedido | null;
+  agendamentoToEdit?: Agendamento | null;
 }
 
 interface SearchItem {
@@ -245,9 +246,10 @@ export default function PedidoFormModal({
   clientes, 
   produtos, 
   vendedores,
-  pedidoToEdit
+  pedidoToEdit,
+  agendamentoToEdit
 }: Props) {
-  const isEditMode = !!pedidoToEdit;
+  const isEditMode = !!pedidoToEdit || !!agendamentoToEdit;
   const [selectedClienteId, setSelectedClienteId] = useState('');
   const [selectedVendedorId, setSelectedVendedorId] = useState('');
   const [formaPagamento, setFormaPagamento] = useState<'dinheiro' | 'pix' | 'cartao'>('pix');
@@ -263,7 +265,7 @@ export default function PedidoFormModal({
   const [agendamentoDate, setAgendamentoDate] = useState('');
   const [agendamentoTime, setAgendamentoTime] = useState('');
 
-  // Pré-preenche o formulário quando um pedido for passado para edição
+  // Pré-preenche o formulário quando um pedido ou agendamento for passado para edição
   useEffect(() => {
     if (isOpen && pedidoToEdit) {
       setSelectedClienteId(pedidoToEdit.cliente_id || '');
@@ -275,6 +277,7 @@ export default function PedidoFormModal({
         quantidade: item.quantidade,
         preco_unitario: item.preco_unitario,
         tipo: (item.desconto_tipo || 'none') as TipoDesconto,
+        breakdown: item.desconto_valor,
         valor: Number(item.desconto_valor) || 0,
       }));
       setCart(itensCart);
@@ -282,7 +285,35 @@ export default function PedidoFormModal({
         tipo: (pedidoToEdit.desconto_tipo || 'none') as TipoDesconto,
         valor: Number(pedidoToEdit.desconto_valor) || 0,
       });
-    } else if (isOpen && !pedidoToEdit) {
+    } else if (isOpen && agendamentoToEdit) {
+      setSelectedClienteId(agendamentoToEdit.cliente_id || '');
+      setSelectedVendedorId(agendamentoToEdit.vendedor_id || '');
+      setFormaPagamento((agendamentoToEdit.forma_pagamento as any) || 'pix');
+      setObservacoes(agendamentoToEdit.observacoes || '');
+      const itensCart: CartItemState[] = (agendamentoToEdit.itens || []).map(item => ({
+        produtoId: item.produto_id,
+        quantidade: item.quantidade,
+        preco_unitario: item.preco_unitario,
+        tipo: (item.desconto_tipo || 'none') as TipoDesconto,
+        valor: Number(item.desconto_valor) || 0,
+      }));
+      setCart(itensCart);
+      setOrderDiscount({
+        tipo: (agendamentoToEdit.desconto_tipo || 'none') as TipoDesconto,
+        valor: Number(agendamentoToEdit.desconto_valor) || 0,
+      });
+
+      // Data e hora do agendamento
+      const dateObj = new Date(agendamentoToEdit.data_agendamento);
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      setAgendamentoDate(`${y}-${m}-${d}`);
+      
+      const hh = String(dateObj.getHours()).padStart(2, '0');
+      const mm = String(dateObj.getMinutes()).padStart(2, '0');
+      setAgendamentoTime(`${hh}:${mm}`);
+    } else if (isOpen && !pedidoToEdit && !agendamentoToEdit) {
       // Resetar ao abrir em modo criação
       setSelectedClienteId('');
       setSelectedVendedorId('');
@@ -291,8 +322,10 @@ export default function PedidoFormModal({
       setCart([]);
       setOrderDiscount({ tipo: 'none', valor: 0 });
       setProductSearch('');
+      setAgendamentoDate('');
+      setAgendamentoTime('');
     }
-  }, [isOpen, pedidoToEdit]);
+  }, [isOpen, pedidoToEdit, agendamentoToEdit]);
 
   const cartSummary = useMemo(() => {
     return cart.reduce((acc, item) => {
@@ -432,7 +465,15 @@ export default function PedidoFormModal({
         };
       });
 
-      if (isEditMode && pedidoToEdit) {
+      if (agendamentoToEdit) {
+        if (!agendamentoDate || !agendamentoTime) {
+          toast.error('Informe a data e o horário do agendamento.');
+          return;
+        }
+        const dataIso = new Date(`${agendamentoDate}T${agendamentoTime}:00`).toISOString();
+        await updateAgendamentoAction(agendamentoToEdit.id, { ...pedidoMeta, data_agendamento: dataIso } as any, itensData as any);
+        toast.success('Agendamento atualizado com sucesso!');
+      } else if (isEditMode && pedidoToEdit) {
         await updatePedidoAction(pedidoToEdit.id, pedidoMeta, itensData as any);
         toast.success('Pedido atualizado com sucesso!');
       } else {
@@ -828,6 +869,35 @@ export default function PedidoFormModal({
 
               {/* Order total & submission */}
               <div className={styles.summaryPane} style={{ padding: '24px', borderTop: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface-container-lowest)' }}>
+                {agendamentoToEdit && (
+                  <div style={{ marginBottom: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', display: 'block' }}>Data do Agendamento</label>
+                      <input 
+                        type="date" 
+                        value={agendamentoDate}
+                        onChange={e => setAgendamentoDate(e.target.value)}
+                        onClick={e => {
+                          try { e.currentTarget.showPicker(); } catch(err) {}
+                        }}
+                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', outline: 'none', cursor: 'pointer', backgroundColor: 'var(--color-surface)', fontSize: '13px', color: 'var(--color-on-surface)' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', display: 'block' }}>Horário</label>
+                      <input 
+                        type="time" 
+                        value={agendamentoTime}
+                        onChange={e => setAgendamentoTime(e.target.value)}
+                        onClick={e => {
+                          try { e.currentTarget.showPicker(); } catch(err) {}
+                        }}
+                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', outline: 'none', cursor: 'pointer', backgroundColor: 'var(--color-surface)', fontSize: '13px', color: 'var(--color-on-surface)' }}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <div style={{ marginBottom: '16px' }}>
                   <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', display: 'block' }}>Observações (Opcional)</label>
                   <textarea 

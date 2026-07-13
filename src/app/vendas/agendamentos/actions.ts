@@ -96,3 +96,20 @@ export async function reagendarAgendamentoAction(agendamentoId: string, novaData
     throw new Error('Falha ao reagendar agendamento.');
   }
 }
+
+export async function updateAgendamentoAction(
+  agendamentoId: string,
+  agendamento: AgendamentoInput,
+  itens: Omit<AgendamentoItem, 'produto'>[]
+) {
+  try {
+    const { updateAgendamento } = await import('@/services/agendamentos');
+    const result = await updateAgendamento(agendamentoId, agendamento, itens);
+    revalidatePath('/vendas/agendamentos');
+    revalidatePath('/');
+    return result;
+  } catch (error) {
+    console.error('Erro ao atualizar agendamento:', error);
+    throw new Error('Falha ao atualizar agendamento.');
+  }
+}
