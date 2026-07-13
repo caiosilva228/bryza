@@ -504,9 +504,9 @@ h1, h2, h3, h4, h5, h6 {
 
 .summary-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 32px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .summary-cards-grid.three-cols {
@@ -516,19 +516,20 @@ h1, h2, h3, h4, h5, h6 {
 .summary-card {
   background-color: var(--color-surface);
   border: 1px solid var(--color-outline-variant);
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 12px;
+  padding: 10px 16px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   gap: 12px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.04);
   transition: all 0.2s ease-in-out;
 }
 
 .summary-card-icon-wrapper {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -536,7 +537,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .summary-card-icon-wrapper span {
-  font-size: 22px;
+  font-size: 18px;
 }
 
 .summary-card-content {
@@ -546,7 +547,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .summary-card-label {
   margin: 0;
-  font-size: 12px;
+  font-size: 10px;
   color: var(--color-on-surface-variant);
   font-weight: 600;
   text-transform: uppercase;
@@ -555,8 +556,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .summary-card-value {
-  margin: 4px 0 0;
-  font-size: 24px;
+  margin: 2px 0 0;
+  font-size: 18px;
   font-weight: 900;
   font-family: var(--font-headline);
   color: var(--color-on-surface);
@@ -564,8 +565,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .summary-card-sub {
-  margin: 2px 0 0;
-  font-size: 11px;
+  margin: 1px 0 0;
+  font-size: 10px;
   color: var(--color-on-surface-variant);
   line-height: 1.2;
 }
@@ -638,9 +639,9 @@ h1, h2, h3, h4, h5, h6 {
    ═══════════════════════════════════════════════════════ */
 
 .calendar-day-cell {
-  min-height: 72px;
-  border-radius: 14px;
-  padding: 10px;
+  min-height: 52px;
+  border-radius: 10px;
+  padding: 6px;
   transition: all 0.15s ease-in-out;
 }
 

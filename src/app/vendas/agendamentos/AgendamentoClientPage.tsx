@@ -1043,11 +1043,11 @@ export default function AgendamentoClientPage({ initialAgendamentos, clientes, p
   return (
     <div className="page-wrapper" style={{ maxWidth: '1000px', margin: '0 auto' }}>
       {/* Page header */}
-      <div style={{ marginBottom: '32px' }}>
-        <h1 style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-on-surface)', letterSpacing: '-0.02em', marginBottom: '8px' }}>
+      <div style={{ marginBottom: '16px' }}>
+        <h1 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--color-on-surface)', letterSpacing: '-0.02em', marginBottom: '4px' }}>
           Gestão de <span style={{ color: 'var(--color-primary)' }}>Agendamentos</span>
         </h1>
-        <p style={{ color: 'var(--color-outline)', fontSize: '15px' }}>
+        <p style={{ color: 'var(--color-outline)', fontSize: '13px' }}>
           Visualize e gerencie os pedidos agendados. Clique em um dia para ver detalhes.
         </p>
       </div>
@@ -1087,7 +1087,7 @@ export default function AgendamentoClientPage({ initialAgendamentos, clientes, p
             style={{ cursor: 'pointer' }}
           >
             <div className="summary-card-icon-wrapper" style={{ backgroundColor: '#fff', border: '1px solid var(--color-outline-variant)' }}>
-              <span className="material-symbols-outlined" style={{ color: s.color, fontSize: '22px' }}>{s.icon}</span>
+              <span className="material-symbols-outlined" style={{ color: s.color, fontSize: '18px' }}>{s.icon}</span>
             </div>
             <div className="summary-card-content">
               <div className="summary-card-label">{s.label}</div>
@@ -1101,13 +1101,13 @@ export default function AgendamentoClientPage({ initialAgendamentos, clientes, p
       <div style={{
         backgroundColor: 'var(--color-surface)',
         border: '1px solid var(--color-outline-variant)',
-        borderRadius: '24px',
+        borderRadius: '16px',
         overflow: 'hidden',
         boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
       }}>
         {/* Nav */}
         <div style={{
-          padding: '20px 28px',
+          padding: '12px 20px',
           borderBottom: '1px solid var(--color-outline-variant)',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           backgroundColor: 'var(--color-surface-container-lowest)',
@@ -1115,39 +1115,39 @@ export default function AgendamentoClientPage({ initialAgendamentos, clientes, p
           <button
             onClick={prevMonth}
             style={{
-              width: '40px', height: '40px', borderRadius: '12px',
+              width: '32px', height: '32px', borderRadius: '8px',
               border: '1px solid var(--color-outline-variant)',
               backgroundColor: 'var(--color-surface)',
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>chevron_left</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chevron_left</span>
           </button>
 
-          <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-on-surface)', margin: 0 }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-on-surface)', margin: 0 }}>
             {MONTHS[month]} {year}
           </h2>
 
           <button
             onClick={nextMonth}
             style={{
-              width: '40px', height: '40px', borderRadius: '12px',
+              width: '32px', height: '32px', borderRadius: '8px',
               border: '1px solid var(--color-outline-variant)',
               backgroundColor: 'var(--color-surface)',
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>chevron_right</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chevron_right</span>
           </button>
         </div>
 
         {/* Weekday headers */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', padding: '16px 16px 0' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', padding: '10px 12px 0' }}>
           {WEEK_DAYS.map(d => (
             <div key={d} style={{
-              textAlign: 'center', fontSize: '11px', fontWeight: 700,
+              textAlign: 'center', fontSize: '10px', fontWeight: 700,
               color: 'var(--color-outline)', textTransform: 'uppercase',
-              letterSpacing: '0.05em', paddingBottom: '12px',
+              letterSpacing: '0.05em', paddingBottom: '8px',
             }}>
               {d}
             </div>
@@ -1155,7 +1155,7 @@ export default function AgendamentoClientPage({ initialAgendamentos, clientes, p
         </div>
 
         {/* Day cells */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', padding: '0 16px 16px', gap: '4px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', padding: '0 12px 12px', gap: '4px' }}>
           {Array.from({ length: totalCells }).map((_, idx) => {
             const dayNum = idx - firstDay + 1;
             const isValid = dayNum >= 1 && dayNum <= daysInMonth;
@@ -1186,12 +1186,12 @@ export default function AgendamentoClientPage({ initialAgendamentos, clientes, p
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '6px',
+                  gap: '4px',
                   justifyContent: 'center',
                 }}
               >
                 <span className="day-number" style={{
-                  fontSize: '14px',
+                  fontSize: '13px',
                   fontWeight: isToday ? 900 : 600,
                   color: isToday ? '#fff' : 'var(--color-on-surface)',
                 }}>
@@ -1202,10 +1202,10 @@ export default function AgendamentoClientPage({ initialAgendamentos, clientes, p
                     backgroundColor: 'var(--color-primary)',
                     color: '#fff',
                     borderRadius: '20px',
-                    padding: '2px 8px',
-                    fontSize: '11px',
+                    padding: '1px 6px',
+                    fontSize: '10px',
                     fontWeight: 800,
-                    minWidth: '24px',
+                    minWidth: '20px',
                     textAlign: 'center',
                   }}>
                     {count}

@@ -84,15 +84,15 @@ export const Sidebar = () => {
 
   return (
     <aside className={styles.sidebar}>
-      <div style={{ padding: '24px 24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ padding: '16px 16px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <img 
           src="https://kkjrunhubqixftemndrm.supabase.co/storage/v1/object/public/Bryza/New%20Logo%20Bryza.svg" 
           alt="Bryza Logo" 
-          style={{ width: '180px', height: 'auto' }}
+          style={{ width: '130px', height: 'auto' }}
         />
         <p style={{ 
-          margin: '-6px 0 0', 
-          fontSize: '10px', 
+          margin: '-2px 0 0', 
+          fontSize: '9px', 
           color: 'var(--color-on-surface-variant)', 
           textTransform: 'uppercase', 
           letterSpacing: '0.05em',
@@ -138,7 +138,7 @@ export const Sidebar = () => {
               )}
 
               {hasSubItems && isOpen && (
-                <div style={{ marginLeft: '16px', borderLeft: '1px solid var(--color-outline-variant)', marginBottom: '8px' }}>
+                <div style={{ marginLeft: '12px', borderLeft: '1px solid var(--color-outline-variant)', marginBottom: '4px' }}>
                   {r.subItems!.map(sub => {
                     const isSubActive = pathname === sub.path;
                     return (
@@ -147,15 +147,15 @@ export const Sidebar = () => {
                         href={sub.path} 
                         className={`${styles.navItem}`}
                         style={{ 
-                          marginLeft: '12px', 
-                          padding: '8px 16px',
+                          marginLeft: '8px', 
+                          padding: '6px 12px',
                           backgroundColor: isSubActive ? 'var(--color-secondary-container)' : 'transparent',
                           color: isSubActive ? 'var(--color-on-secondary-container)' : 'var(--color-on-surface-variant)',
                           marginBottom: '2px'
                         }}
                       >
-                        <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{sub.icon}</span>
-                        <span className={styles.navItemText} style={{ fontSize: '13px' }}>{sub.label}</span>
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>{sub.icon}</span>
+                        <span className={styles.navItemText} style={{ fontSize: '12px' }}>{sub.label}</span>
                       </Link>
                     );
                   })}
@@ -170,12 +170,13 @@ export const Sidebar = () => {
             type="submit" 
             className={styles.navItem} 
             style={{ 
-              width: '100%', 
+              width: 'calc(100% - 12px)', 
               background: 'transparent', 
               border: 'none', 
               cursor: 'pointer',
               color: 'var(--color-error, #f44336)',
-              marginTop: '8px'
+              marginTop: '4px',
+              textAlign: 'left'
             }}
           >
             <span className="material-symbols-outlined">logout</span>
@@ -184,16 +185,16 @@ export const Sidebar = () => {
         </form>
       </nav>
 
-      <div style={{ padding: '24px' }}>
-        <div style={{ padding: '16px', backgroundColor: 'var(--color-surface-container)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: 'var(--color-primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span className="material-symbols-outlined">person</span>
+      <div style={{ padding: '12px 16px' }}>
+        <div style={{ padding: '10px 12px', backgroundColor: 'var(--color-surface-container)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: 'var(--color-primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person</span>
           </div>
           <div style={{ overflow: 'hidden' }}>
-            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--color-on-surface)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--color-on-surface)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {profile?.nome || 'Carregando...'}
             </p>
-            <p style={{ margin: 0, fontSize: 10, textTransform: 'uppercase', color: 'var(--color-on-surface-variant)' }}>
+            <p style={{ margin: 0, fontSize: 9, textTransform: 'uppercase', color: 'var(--color-on-surface-variant)' }}>
               {profile ? (roleLabels[profile.role] || profile.role) : '...'}
             </p>
           </div>

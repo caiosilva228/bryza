@@ -577,18 +577,18 @@ export default function PedidoFormModal({
           <div className={styles.modalHeaderIntro} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{
               width: '40px', height: '40px', borderRadius: '10px',
-              backgroundColor: isEditMode ? '#f59e0b' : 'var(--color-primary)',
+              backgroundColor: agendamentoToEdit ? '#f59e0b' : isEditMode ? '#f59e0b' : 'var(--color-primary)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#ffffff'
             }}>
-              <span className="material-symbols-outlined">{isEditMode ? 'edit' : 'add_shopping_cart'}</span>
+              <span className="material-symbols-outlined">{agendamentoToEdit ? 'calendar_month' : isEditMode ? 'edit' : 'add_shopping_cart'}</span>
             </div>
             <div className={styles.modalHeaderText}>
               <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--color-on-surface)', margin: 0 }}>
-                {isEditMode ? `Editar Pedido #${pedidoToEdit?.numero_pedido}` : 'Novo Pedido de Venda'}
+                {agendamentoToEdit ? 'Editar Agendamento' : isEditMode ? `Editar Pedido #${pedidoToEdit?.numero_pedido}` : 'Novo Pedido de Venda'}
               </h2>
               <p style={{ fontSize: '13px', color: 'var(--color-outline)', margin: '4px 0 0 0' }}>
-                {isEditMode ? 'Altere os itens ou dados do pedido. O estoque será ajustado automaticamente.' : 'Preencha os dados abaixo e adicione itens ao pedido'}
+                {agendamentoToEdit ? 'Altere as informações ou os produtos deste agendamento.' : isEditMode ? 'Altere os itens ou dados do pedido. O estoque será ajustado automaticamente.' : 'Preencha os dados abaixo e adicione itens ao pedido'}
               </p>
             </div>
           </div>
