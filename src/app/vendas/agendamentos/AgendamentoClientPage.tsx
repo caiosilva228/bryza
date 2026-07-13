@@ -10,6 +10,7 @@ import {
   reagendarAgendamentoAction,
 } from './actions';
 import { formatCurrency } from '@/utils/format';
+import { printSummary } from '@/utils/print';
 import { toast } from 'sonner';
 import PedidoFormModal from '../pedidos/components/PedidoFormModal';
 
@@ -932,6 +933,19 @@ function AgendamentoDetailsModal({
           display: 'flex', justifyContent: 'flex-end', gap: '12px',
           backgroundColor: 'var(--color-surface-container-lowest)'
         }}>
+          <button
+            onClick={() => printSummary(agendamento as any, 'agendamento')}
+            style={{
+              padding: '10px 20px', borderRadius: '10px',
+              border: '1px solid var(--color-primary)',
+              backgroundColor: 'transparent', color: 'var(--color-primary)',
+              fontWeight: 700, fontSize: '13px', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: '8px'
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>print</span>
+            Imprimir
+          </button>
           <button
             onClick={onClose}
             style={{

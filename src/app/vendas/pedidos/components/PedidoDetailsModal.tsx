@@ -6,6 +6,7 @@ import { updatePedidoStatus, getPedidoById } from '../actions';
 import { retornarPedidoParaAgendamentoAction } from '../../agendamentos/actions';
 import { statusWorkflow } from '../constants/workflow';
 import { formatCurrency, formatDate } from '@/utils/format';
+import { printSummary } from '@/utils/print';
 import { toast } from 'sonner';
 
 interface Props {
@@ -378,6 +379,29 @@ export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onCl
           )}
           
           <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              onClick={() => printSummary({ ...pedido, itens } as any, 'pedido')}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: 'transparent',
+                border: '1px solid var(--color-primary)',
+                color: 'var(--color-primary)',
+                fontWeight: 700,
+                fontSize: '12px',
+                borderRadius: '6px',
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-primary-container)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>print</span>
+              IMPRIMIR
+            </button>
             <button 
               onClick={onClose} 
               style={{
