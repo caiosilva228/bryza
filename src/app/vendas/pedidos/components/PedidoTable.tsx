@@ -81,16 +81,16 @@ export default function PedidoTable({
           title={getSortHint(key)}
           style={{
             width: '100%',
-            padding: '16px 20px',
+            padding: '10px 12px',
             border: 'none',
             background: 'transparent',
             display: 'flex',
             alignItems: 'center',
             justifyContent,
-            gap: '8px',
+            gap: '6px',
             cursor: 'pointer',
             color: isActive ? 'var(--color-primary)' : 'var(--color-outline)',
-            fontSize: '12px',
+            fontSize: '11px',
             fontWeight: 800,
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
@@ -101,7 +101,7 @@ export default function PedidoTable({
           <span
             className="material-symbols-outlined"
             style={{
-              fontSize: '16px',
+              fontSize: '14px',
               color: isActive ? 'var(--color-primary)' : 'var(--color-outline)',
             }}
           >
@@ -188,9 +188,9 @@ export default function PedidoTable({
               {renderSortableHeader('Destino (Entrega)', 'destino')}
               {renderSortableHeader('Responsável', 'responsavel')}
               {renderSortableHeader('Status', 'status', 'center')}
-              <th style={{ padding: '16px 20px', textAlign: 'center', fontSize: '12px', fontWeight: 800, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Ação Rápida</th>
+              <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: '11px', fontWeight: 800, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Ação Rápida</th>
               {renderSortableHeader('Valor Total', 'valor', 'right')}
-              <th style={{ padding: '16px 20px', textAlign: 'center', fontSize: '12px', fontWeight: 800, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Detalhes</th>
+              <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: '11px', fontWeight: 800, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Detalhes</th>
             </tr>
           </thead>
           <tbody>
@@ -211,42 +211,42 @@ export default function PedidoTable({
                     e.currentTarget.style.boxShadow = 'none';
                   }}
                 >
-                  <td style={{ padding: '16px 20px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <span style={{ fontWeight: 800, color: 'var(--color-on-surface)', fontSize: '14px' }}>#{pedido.numero_pedido}</span>
-                      <span style={{ fontSize: '12px', color: 'var(--color-outline)', fontWeight: 600 }}>{formatDate(pedido.data_criacao || pedido.created_at)}</span>
+                  <td style={{ padding: '6px 10px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <span style={{ fontWeight: 800, color: 'var(--color-on-surface)', fontSize: '12px' }}>#{pedido.numero_pedido}</span>
+                      <span style={{ fontSize: '10px', color: 'var(--color-outline)', fontWeight: 600 }}>{formatDate(pedido.data_criacao || pedido.created_at)}</span>
                     </div>
                   </td>
-                  <td style={{ padding: '16px 20px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <span style={{ fontWeight: 700, color: 'var(--color-on-surface)', fontSize: '14px' }}>{pedido.nome_cliente || pedido.cliente?.nome || 'Consumidor'}</span>
-                      <span style={{ fontSize: '12px', color: 'var(--color-primary)', fontWeight: 600 }}>{pedido.telefone_cliente || pedido.cliente?.telefone || 'Sem telefone'}</span>
+                  <td style={{ padding: '6px 10px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <span style={{ fontWeight: 700, color: 'var(--color-on-surface)', fontSize: '11px' }}>{pedido.nome_cliente || pedido.cliente?.nome || 'Consumidor'}</span>
+                      <span style={{ fontSize: '10px', color: 'var(--color-primary)', fontWeight: 600 }}>{pedido.telefone_cliente || pedido.cliente?.telefone || 'Sem telefone'}</span>
                     </div>
                   </td>
-                  <td style={{ padding: '16px 20px', maxWidth: '220px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <span style={{ color: 'var(--color-on-surface)', fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pedido.endereco_entrega || pedido.cliente?.endereco || 'RETIRADA NA LOJA'}</span>
-                      <span style={{ fontSize: '12px', color: 'var(--color-outline)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pedido.bairro || pedido.cliente?.bairro}, {pedido.cidade || pedido.cliente?.cidade}</span>
+                  <td style={{ padding: '6px 10px', maxWidth: '220px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <span style={{ color: 'var(--color-on-surface)', fontSize: '11px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pedido.endereco_entrega || pedido.cliente?.endereco || 'RETIRADA NA LOJA'}</span>
+                      <span style={{ fontSize: '10px', color: 'var(--color-outline)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pedido.bairro || pedido.cliente?.bairro}, {pedido.cidade || pedido.cliente?.cidade}</span>
                     </div>
                   </td>
-                  <td style={{ padding: '16px 20px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <span style={{ fontWeight: 600, color: 'var(--color-on-surface)', fontSize: '13px' }}>{pedido.nome_vendedor || pedido.vendedor?.nome || 'Admin'}</span>
-                      <span style={{ fontSize: '12px', color: 'var(--color-outline)', fontFamily: 'monospace' }}>ID: {pedido.codigo_vendedor || pedido.vendedor_id?.substring(0, 8).toUpperCase() || 'SISTEMA'}</span>
+                  <td style={{ padding: '6px 10px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <span style={{ fontWeight: 600, color: 'var(--color-on-surface)', fontSize: '11px' }}>{pedido.nome_vendedor || pedido.vendedor?.nome || 'Admin'}</span>
+                      <span style={{ fontSize: '10px', color: 'var(--color-outline)', fontFamily: 'monospace' }}>ID: {pedido.codigo_vendedor || pedido.vendedor_id?.substring(0, 8).toUpperCase() || 'SISTEMA'}</span>
                     </div>
                   </td>
-                  <td style={{ padding: '16px 20px', textAlign: 'center' }}>
+                  <td style={{ padding: '6px 10px', textAlign: 'center' }}>
                     <span style={{ 
-                      padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 800,
+                      padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 800,
                       textTransform: 'uppercase', backgroundColor: `${status.bg}90`, color: status.color,
                       border: `1px solid ${status.color}40`,
-                      display: 'inline-flex', alignItems: 'center', gap: '6px', letterSpacing: '0.05em'
+                      display: 'inline-flex', alignItems: 'center', gap: '4px', letterSpacing: '0.05em'
                     }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>{status.icon}</span>
+                      <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>{status.icon}</span>
                       {status.label}
                     </span>
                   </td>
-                  <td style={{ padding: '16px 20px', textAlign: 'center' }}>
+                  <td style={{ padding: '6px 10px', textAlign: 'center' }}>
                     {statusWorkflow[pedido.status_pedido]?.next ? (
                       <button 
                         onClick={(e) => {
@@ -255,12 +255,12 @@ export default function PedidoTable({
                         }}
                         disabled={updatingId === pedido.id}
                         style={{
-                          padding: '8px 16px',
+                          padding: '6px 10px',
                           backgroundColor: 'var(--color-primary-container)',
                           color: 'var(--color-on-primary-container)',
                           border: 'none',
-                          borderRadius: '10px',
-                          fontSize: '12px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
                           fontWeight: 800,
                           cursor: updatingId === pedido.id ? 'not-allowed' : 'pointer',
                           transition: 'all 0.2s',
@@ -268,14 +268,14 @@ export default function PedidoTable({
                           whiteSpace: 'nowrap',
                           display: 'inline-flex',
                           alignItems: 'center',
-                          gap: '6px'
+                          gap: '4px'
                         }}
                         onMouseEnter={(e) => { 
                           if (updatingId !== pedido.id) {
                             e.currentTarget.style.backgroundColor = 'var(--color-primary)';
                             e.currentTarget.style.color = 'var(--color-on-primary)';
                             e.currentTarget.style.transform = 'translateY(-1px)';
-                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
                           }
                         }}
                         onMouseLeave={(e) => { 
@@ -288,22 +288,22 @@ export default function PedidoTable({
                         }}
                       >
                         {updatingId === pedido.id ? (
-                          <span className="material-symbols-outlined" style={{ fontSize: '16px', animation: 'spin 1s linear infinite' }}>sync</span>
+                          <span className="material-symbols-outlined" style={{ fontSize: '14px', animation: 'spin 1s linear infinite' }}>sync</span>
                         ) : (
                           <>
                             {statusWorkflow[pedido.status_pedido].actionLabel}
-                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_forward</span>
+                            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>arrow_forward</span>
                           </>
                         )}
                       </button>
                     ) : (
-                      <span style={{ fontSize: '12px', color: 'var(--color-outline)', fontStyle: 'italic', fontWeight: 500 }}>Sem ações</span>
+                      <span style={{ fontSize: '11px', color: 'var(--color-outline)', fontStyle: 'italic', fontWeight: 500 }}>Sem ações</span>
                     )}
                   </td>
-                  <td style={{ padding: '16px 20px', textAlign: 'right', fontWeight: 900, color: 'var(--color-on-surface)', fontSize: '15px' }}>
+                  <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 900, color: 'var(--color-on-surface)', fontSize: '12px' }}>
                     {formatCurrency(pedido.valor_total)}
                   </td>
-                  <td style={{ padding: '16px 20px', textAlign: 'center' }}>
+                  <td style={{ padding: '6px 10px', textAlign: 'center' }}>
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
@@ -311,9 +311,9 @@ export default function PedidoTable({
                       }}
                       className="material-symbols-outlined" 
                       style={{ 
-                        padding: '8px', borderRadius: '10px', border: '1px solid var(--color-outline-variant)', 
+                        padding: '6px', borderRadius: '6px', border: '1px solid var(--color-outline-variant)', 
                         backgroundColor: 'var(--color-surface)', 
-                        color: 'var(--color-on-surface-variant)', fontSize: '20px', cursor: 'pointer',
+                        color: 'var(--color-on-surface-variant)', fontSize: '18px', cursor: 'pointer',
                         transition: 'all 0.2s',
                         display: 'inline-flex'
                       }}

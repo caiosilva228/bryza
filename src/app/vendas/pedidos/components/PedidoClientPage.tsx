@@ -196,37 +196,38 @@ export default function PedidoClientPage({
   return (
     <div className="page-wrapper">
       {/* ── Cabeçalho ───────────────────────────────────── */}
-      <div className="page-header" style={{ marginBottom: '32px' }}>
+      <div className="page-header">
         <div className="page-header-text">
           <h1 style={{ 
-            fontSize: '28px', 
+            fontSize: '22px', 
             fontWeight: 800, 
             color: 'var(--color-on-surface)',
             letterSpacing: '-0.02em',
-            marginBottom: '8px'
+            marginBottom: '4px'
           }}>
             Gestão de <span style={{ color: 'var(--color-primary)' }}>Pedidos</span>
           </h1>
-          <p style={{ color: 'var(--color-outline)', fontSize: '15px' }}>
+          <p style={{ color: 'var(--color-outline)', fontSize: '13px' }}>
             Controle de logística, status de preparação e expedição em tempo real.
           </p>
         </div>
 
-        <div className="page-header-actions" style={{ display: 'flex', gap: '12px' }}>
+        <div className="page-header-actions" style={{ display: 'flex', gap: '10px' }}>
           <button
             onClick={refreshData}
             disabled={isLoading}
             className="btn-secondary"
             style={{
-              padding: '10px 20px',
-              borderRadius: '12px',
+              padding: '8px 12px',
+              borderRadius: '8px',
               backgroundColor: 'var(--color-surface)',
               border: '1px solid var(--color-outline-variant)',
               color: 'var(--color-on-surface)',
+              fontSize: '13px',
               fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
+              gap: '6px',
               opacity: isLoading ? 0.7 : 1,
               cursor: isLoading ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -252,25 +253,26 @@ export default function PedidoClientPage({
             onClick={() => setIsFormModalOpen(true)}
             className="btn-primary"
             style={{ 
-              padding: '10px 24px',
-              borderRadius: '12px',
+              padding: '8px 16px',
+              borderRadius: '8px',
               fontWeight: 700,
+              fontSize: '13px',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              gap: '6px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
               transition: 'transform 0.2s, box-shadow 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.15)';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
             Novo Pedido
           </button>
         </div>
@@ -280,17 +282,17 @@ export default function PedidoClientPage({
 
       <div style={{
         backgroundColor: 'var(--color-surface)',
-        borderRadius: '20px',
+        borderRadius: '12px',
         border: '1px solid var(--color-outline-variant)',
         overflow: 'hidden',
-        boxShadow: '0 8px 24px rgba(0,0,0,0.03)',
-        marginTop: '24px'
+        boxShadow: '0 4px 16px rgba(0,0,0,0.02)',
+        marginTop: '12px'
       }}>
         {/* Barra de Filtros (Toolbar Premium) */}
         <div style={{
           display: 'flex',
-          gap: '16px',
-          padding: '20px',
+          gap: '12px',
+          padding: '12px 16px',
           borderBottom: '1px solid var(--color-outline-variant)',
           backgroundColor: 'var(--color-surface)',
           flexWrap: 'wrap',
@@ -298,11 +300,11 @@ export default function PedidoClientPage({
         }}>
           {/* Busca */}
           <div style={{ position: 'relative', flex: '1 1 280px', minWidth: '200px' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-outline)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Buscar
             </label>
             <div style={{ position: 'relative' }}>
-              <span className="material-symbols-outlined" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-outline)', fontSize: '20px' }}>search</span>
+              <span className="material-symbols-outlined" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-outline)', fontSize: '18px' }}>search</span>
               <input
                 type="text"
                 placeholder="Nº pedido, cliente ou cidade..."
@@ -310,12 +312,12 @@ export default function PedidoClientPage({
                 onChange={(e) => setSearch(e.target.value)}
                 style={{
                   width: '100%',
-                  padding: '12px 16px 12px 48px',
-                  borderRadius: '12px',
+                  padding: '8px 12px 8px 36px',
+                  borderRadius: '8px',
                   border: '1px solid var(--color-outline-variant)',
                   backgroundColor: 'var(--color-surface-container-lowest)',
                   fontFamily: 'var(--font-body)',
-                  fontSize: '14px',
+                  fontSize: '13px',
                   color: 'var(--color-on-surface)',
                   outline: 'none',
                   transition: 'all 0.2s',
@@ -323,7 +325,7 @@ export default function PedidoClientPage({
                 onFocus={(e) => {
                   e.currentTarget.style.borderColor = 'var(--color-primary)';
                   e.currentTarget.style.backgroundColor = 'var(--color-surface)';
-                  e.currentTarget.style.boxShadow = '0 0 0 4px var(--color-primary-fixed)';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px var(--color-primary-fixed)';
                 }}
                 onBlur={(e) => {
                   e.currentTarget.style.borderColor = 'var(--color-outline-variant)';
@@ -335,23 +337,23 @@ export default function PedidoClientPage({
           </div>
 
           {/* Status */}
-          <div style={{ position: 'relative', minWidth: '200px', flex: '0 0 auto' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-outline)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <div style={{ position: 'relative', minWidth: '180px', flex: '0 0 auto' }}>
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Status
             </label>
             <div style={{ position: 'relative' }}>
-              <span className="material-symbols-outlined" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-primary)', fontSize: '20px', pointerEvents: 'none' }}>flag</span>
+              <span className="material-symbols-outlined" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-primary)', fontSize: '18px', pointerEvents: 'none' }}>flag</span>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 style={{
                   width: '100%',
-                  padding: '12px 40px 12px 48px',
-                  borderRadius: '12px',
+                  padding: '8px 30px 8px 36px',
+                  borderRadius: '8px',
                   border: '1px solid var(--color-outline-variant)',
                   backgroundColor: 'var(--color-surface-container-lowest)',
                   fontFamily: 'var(--font-body)',
-                  fontSize: '14px',
+                  fontSize: '13px',
                   fontWeight: 600,
                   color: 'var(--color-on-surface)',
                   appearance: 'none',
@@ -362,7 +364,7 @@ export default function PedidoClientPage({
                 onFocus={(e) => {
                   e.currentTarget.style.borderColor = 'var(--color-primary)';
                   e.currentTarget.style.backgroundColor = 'var(--color-surface)';
-                  e.currentTarget.style.boxShadow = '0 0 0 4px var(--color-primary-fixed)';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px var(--color-primary-fixed)';
                 }}
                 onBlur={(e) => {
                   e.currentTarget.style.borderColor = 'var(--color-outline-variant)';
@@ -378,14 +380,14 @@ export default function PedidoClientPage({
                 <option value="finalizado">Finalizado</option>
                 <option value="cancelado">Cancelado</option>
               </select>
-              <span className="material-symbols-outlined" style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-outline)', fontSize: '20px', pointerEvents: 'none' }}>unfold_more</span>
+              <span className="material-symbols-outlined" style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-outline)', fontSize: '18px', pointerEvents: 'none' }}>unfold_more</span>
             </div>
           </div>
 
           {/* Filtros de Data */}
-          <div style={{ display: 'flex', gap: '12px', flex: '0 0 auto' }}>
+          <div style={{ display: 'flex', gap: '8px', flex: '0 0 auto' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-outline)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Período (De)
               </label>
               <input
@@ -393,22 +395,22 @@ export default function PedidoClientPage({
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
                 style={{
-                  padding: '11px 16px',
-                  borderRadius: '12px',
+                  padding: '7px 10px',
+                  borderRadius: '8px',
                   border: `1px solid ${dateFrom ? 'var(--color-primary)' : 'var(--color-outline-variant)'}`,
                   backgroundColor: dateFrom ? 'var(--color-primary-fixed)' : 'var(--color-surface-container-lowest)',
                   fontFamily: 'var(--font-body)',
-                  fontSize: '14px',
+                  fontSize: '13px',
                   fontWeight: 600,
                   color: dateFrom ? 'var(--color-on-primary-fixed)' : 'var(--color-on-surface)',
                   outline: 'none',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
-                  height: '46px'
+                  height: '36px'
                 }}
                 onFocus={(e) => {
                   e.currentTarget.style.borderColor = 'var(--color-primary)';
-                  e.currentTarget.style.boxShadow = '0 0 0 4px var(--color-primary-fixed)';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px var(--color-primary-fixed)';
                 }}
                 onBlur={(e) => {
                   e.currentTarget.style.borderColor = dateFrom ? 'var(--color-primary)' : 'var(--color-outline-variant)';
@@ -417,7 +419,7 @@ export default function PedidoClientPage({
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-outline)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Até
               </label>
               <input
@@ -425,22 +427,22 @@ export default function PedidoClientPage({
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
                 style={{
-                  padding: '11px 16px',
-                  borderRadius: '12px',
+                  padding: '7px 10px',
+                  borderRadius: '8px',
                   border: `1px solid ${dateTo ? 'var(--color-primary)' : 'var(--color-outline-variant)'}`,
                   backgroundColor: dateTo ? 'var(--color-primary-fixed)' : 'var(--color-surface-container-lowest)',
                   fontFamily: 'var(--font-body)',
-                  fontSize: '14px',
+                  fontSize: '13px',
                   fontWeight: 600,
                   color: dateTo ? 'var(--color-on-primary-fixed)' : 'var(--color-on-surface)',
                   outline: 'none',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
-                  height: '46px'
+                  height: '36px'
                 }}
                 onFocus={(e) => {
                   e.currentTarget.style.borderColor = 'var(--color-primary)';
-                  e.currentTarget.style.boxShadow = '0 0 0 4px var(--color-primary-fixed)';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px var(--color-primary-fixed)';
                 }}
                 onBlur={(e) => {
                   e.currentTarget.style.borderColor = dateTo ? 'var(--color-primary)' : 'var(--color-outline-variant)';
@@ -462,15 +464,15 @@ export default function PedidoClientPage({
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '0 16px',
-                height: '46px',
-                borderRadius: '12px',
+                gap: '6px',
+                padding: '0 12px',
+                height: '36px',
+                borderRadius: '8px',
                 border: '1px solid var(--color-outline-variant)',
                 backgroundColor: 'var(--color-surface)',
                 color: 'var(--color-on-surface-variant)',
                 cursor: 'pointer',
-                fontSize: '14px',
+                fontSize: '13px',
                 fontWeight: 600,
                 transition: 'all 0.2s',
               }}

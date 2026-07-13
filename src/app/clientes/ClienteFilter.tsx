@@ -100,7 +100,7 @@ export default function ClienteFilter({ vendedores }: ClienteFilterProps) {
       backgroundColor: 'var(--color-surface-container-lowest)', 
       borderRadius: '16px', 
       border: '1px solid var(--color-outline-variant)',
-      marginBottom: '24px',
+      marginBottom: '12px',
       position: 'relative',
       opacity: isPending ? 0.7 : 1,
       transition: 'opacity 0.2s',
@@ -113,7 +113,7 @@ export default function ClienteFilter({ vendedores }: ClienteFilterProps) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '16px 24px',
+          padding: '10px 16px',
           cursor: isMobile ? 'pointer' : 'default',
           borderBottom: isOpen ? '1px solid var(--color-outline-variant)' : 'none',
           WebkitTapHighlightColor: 'transparent',
@@ -171,10 +171,10 @@ export default function ClienteFilter({ vendedores }: ClienteFilterProps) {
 
       {/* Painel de filtros — colapsável no mobile */}
       {isOpen && (
-        <div style={{ padding: '20px 24px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', alignItems: 'flex-end' }}>
+        <div style={{ padding: '12px 16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', alignItems: 'flex-end' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '8px', color: 'var(--color-on-surface-variant)' }}>Buscar por Nome ou ID</label>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, marginBottom: '4px', color: 'var(--color-on-surface-variant)' }}>Buscar por Nome ou ID</label>
               <input 
                 type="text" 
                 name="search" 
@@ -183,17 +183,17 @@ export default function ClienteFilter({ vendedores }: ClienteFilterProps) {
                 onChange={(e) => setSearchValue(e.target.value)}
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
-                style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', fontSize: '14px' }} 
+                style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', fontSize: '13px' }} 
               />
             </div>
             
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '8px', color: 'var(--color-on-surface-variant)' }}>Vendedor</label>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, marginBottom: '4px', color: 'var(--color-on-surface-variant)' }}>Vendedor</label>
               <select 
                 name="vendedor" 
                 value={searchParams.get('vendedor') || ''}
                 onChange={handleSelectChange}
-                style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', fontSize: '14px' }}
+                style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', fontSize: '13px' }}
               >
                 <option value="">Todos os Vendedores</option>
                 {vendedores.map(v => (
@@ -205,12 +205,12 @@ export default function ClienteFilter({ vendedores }: ClienteFilterProps) {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '8px', color: 'var(--color-on-surface-variant)' }}>Status</label>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, marginBottom: '4px', color: 'var(--color-on-surface-variant)' }}>Status</label>
               <select 
                 name="status" 
                 value={searchParams.get('status') || ''}
                 onChange={handleSelectChange}
-                style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', fontSize: '14px' }}
+                style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', fontSize: '13px' }}
               >
                 <option value="">Todos os Status</option>
                 <option value="lead">Lead</option>
@@ -221,7 +221,7 @@ export default function ClienteFilter({ vendedores }: ClienteFilterProps) {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '8px', color: 'var(--color-on-surface-variant)' }}>Cidade</label>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, marginBottom: '4px', color: 'var(--color-on-surface-variant)' }}>Cidade</label>
               <input 
                 type="text" 
                 name="cidade" 
@@ -230,14 +230,14 @@ export default function ClienteFilter({ vendedores }: ClienteFilterProps) {
                 onChange={(e) => setCidadeValue(e.target.value)}
                 onFocus={() => setCidadeFocused(true)}
                 onBlur={() => setCidadeFocused(false)}
-                style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', fontSize: '14px' }} 
+                style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', fontSize: '13px' }} 
               />
             </div>
 
             <div style={{ display: 'flex', gap: '8px' }}>
               <Link href="/clientes" style={{ 
                 flex: 1,
-                padding: '10px 16px', 
+                padding: '8px 12px', 
                 backgroundColor: 'var(--color-surface-container-high)', 
                 color: 'var(--color-on-surface)', 
                 textDecoration: 'none',
@@ -247,14 +247,15 @@ export default function ClienteFilter({ vendedores }: ClienteFilterProps) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
-                minHeight: '44px',
+                minHeight: '36px',
+                fontSize: '13px',
               }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>close</span>
                 Limpar Filtros
               </Link>
             </div>
           </div>
-          <p style={{ marginTop: '12px', fontSize: '11px', color: 'var(--color-on-surface-variant)', fontStyle: 'italic' }}>
+          <p style={{ marginTop: '8px', fontSize: '10px', color: 'var(--color-on-surface-variant)', fontStyle: 'italic' }}>
             * Filtro inteligente: resultados atualizados automaticamente enquanto você digita ou seleciona.
           </p>
         </div>

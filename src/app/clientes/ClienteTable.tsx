@@ -205,13 +205,13 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
           title={getSortHint(key)}
           style={{
             width: '100%',
-            padding: '12px 16px',
+            padding: '8px 12px',
             border: 'none',
             background: 'transparent',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '8px',
+            gap: '6px',
             cursor: 'pointer',
             color: isActive ? 'var(--color-primary)' : 'var(--color-on-surface)',
             fontSize: '11px',
@@ -592,7 +592,7 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '1000px' }}>
             <thead style={{ backgroundColor: 'var(--color-surface-container-low)', borderBottom: '2px solid var(--color-outline-variant)' }}>
               <tr>
-                <th style={{ padding: '12px 16px', width: '40px' }}>
+                <th style={{ padding: '8px 12px', width: '40px' }}>
                   <input 
                     type="checkbox" 
                     checked={selectedIds.size === clientes.length && clientes.length > 0} 
@@ -606,7 +606,7 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
                 {renderSortableHeader('Vendedor', 'vendedor')}
                 {renderSortableHeader('Situação', 'status')}
                 {renderSortableHeader('Atividade', 'atividade')}
-                <th style={{ padding: '12px 16px', fontWeight: 900, color: 'var(--color-on-surface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>
+                <th style={{ padding: '8px 12px', fontWeight: 900, color: 'var(--color-on-surface)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>
                   {isAdmin ? 'Ações' : 'Detalhes'}
                 </th>
               </tr>
@@ -632,7 +632,7 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
                       onMouseEnter={(e) => { if (!selectedIds.has(cliente.id)) e.currentTarget.style.backgroundColor = 'var(--color-surface-container-low)'; }}
                       onMouseLeave={(e) => { if (!selectedIds.has(cliente.id)) e.currentTarget.style.backgroundColor = 'transparent'; }}
                     >
-                      <td style={{ padding: '12px 16px' }}>
+                      <td style={{ padding: '8px 12px' }}>
                         <input 
                           type="checkbox" 
                           checked={selectedIds.has(cliente.id)} 
@@ -640,7 +640,7 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
                           style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--color-primary)' }}
                         />
                       </td>
-                      <td style={{ padding: '12px 16px' }}>
+                      <td style={{ padding: '8px 12px' }}>
                         <span style={{ 
                           color: 'var(--color-on-surface)', 
                           fontSize: '12px', 
@@ -653,18 +653,18 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
                           C{String(cliente.codigo_cliente || 0).padStart(5, '0')}
                         </span>
                       </td>
-                      <td style={{ padding: '12px 16px' }}>
+                      <td style={{ padding: '8px 12px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ fontWeight: 800, color: 'var(--color-on-surface)', fontSize: '13px' }}>{cliente.nome.toUpperCase()}</span>
                           <span style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>TEL: {cliente.telefone || '--'}</span>
                         </div>
                       </td>
-                      <td style={{ padding: '12px 16px' }}>
+                      <td style={{ padding: '8px 12px' }}>
                         <div style={{ fontSize: '12px', color: 'var(--color-on-surface)', fontWeight: 600 }}>
                           {cliente.cidade?.toUpperCase()} - {cliente.estado?.toUpperCase()}
                         </div>
                       </td>
-                      <td style={{ padding: '12px 16px' }}>
+                      <td style={{ padding: '8px 12px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ fontWeight: 700, color: 'var(--color-on-surface)', fontSize: '12px' }}>
                             {cliente.vendedor?.nome?.toUpperCase() || 'SEM VENDEDOR'}
@@ -674,7 +674,7 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
                           </span>
                         </div>
                       </td>
-                      <td style={{ padding: '12px 16px' }}>
+                      <td style={{ padding: '8px 12px' }}>
                         <span style={{ 
                           padding: '2px 8px', 
                           borderRadius: '2px', 
@@ -689,7 +689,7 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
                           {cliente.status_cliente}
                         </span>
                       </td>
-                      <td style={{ padding: '12px 16px' }}>
+                      <td style={{ padding: '8px 12px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           <div style={{ fontSize: '11px', color: 'var(--color-on-surface)', fontWeight: 600 }}>
                             CAD: {cliente.data_cadastro ? formatDate(cliente.data_cadastro) : '--'}
@@ -699,8 +699,8 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
                           </div>
                         </div>
                       </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                        <div style={{ display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
+                      <td style={{ padding: '8px 12px', textAlign: 'right' }}>
+                        <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
                           <button 
                             type="button"
                             onClick={(e) => {
@@ -711,14 +711,14 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
                               backgroundColor: 'white', 
                               border: '1px solid #ccc', 
                               borderRadius: '4px', 
-                              padding: '6px 12px', 
+                              padding: '4px 10px', 
                               color: '#333', 
                               cursor: 'pointer', 
                               display: 'inline-flex', 
                               alignItems: 'center', 
-                              gap: '6px', 
+                              gap: '4px', 
                               fontWeight: 800,
-                              fontSize: '11px',
+                              fontSize: '10px',
                               textTransform: 'uppercase'
                             }}
                           >
@@ -734,14 +734,14 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
                                 backgroundColor: '#e8f5e9',
                                 border: '1px solid #c8e6c9',
                                 borderRadius: '4px',
-                                padding: '6px 12px',
+                                padding: '4px 10px',
                                 color: '#2e7d32',
                                 textDecoration: 'none',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '6px',
+                                gap: '4px',
                                 fontWeight: 800,
-                                fontSize: '11px',
+                                fontSize: '10px',
                                 textTransform: 'uppercase',
                               }}
                             >
@@ -756,14 +756,14 @@ export default function ClienteTable({ clientes, isAdmin = false }: ClienteTable
                                 backgroundColor: 'var(--color-surface-container-high)',
                                 border: '1px solid var(--color-outline-variant)',
                                 borderRadius: '4px',
-                                padding: '6px 12px',
+                                padding: '4px 10px',
                                 color: 'var(--color-outline)',
                                 cursor: 'not-allowed',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '6px',
+                                gap: '4px',
                                 fontWeight: 800,
-                                fontSize: '11px',
+                                fontSize: '10px',
                                 textTransform: 'uppercase',
                               }}
                             >

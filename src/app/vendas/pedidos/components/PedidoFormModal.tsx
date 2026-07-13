@@ -65,21 +65,25 @@ function DiscountControls({
   appliedAmount,
   onTypeChange,
   onValueChange,
+  compact = false,
 }: {
-  label: string;
+  label?: string;
   discount: DiscountState;
   appliedAmount: number;
   onTypeChange: (tipo: TipoDesconto) => void;
   onValueChange: (valor: number | '') => void;
+  compact?: boolean;
 }) {
   const isDisabled = discount.tipo === 'none';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-        {label}
-      </span>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(96px, 1fr)', gap: '8px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: compact ? '2px' : '4px' }}>
+      {label && (
+        <span style={{ fontSize: compact ? '9px' : '10px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          {label}
+        </span>
+      )}
+      <div style={{ display: 'grid', gridTemplateColumns: compact ? 'minmax(0, 1.1fr) minmax(70px, 0.9fr)' : 'minmax(0, 1.2fr) minmax(96px, 1fr)', gap: compact ? '4px' : '6px' }}>
         <select
           value={discount.tipo}
           onChange={(e) => onTypeChange(e.target.value as TipoDesconto)}
@@ -87,9 +91,9 @@ function DiscountControls({
             width: '100%',
             backgroundColor: 'var(--color-surface)',
             border: '1px solid var(--color-outline-variant)',
-            borderRadius: '8px',
-            padding: '10px 12px',
-            fontSize: '13px',
+            borderRadius: '6px',
+            padding: compact ? '4px 6px' : '6px 10px',
+            fontSize: compact ? '12px' : '13px',
             color: 'var(--color-on-surface)',
             outline: 'none',
           }}
@@ -104,7 +108,7 @@ function DiscountControls({
           type="number"
           min="0"
           max={discount.tipo === 'percent' ? 100 : undefined}
-          step={discount.tipo === 'percent' ? '0.01' : '0.01'}
+          step="0.01"
           disabled={isDisabled}
           value={isDisabled ? '' : discount.valor}
           onChange={(e) => onValueChange(e.target.value === '' ? '' : Number(e.target.value))}
@@ -113,9 +117,9 @@ function DiscountControls({
             width: '100%',
             backgroundColor: isDisabled ? 'var(--color-surface-container-lowest)' : 'var(--color-surface)',
             border: '1px solid var(--color-outline-variant)',
-            borderRadius: '8px',
-            padding: '10px 12px',
-            fontSize: '13px',
+            borderRadius: '6px',
+            padding: compact ? '4px 6px' : '6px 10px',
+            fontSize: compact ? '12px' : '13px',
             color: 'var(--color-on-surface)',
             outline: 'none',
             opacity: isDisabled ? 0.7 : 1,
@@ -123,8 +127,8 @@ function DiscountControls({
         />
       </div>
       {appliedAmount > 0 && (
-        <span style={{ fontSize: '12px', color: 'var(--color-primary)', fontWeight: 600 }}>
-          Desconto aplicado: {formatCurrency(appliedAmount)}
+        <span style={{ fontSize: compact ? '10px' : '11px', color: 'var(--color-primary)', fontWeight: 600 }}>
+          Desconto: {formatCurrency(appliedAmount)}
         </span>
       )}
     </div>
@@ -157,12 +161,12 @@ function SearchSelector({
   const selectedItem = items.find(i => i.id === selectedId);
 
   return (
-    <div className={styles.searchSelector} style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', position: 'relative' }}>
-      <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</label>
+    <div className={styles.searchSelector} style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', position: 'relative' }}>
+      <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</label>
       <div 
         className={styles.searchSelectorField}
         style={{
-          display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px',
+          display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px',
           backgroundColor: isFocused ? 'var(--color-surface)' : 'var(--color-surface-container-lowest)',
           border: `1px solid ${isFocused ? 'var(--color-primary)' : 'var(--color-outline-variant)'}`,
           borderRadius: '8px', cursor: 'text', transition: 'all 0.2s',
@@ -172,11 +176,11 @@ function SearchSelector({
       >
         {selectedItem && !query && (
           <span style={{ 
-            fontSize: '11px', 
+            fontSize: '10px', 
             fontWeight: 700, 
             color: '#ffffff', 
             backgroundColor: 'var(--color-primary)', 
-            padding: '2px 8px', 
+            padding: '2px 6px', 
             borderRadius: '4px',
             lineHeight: '1.2'
           }}>
@@ -187,7 +191,7 @@ function SearchSelector({
           ref={inputRef}
           type="text"
           className={styles.searchSelectorInput}
-          style={{ flex: 1, backgroundColor: 'transparent', border: 'none', outline: 'none', fontSize: '14px', color: 'var(--color-on-surface)' }}
+          style={{ flex: 1, backgroundColor: 'transparent', border: 'none', outline: 'none', fontSize: '13px', color: 'var(--color-on-surface)' }}
           placeholder={selectedItem ? selectedItem.name : placeholder}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -566,28 +570,27 @@ export default function PedidoFormModal({
       >
         {/* Header */}
         <div className={styles.modalHeader} style={{
-          padding: '24px',
-          paddingBottom: '20px',
+          padding: '12px 20px',
           borderBottom: '1px solid var(--color-outline-variant, #e2e8f0)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           backgroundColor: 'var(--color-surface, #fff)'
         }}>
-          <div className={styles.modalHeaderIntro} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div className={styles.modalHeaderIntro} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{
-              width: '40px', height: '40px', borderRadius: '10px',
+              width: '32px', height: '32px', borderRadius: '8px',
               backgroundColor: agendamentoToEdit ? '#f59e0b' : isEditMode ? '#f59e0b' : 'var(--color-primary)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#ffffff'
             }}>
-              <span className="material-symbols-outlined">{agendamentoToEdit ? 'calendar_month' : isEditMode ? 'edit' : 'add_shopping_cart'}</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>{agendamentoToEdit ? 'calendar_month' : isEditMode ? 'edit' : 'add_shopping_cart'}</span>
             </div>
             <div className={styles.modalHeaderText}>
-              <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--color-on-surface)', margin: 0 }}>
+              <h2 style={{ fontSize: '17px', fontWeight: 600, color: 'var(--color-on-surface)', margin: 0 }}>
                 {agendamentoToEdit ? 'Editar Agendamento' : isEditMode ? `Editar Pedido #${pedidoToEdit?.numero_pedido}` : 'Novo Pedido de Venda'}
               </h2>
-              <p style={{ fontSize: '13px', color: 'var(--color-outline)', margin: '4px 0 0 0' }}>
+              <p style={{ fontSize: '11px', color: 'var(--color-outline)', margin: '2px 0 0 0' }}>
                 {agendamentoToEdit ? 'Altere as informações ou os produtos deste agendamento.' : isEditMode ? 'Altere os itens ou dados do pedido. O estoque será ajustado automaticamente.' : 'Preencha os dados abaixo e adicione itens ao pedido'}
               </p>
             </div>
@@ -598,20 +601,20 @@ export default function PedidoFormModal({
             style={{
               background: 'transparent', border: 'none', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              width: '32px', height: '32px', borderRadius: '8px', color: 'var(--color-outline)'
+              width: '28px', height: '28px', borderRadius: '6px', color: 'var(--color-outline)'
             }}
             onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--color-surface-container-highest, #f1f5f9)'; e.currentTarget.style.color = 'var(--color-on-surface)'; }}
             onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-outline)'; }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>close</span>
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
           {/* Top Section - Filters */}
           <div style={{
-            display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1fr)', gap: '24px',
-            padding: '24px', borderBottom: '1px solid var(--color-outline-variant)',
+            display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1fr)', gap: '12px',
+            padding: '12px 20px', borderBottom: '1px solid var(--color-outline-variant)',
             backgroundColor: 'var(--color-surface-container-lowest, #fafafa)'
           }} className={`pedido-form-header ${styles.topSection}`}>
             <div>
@@ -632,11 +635,11 @@ export default function PedidoFormModal({
                 onSelect={setSelectedVendedorId}
               />
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Forma de Pagamento
               </label>
-              <div className={styles.paymentGrid} style={{ display: 'flex', gap: '8px' }}>
+              <div className={styles.paymentGrid} style={{ display: 'flex', gap: '4px' }}>
                 {['PIX', 'DINHEIRO', 'CARTAO'].map(type => {
                   const isSelected = formaPagamento === type.toLowerCase();
                   return (
@@ -646,7 +649,7 @@ export default function PedidoFormModal({
                       onClick={() => setFormaPagamento(type.toLowerCase() as any)}
                       className={styles.paymentButton}
                       style={{
-                        flex: 1, padding: '10px 0', borderRadius: '8px', fontSize: '11px', fontWeight: 600,
+                        flex: 1, padding: '7px 0', borderRadius: '8px', fontSize: '11px', fontWeight: 600,
                         backgroundColor: isSelected ? 'var(--color-primary)' : 'var(--color-surface)',
                         color: isSelected ? '#ffffff' : 'var(--color-on-surface)',
                         border: `1px solid ${isSelected ? 'var(--color-primary)' : 'var(--color-outline-variant)'}`,
@@ -686,7 +689,7 @@ export default function PedidoFormModal({
                 </div>
               </div>
 
-              <div className={styles.catalogList} style={{ flex: 1, overflowY: 'auto', padding: '24px', backgroundColor: 'var(--color-surface-container-lowest)' }}>
+              <div className={styles.catalogList} style={{ flex: 1, overflowY: 'auto', padding: '12px', backgroundColor: 'var(--color-surface-container-lowest)' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {/* Header da Lista */}
                   <div className={styles.productTableHead} style={{ display: 'flex', padding: '8px 16px', borderBottom: '2px solid var(--color-surface-container)', fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em', gap: '16px' }}>
@@ -715,7 +718,7 @@ export default function PedidoFormModal({
                           className={styles.productRow}
                           style={{
                             backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-outline-variant)',
-                            borderRadius: '10px', padding: '10px 16px', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '16px',
+                            borderRadius: '8px', padding: '6px 12px', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px',
                             cursor: isOutOfStock ? 'not-allowed' : 'pointer', opacity: isOutOfStock ? 0.6 : 1,
                             transition: 'all 0.2s',
                             minWidth: 0
@@ -774,8 +777,8 @@ export default function PedidoFormModal({
             </div>
 
             {/* Right Box: Cart */}
-            <div className={styles.cartPane} style={{ width: '380px', flexShrink: 0, display: 'flex', flexDirection: 'column', backgroundColor: 'var(--color-surface)', minWidth: 0 }}>
-              <div className={styles.cartToolbar} style={{ padding: '16px 24px', borderBottom: '1px solid var(--color-outline-variant)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'var(--color-surface)' }}>
+            <div className={styles.cartPane} style={{ width: '380px', flexShrink: 0, display: 'flex', flexDirection: 'column', backgroundColor: 'var(--color-surface)', minWidth: 0, minHeight: 0 }}>
+              <div className={styles.cartToolbar} style={{ padding: '10px 16px', borderBottom: '1px solid var(--color-outline-variant)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'var(--color-surface)' }}>
                 <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-on-surface)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--color-outline)' }}>shopping_bag</span>
                   Itens do Pedido
@@ -785,7 +788,7 @@ export default function PedidoFormModal({
                 </span>
               </div>
               
-              <div className={styles.cartBody} style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+              <div className={styles.cartBody} style={{ flex: 1, overflowY: 'auto', padding: '12px', minHeight: 0 }}>
                 {cart.length === 0 ? (
                   <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
                     <div style={{ width: '64px', height: '64px', backgroundColor: 'var(--color-surface-container)', color: 'var(--color-outline)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
@@ -795,42 +798,42 @@ export default function PedidoFormModal({
                     <p style={{ fontSize: '12px', color: 'var(--color-outline)', margin: 0 }}>Adicione produtos pelo catálogo ao lado</p>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {cart.map(item => {
                       const p = produtos.find(prod => prod.id === item.produtoId);
                       const subtotalBrutoItem = roundCurrency(item.quantidade * item.preco_unitario);
                       const descontoAplicadoItem = calculateDiscountAmount(subtotalBrutoItem, item.tipo, item.valor, item.quantidade);
                       const subtotalLiquidoItem = roundCurrency(subtotalBrutoItem - descontoAplicadoItem);
                       return (
-                        <div key={item.produtoId} className={styles.cartItem} style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-outline-variant)', borderRadius: '12px', minWidth: 0 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
-                            <span title={p?.nome_produto} style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-on-surface)', lineHeight: 1.3, flex: 1, minWidth: 0 }}>{p?.nome_produto}</span>
+                        <div key={item.produtoId} className={styles.cartItem} style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '8px 12px', backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-outline-variant)', borderRadius: '8px', minWidth: 0 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                            <span title={p?.nome_produto} style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface)', lineHeight: 1.2, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p?.nome_produto}</span>
                             <button 
                               type="button" 
                               onClick={() => removeFromCart(item.produtoId)}
-                              style={{ color: 'var(--color-outline)', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px', borderRadius: '6px', flexShrink: 0 }}
+                              style={{ color: 'var(--color-outline)', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px', borderRadius: '4px', flexShrink: 0 }}
                               onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--color-error-container)'; e.currentTarget.style.color = 'var(--color-error)'; }}
                               onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-outline)'; }}
                               title="Remover Item"
                             >
-                              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span>
+                              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
                             </button>
                           </div>
 
                           <DiscountControls
-                            label="Desconto do item"
                             discount={{ tipo: item.tipo, valor: item.valor }}
                             appliedAmount={descontoAplicadoItem}
                             onTypeChange={(tipo) => updateItemDiscountType(item.produtoId, tipo)}
                             onValueChange={(valor) => updateItemDiscountValue(item.produtoId, valor)}
+                            compact={true}
                           />
                           
-                          <div className={styles.cartItemFooter} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '12px', borderTop: '1px solid var(--color-surface-container)' }}>
-                            <div className={styles.qtyControl} style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: 'var(--color-surface-container-lowest)', border: '1px solid var(--color-outline-variant)', borderRadius: '8px', padding: '4px', flexShrink: 0 }}>
+                          <div className={styles.cartItemFooter} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '6px', borderTop: '1px solid var(--color-surface-container)' }}>
+                            <div className={styles.qtyControl} style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: 'var(--color-surface-container-lowest)', border: '1px solid var(--color-outline-variant)', borderRadius: '8px', padding: '2px', flexShrink: 0 }}>
                               <button 
                                 type="button" 
                                 onClick={() => updateQuantity(item.produtoId, item.quantidade - 1)}
-                                style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)', border: '1px solid var(--color-outline-variant)', borderRadius: '4px', fontSize: '18px', fontWeight: 500, cursor: 'pointer' }}
+                                style={{ width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)', border: '1px solid var(--color-outline-variant)', borderRadius: '4px', fontSize: '16px', fontWeight: 500, cursor: 'pointer' }}
                               >
                                 -
                               </button>
@@ -839,25 +842,25 @@ export default function PedidoFormModal({
                                 value={item.quantidade} 
                                 onChange={(e) => updateQuantity(item.produtoId, parseInt(e.target.value) || 0)}
                                 className={styles.qtyInput}
-                                style={{ width: '35px', textAlign: 'center', fontSize: '14px', fontWeight: 600, backgroundColor: 'transparent', border: 'none', outline: 'none', color: 'var(--color-on-surface)' }}
+                                style={{ width: '28px', textAlign: 'center', fontSize: '13px', fontWeight: 600, backgroundColor: 'transparent', border: 'none', outline: 'none', color: 'var(--color-on-surface)' }}
                               />
                               <button 
                                 type="button" 
                                 onClick={() => updateQuantity(item.produtoId, item.quantidade + 1)}
-                                style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)', border: '1px solid var(--color-outline-variant)', borderRadius: '4px', fontSize: '18px', fontWeight: 500, cursor: 'pointer' }}
+                                style={{ width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)', border: '1px solid var(--color-outline-variant)', borderRadius: '4px', fontSize: '16px', fontWeight: 500, cursor: 'pointer' }}
                               >
                                 +
                               </button>
                             </div>
                             
                             <div className={styles.cartItemTotals} style={{ textAlign: 'right', minWidth: 0 }}>
-                              <span style={{ fontSize: '11px', color: 'var(--color-outline)', display: 'block', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{formatCurrency(item.preco_unitario)} cada</span>
+                              <span style={{ fontSize: '10px', color: 'var(--color-outline)', display: 'block', marginBottom: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{formatCurrency(item.preco_unitario)} cada</span>
                               {descontoAplicadoItem > 0 && (
-                                <span style={{ fontSize: '11px', color: 'var(--color-outline)', display: 'block', textDecoration: 'line-through' }}>
+                                <span style={{ fontSize: '10px', color: 'var(--color-outline)', display: 'block', textDecoration: 'line-through' }}>
                                   {formatCurrency(subtotalBrutoItem)}
                                 </span>
                               )}
-                              <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-on-surface)', whiteSpace: 'nowrap' }}>{formatCurrency(subtotalLiquidoItem)}</span>
+                              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-on-surface)', whiteSpace: 'nowrap' }}>{formatCurrency(subtotalLiquidoItem)}</span>
                             </div>
                           </div>
                         </div>
@@ -868,11 +871,11 @@ export default function PedidoFormModal({
               </div>
 
               {/* Order total & submission */}
-              <div className={styles.summaryPane} style={{ padding: '24px', borderTop: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface-container-lowest)' }}>
+              <div className={styles.summaryPane} style={{ padding: '12px', borderTop: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface-container-lowest)', flexShrink: 0 }}>
                 {agendamentoToEdit && (
-                  <div style={{ marginBottom: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div style={{ marginBottom: '8px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div>
-                      <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', display: 'block' }}>Data do Agendamento</label>
+                      <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px', display: 'block' }}>Data do Agendamento</label>
                       <input 
                         type="date" 
                         value={agendamentoDate}
@@ -880,11 +883,11 @@ export default function PedidoFormModal({
                         onClick={e => {
                           try { e.currentTarget.showPicker(); } catch(err) {}
                         }}
-                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', outline: 'none', cursor: 'pointer', backgroundColor: 'var(--color-surface)', fontSize: '13px', color: 'var(--color-on-surface)' }}
+                        style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', outline: 'none', cursor: 'pointer', backgroundColor: 'var(--color-surface)', fontSize: '13px', color: 'var(--color-on-surface)' }}
                       />
                     </div>
                     <div>
-                      <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', display: 'block' }}>Horário</label>
+                      <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px', display: 'block' }}>Horário</label>
                       <input 
                         type="time" 
                         value={agendamentoTime}
@@ -892,30 +895,30 @@ export default function PedidoFormModal({
                         onClick={e => {
                           try { e.currentTarget.showPicker(); } catch(err) {}
                         }}
-                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', outline: 'none', cursor: 'pointer', backgroundColor: 'var(--color-surface)', fontSize: '13px', color: 'var(--color-on-surface)' }}
+                        style={{ width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', outline: 'none', cursor: 'pointer', backgroundColor: 'var(--color-surface)', fontSize: '13px', color: 'var(--color-on-surface)' }}
                       />
                     </div>
                   </div>
                 )}
 
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', display: 'block' }}>Observações (Opcional)</label>
-                  <textarea 
+                <div style={{ marginBottom: '8px' }}>
+                  <input 
+                    type="text" 
                     className={styles.observationsField}
                     value={observacoes}
                     onChange={(e) => setObservacoes(e.target.value)}
-                    placeholder="Instruções para entrega, detalhes..."
+                    placeholder="Observações (Opcional)"
                     style={{
                       width: '100%', backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-outline-variant)',
-                      borderRadius: '8px', padding: '10px 12px', fontSize: '13px', color: 'var(--color-on-surface)',
-                      outline: 'none', resize: 'none', height: '64px',
+                      borderRadius: '8px', padding: '6px 10px', fontSize: '13px', color: 'var(--color-on-surface)',
+                      outline: 'none', height: '32px',
                     }}
                     onFocus={e => e.currentTarget.style.borderColor = 'var(--color-primary)'}
                     onBlur={e => e.currentTarget.style.borderColor = 'var(--color-outline-variant)'}
                   />
                 </div>
                 
-                <div style={{ marginBottom: '16px' }}>
+                <div style={{ marginBottom: '8px' }}>
                   <DiscountControls
                     label="Desconto no pedido inteiro"
                     discount={orderDiscount}
@@ -925,30 +928,22 @@ export default function PedidoFormModal({
                   />
                 </div>
 
-                <div className={styles.totalCard} style={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-outline-variant)', borderRadius: '12px', padding: '16px', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'var(--color-outline)' }}>
-                    <span>Subtotal bruto</span>
-                    <span>{formatCurrency(cartSummary.subtotalBruto)}</span>
-                  </div>
-                  {cartSummary.descontoItens > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'var(--color-primary)' }}>
-                      <span>Desconto nos itens</span>
-                      <span>- {formatCurrency(cartSummary.descontoItens)}</span>
+                <div className={styles.totalCard} style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '8px' }}>
+                  {cartSummary.descontoItens + descontoPedidoAplicado > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--color-outline)' }}>
+                      <span>Subtotal bruto</span>
+                      <span>{formatCurrency(cartSummary.subtotalBruto)}</span>
                     </div>
                   )}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'var(--color-outline)' }}>
-                    <span>Subtotal</span>
-                    <span>{formatCurrency(cartSummary.subtotalLiquido)}</span>
-                  </div>
-                  {descontoPedidoAplicado > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'var(--color-primary)' }}>
-                      <span>Desconto no pedido</span>
-                      <span>- {formatCurrency(descontoPedidoAplicado)}</span>
+                  {cartSummary.descontoItens + descontoPedidoAplicado > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--color-primary)' }}>
+                      <span>Descontos</span>
+                      <span>- {formatCurrency(cartSummary.descontoItens + descontoPedidoAplicado)}</span>
                     </div>
                   )}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', marginTop: '4px', borderTop: '1px solid var(--color-surface-container)' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-on-surface)' }}>Total do Pedido</span>
-                    <span style={{ fontSize: '20px', fontWeight: 700, color: 'var(--color-primary)' }}>{formatCurrency(total)}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '4px', borderTop: '1px solid var(--color-outline-variant)' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-on-surface)' }}>Total</span>
+                    <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-primary)' }}>{formatCurrency(total)}</span>
                   </div>
                 </div>
 
@@ -957,9 +952,9 @@ export default function PedidoFormModal({
                   disabled={isSubmitting || cart.length === 0}
                   className={styles.submitButton}
                   style={{
-                    width: '100%', padding: '14px 16px',
+                    width: '100%', padding: '8px 16px',
                     backgroundColor: (isSubmitting || cart.length === 0) ? 'var(--color-outline-variant)' : isEditMode ? '#f59e0b' : 'var(--color-primary)',
-                    color: '#ffffff', fontSize: '14px', fontWeight: 700, borderRadius: '8px', transition: 'all 0.2s',
+                    color: '#ffffff', fontSize: '12px', fontWeight: 700, borderRadius: '8px', transition: 'all 0.2s',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                     cursor: (isSubmitting || cart.length === 0) ? 'not-allowed' : 'pointer', border: 'none'
                   }}
@@ -982,10 +977,10 @@ export default function PedidoFormModal({
                     onClick={() => setIsAgendamentoOpen(true)}
                     disabled={isSubmitting || cart.length === 0}
                     style={{
-                      width: '100%', padding: '14px 16px', marginTop: '12px',
+                      width: '100%', padding: '8px 16px', marginTop: '6px',
                       backgroundColor: 'transparent',
                       color: (isSubmitting || cart.length === 0) ? 'var(--color-outline-variant)' : 'var(--color-primary)', 
-                      fontSize: '14px', fontWeight: 700, borderRadius: '8px', transition: 'all 0.2s',
+                      fontSize: '12px', fontWeight: 700, borderRadius: '8px', transition: 'all 0.2s',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                       cursor: (isSubmitting || cart.length === 0) ? 'not-allowed' : 'pointer', 
                       border: `1px solid ${(isSubmitting || cart.length === 0) ? 'var(--color-outline-variant)' : 'var(--color-primary)'}`
