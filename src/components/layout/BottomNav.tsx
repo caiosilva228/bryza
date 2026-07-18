@@ -2,23 +2,64 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { createClient } from '@/utils/supabase/client';
 
 interface BottomNavProps {
   onMenuOpen: () => void;
 }
 
-const NAV_ITEMS = [
-  { label: 'Dashboard', path: '/', icon: 'dashboard' },
-  { label: 'Pedidos', path: '/vendas/pedidos', icon: 'assignment' },
-  { label: 'Clientes', path: '/clientes', icon: 'group' },
-  { label: 'Estoque', path: '/estoque', icon: 'inventory_2' },
-];
-
 export const BottomNav = ({ onMenuOpen }: BottomNavProps) => {
   const pathname = usePathname();
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    const fetchRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        if (data) setRole(data.role);
+      }
+    };
+    fetchRole();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        fetchRole();
+      } else if (event === 'SIGNED_OUT') {
+        setRole(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const getNavItems = () => {
+    if (role === 'embaixador') {
+      return [
+        { label: 'Dashboard', path: '/embaixador/dashboard', icon: 'dashboard' },
+        { label: 'Vendas', path: '/embaixador/vendas', icon: 'shopping_bag' },
+        { label: 'Comissões', path: '/embaixador/comissoes', icon: 'payments' },
+        { label: 'Indicações', path: '/embaixador/indicacoes', icon: 'person_add' },
+      ];
+    }
+    return [
+      { label: 'Dashboard', path: '/', icon: 'dashboard' },
+      { label: 'Pedidos', path: '/vendas/pedidos', icon: 'assignment' },
+      { label: 'Clientes', path: '/clientes', icon: 'group' },
+      { label: 'Estoque', path: '/estoque', icon: 'inventory_2' },
+    ];
+  };
+
+  const navItems = getNavItems();
 
   const isActive = (path: string) => {
-    if (path === '/') return pathname === '/';
+    if (path === '/' || path === '/embaixador/dashboard') return pathname === path;
     return pathname.startsWith(path);
   };
 
@@ -40,7 +81,7 @@ export const BottomNav = ({ onMenuOpen }: BottomNavProps) => {
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
     >
-      {NAV_ITEMS.map((item) => {
+      {navItems.map((item) => {
         const active = isActive(item.path);
         return (
           <Link

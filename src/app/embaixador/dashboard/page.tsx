@@ -129,62 +129,107 @@ export default function EmbaixadorDashboardPage() {
           </div>
         </header>
 
-        {/* 6 Cards de Métricas Solicitados */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '32px' }}>
-          <MetricCard 
-            label="VENDAS NO MÊS" 
-            value={`${vendas_mes_qtd}`} 
-            suffix="Pedidos aprovados"
-            icon="shopping_bag"
-            colorHint="primary"
-          />
-          <MetricCard 
-            label="VALOR VENDIDO" 
-            value={formatCurrency(vendas_mes_valor).replace('R$', '')} 
-            prefix="R$"
-            suffix="Este mês"
-            icon="attach_money"
-            colorHint="primary"
-          />
-          <MetricCard 
-            label="COMISSÃO AGUARDANDO" 
-            value={formatCurrency(comissao_aguardando).replace('R$', '')} 
-            prefix="R$"
-            suffix="Aguardando entrega"
-            icon="schedule"
-            colorHint="warning"
-          />
-          <MetricCard 
-            label="COMISSÃO DISPONÍVEL" 
-            value={formatCurrency(comissao_disponivel).replace('R$', '')} 
-            prefix="R$"
-            suffix="Liberado para saque"
-            icon="account_balance_wallet"
-            colorHint="success"
-          />
-          <MetricCard 
-            label="TOTAL RECEBIDO" 
-            value={formatCurrency(total_recebido).replace('R$', '')} 
-            prefix="R$"
-            suffix="Saques efetuados"
-            icon="payments"
-            colorHint="secondary"
-          />
-          <MetricCard
-            label="BÔNUS ACUMULADO"
-            value={formatCurrency(first_purchase_bonus_total ?? 0).replace('R$', '')}
-            prefix="R$"
-            suffix="Bônus de primeira compra"
-            icon="redeem"
-            colorHint="tertiary"
-          />
-          <MetricCard 
-            label="CLIENTES INDICADOS" 
-            value={`${clientes_indicados}`} 
-            suffix="Total acumulado"
-            icon="group_add"
-            colorHint="primary"
-          />
+        {/* Card Principal: Comissão Disponível */}
+        <div style={{
+          backgroundColor: 'var(--color-primary)',
+          color: 'var(--color-on-primary)',
+          padding: '24px 28px',
+          borderRadius: '20px',
+          marginBottom: '20px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          boxShadow: '0 8px 24px rgba(0, 86, 117, 0.15)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          {/* Elemento decorativo de fundo */}
+          <div style={{
+            position: 'absolute',
+            top: '-20px',
+            right: '-20px',
+            width: '120px',
+            height: '120px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            pointerEvents: 'none'
+          }} />
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--color-primary-container)' }}>account_balance_wallet</span>
+            <span style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-primary-container)' }}>
+              Comissão Disponível
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', zIndex: 1 }}>
+            <span style={{ fontSize: '20px', fontWeight: 600 }}>R$</span>
+            <span style={{ fontSize: '42px', fontWeight: 800, lineHeight: 1 }}>{formatCurrency(comissao_disponivel).replace('R$', '').trim()}</span>
+          </div>
+          <span style={{ fontSize: '12px', color: 'var(--color-primary-container)', zIndex: 1 }}>Liberado para saque imediato</span>
+        </div>
+
+        {/* Demais Métricas */}
+        <div className="summary-cards-grid">
+          <div className="summary-card">
+            <div className="summary-card-icon-wrapper" style={{ backgroundColor: 'var(--color-surface-container-high)', color: 'var(--color-on-surface-variant)' }}>
+              <span className="material-symbols-outlined">shopping_bag</span>
+            </div>
+            <div className="summary-card-content">
+              <p className="summary-card-label">Vendas no Mês</p>
+              <p className="summary-card-value">{vendas_mes_qtd}</p>
+              <p className="summary-card-sub">Pedidos aprovados</p>
+            </div>
+          </div>
+          <div className="summary-card">
+            <div className="summary-card-icon-wrapper" style={{ backgroundColor: 'var(--color-surface-container-high)', color: 'var(--color-on-surface-variant)' }}>
+              <span className="material-symbols-outlined">attach_money</span>
+            </div>
+            <div className="summary-card-content">
+              <p className="summary-card-label">Valor Vendido</p>
+              <p className="summary-card-value">{formatCurrency(vendas_mes_valor)}</p>
+              <p className="summary-card-sub">Neste mês</p>
+            </div>
+          </div>
+          <div className="summary-card">
+            <div className="summary-card-icon-wrapper" style={{ backgroundColor: 'rgba(164, 114, 0, 0.1)', color: '#a47200' }}>
+              <span className="material-symbols-outlined">schedule</span>
+            </div>
+            <div className="summary-card-content">
+              <p className="summary-card-label" style={{ color: '#a47200' }}>Aguardando</p>
+              <p className="summary-card-value">{formatCurrency(comissao_aguardando)}</p>
+              <p className="summary-card-sub">Comissão pendente</p>
+            </div>
+          </div>
+          <div className="summary-card">
+            <div className="summary-card-icon-wrapper" style={{ backgroundColor: 'var(--color-surface-container-high)', color: 'var(--color-on-surface-variant)' }}>
+              <span className="material-symbols-outlined">payments</span>
+            </div>
+            <div className="summary-card-content">
+              <p className="summary-card-label">Total Recebido</p>
+              <p className="summary-card-value">{formatCurrency(total_recebido)}</p>
+              <p className="summary-card-sub">Saques efetuados</p>
+            </div>
+          </div>
+          <div className="summary-card">
+            <div className="summary-card-icon-wrapper" style={{ backgroundColor: 'var(--color-surface-container-high)', color: 'var(--color-on-surface-variant)' }}>
+              <span className="material-symbols-outlined">redeem</span>
+            </div>
+            <div className="summary-card-content">
+              <p className="summary-card-label">Bônus Acum.</p>
+              <p className="summary-card-value">{formatCurrency(first_purchase_bonus_total ?? 0)}</p>
+              <p className="summary-card-sub">Primeira compra</p>
+            </div>
+          </div>
+          <div className="summary-card">
+            <div className="summary-card-icon-wrapper" style={{ backgroundColor: 'var(--color-surface-container-high)', color: 'var(--color-on-surface-variant)' }}>
+              <span className="material-symbols-outlined">group_add</span>
+            </div>
+            <div className="summary-card-content">
+              <p className="summary-card-label">Clientes Ind.</p>
+              <p className="summary-card-value">{clientes_indicados}</p>
+              <p className="summary-card-sub">Total acumulado</p>
+            </div>
+          </div>
         </div>
 
         {/* Gráfico Mensal em SVG/CSS Responsivo */}
