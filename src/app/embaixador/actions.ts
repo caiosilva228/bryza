@@ -20,6 +20,7 @@ export type NetworkMember = {
   full_name: string;
   display_name: string | null;
   username: string;
+  phone: string | null;
   city: string | null;
   state: string | null;
   status: 'pendente' | 'ativo' | 'inativo' | 'bloqueado';
@@ -71,7 +72,7 @@ export type AmbassadorProfileData = {
 export async function getMinhaRede() {
   const { user } = await getAuthenticatedUser();
   const admin = createAdminClient();
-  const safeColumns = 'id, parent_ambassador_id, full_name, display_name, username, city, state, status, created_at';
+  const safeColumns = 'id, parent_ambassador_id, full_name, display_name, username, phone, city, state, status, created_at';
 
   const { data: owner, error: ownerError } = await admin
     .from('ambassadors')
