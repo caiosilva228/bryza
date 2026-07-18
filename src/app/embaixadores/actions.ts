@@ -311,7 +311,13 @@ export async function editarEmbaixador(ambassadorId: string, data: any) {
     pix_type, 
     pix_key, 
     notes, 
-    photo_path 
+    photo_path,
+    cep,
+    address,
+    number,
+    neighborhood,
+    latitude,
+    longitude
   } = data;
 
   const { data: oldAmb } = await adminClient
@@ -335,7 +341,13 @@ export async function editarEmbaixador(ambassadorId: string, data: any) {
     city: city ? city.trim() : null,
     state: normalizedState,
     notes: notes || null,
-    photo_path: photo_path || null
+    photo_path: photo_path || null,
+    cep: cep || null,
+    address: address || null,
+    number: number || null,
+    neighborhood: neighborhood || null,
+    latitude: latitude ? Number(latitude) : null,
+    longitude: longitude ? Number(longitude) : null
   };
 
   // Uma chave mascarada/omitida significa "preservar a chave atual".

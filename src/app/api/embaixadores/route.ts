@@ -68,7 +68,13 @@ export async function POST(req: NextRequest) {
       parent_ambassador_id, 
       status, 
       notes, 
-      photo_path 
+      photo_path,
+      cep,
+      address,
+      number,
+      neighborhood,
+      latitude,
+      longitude 
     } = body;
 
     // Validações básicas
@@ -165,6 +171,12 @@ export async function POST(req: NextRequest) {
         status: status || 'pendente',
         notes: notes || null,
         photo_path: photo_path || null,
+        cep: cep || null,
+        address: address || null,
+        number: number || null,
+        neighborhood: neighborhood || null,
+        latitude: latitude ? Number(latitude) : null,
+        longitude: longitude ? Number(longitude) : null,
         user_id: null
       })
       .select()
