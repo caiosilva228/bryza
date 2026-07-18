@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { logout } from '@/app/login/actions';
 import { createClient } from '@/utils/supabase/client';
+import { getCurrentProfile } from '@/services/profiles';
 import { Profile } from '@/models/types';
 import styles from './layout.module.css';
 
@@ -21,27 +22,14 @@ export const Sidebar = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
-    const supabase = createClient();
-    
     const fetchProfile = async () => {
-      // Falhar fechado: nunca manter/exibir rotas de outro papel enquanto a
-      // sessão atual está sendo resolvida.
-      setProfile(null);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-        
-        if (data) setProfile(data as Profile);
-      }
+      const data = await getCurrentProfile();
+      if (data) setProfile(data);
     };
 
     fetchProfile();
 
-    // Ouvir atualizações no auth (opcional mas bom para sincronia)
+    const supabase = createClient();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
         fetchProfile();

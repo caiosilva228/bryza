@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 
+import { getCurrentProfile } from '@/services/profiles';
+
 interface BottomNavProps {
   onMenuOpen: () => void;
 }
@@ -14,20 +16,13 @@ export const BottomNav = ({ onMenuOpen }: BottomNavProps) => {
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
-    const supabase = createClient();
     const fetchRole = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
-        if (data) setRole(data.role);
-      }
+      const data = await getCurrentProfile();
+      if (data) setRole(data.role);
     };
     fetchRole();
 
+    const supabase = createClient();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
         fetchRole();

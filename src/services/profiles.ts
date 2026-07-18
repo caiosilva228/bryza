@@ -1,4 +1,7 @@
+'use server';
+
 import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { Profile } from '@/models/types';
 
 /**
@@ -29,21 +32,28 @@ export const getVendedores = async (): Promise<Profile[]> => {
  * Retorna o profile do usuário atualmente logado.
  */
 export const getCurrentProfile = async (): Promise<Profile | null> => {
-  const supabase = await createClient();
-  
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  if (userError || !user) return null;
+  try {
+    const supabase = await createClient();
+    
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) return null;
 
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .maybeSingle();
 
-  if (error) {
-    console.error('Erro ao buscar perfil atual:', error);
+    if (error || !data) {
+      console.error('Erro ao buscar perfil atual:', error);
+      return null;
+    }
+
+    return data as Profile;
+  } catch (err) {
+    console.error('Erro em getCurrentProfile:', err);
     return null;
   }
-
-  return data as Profile;
 };
+

@@ -1,10 +1,13 @@
 'use client';
 
+'use client';
+
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { logout } from '@/app/login/actions';
 import { createClient } from '@/utils/supabase/client';
+import { getCurrentProfile } from '@/services/profiles';
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -24,21 +27,13 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
-    const supabase = createClient();
     const fetchRole = async () => {
-      setRole(null);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
-        if (data) setRole(data.role);
-      }
+      const data = await getCurrentProfile();
+      if (data) setRole(data.role);
     };
     fetchRole();
 
+    const supabase = createClient();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
         fetchRole();
