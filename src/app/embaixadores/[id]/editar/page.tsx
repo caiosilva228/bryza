@@ -512,16 +512,21 @@ export default function EditarEmbaixadorPage({ params }: Context) {
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>Chave Pix</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>Chave Pix *</label>
                 <input 
                   type="text" 
                   value={pixKey} 
                   onChange={e => setPixKey(e.target.value)} 
+                  required
                   placeholder={pixKey.includes('*') ? 'Digite uma nova chave Pix para alterar' : 'Chave Pix'}
                   style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)' }} 
                 />
               </div>
             </div>
+            <p style={{ fontSize: '12px', color: 'var(--color-error, #B3261E)', marginTop: '8px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>info</span>
+              Obrigatório: A conta bancária (Chave Pix) deve estar obrigatoriamente no nome da pessoa cadastrada.
+            </p>
           </div>
 
           {/* Upload de Foto */}

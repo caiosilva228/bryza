@@ -491,10 +491,14 @@ export default function MeuPerfilPage() {
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>Chave Pix</label>
-                <input disabled={!data?.allow_pix_edit || data?.require_pix_change_approval} type="text" value={pixKey} onChange={e => setPixKey(e.target.value)} placeholder="Digite sua chave Pix" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)' }} />
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>Chave Pix *</label>
+                <input disabled={!data?.allow_pix_edit || data?.require_pix_change_approval} required type="text" value={pixKey} onChange={e => setPixKey(e.target.value)} placeholder="Digite sua chave Pix" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)' }} />
               </div>
             </div>
+            <p style={{ fontSize: '12px', color: 'var(--color-error, #B3261E)', marginTop: '8px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>info</span>
+              Obrigatório: A conta bancária (Chave Pix) deve estar obrigatoriamente no seu nome (da pessoa cadastrada).
+            </p>
           </div>
 
           {/* Foto de Perfil */}
