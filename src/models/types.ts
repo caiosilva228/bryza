@@ -1,4 +1,4 @@
-export type Role = 'admin' | 'vendedor' | 'logistica';
+export type Role = 'admin' | 'vendedor' | 'logistica' | 'embaixador';
 export type StatusCliente = 'lead' | 'cliente' | 'recorrente' | 'inativo';
 export type TipoMovimento = 'entrada' | 'saida' | 'ajuste';
 export type StatusAgendamento = 'agendado' | 'convertido' | 'cancelado';

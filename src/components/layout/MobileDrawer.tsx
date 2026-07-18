@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { logout } from '@/app/login/actions';
+import { createClient } from '@/utils/supabase/client';
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -17,31 +18,71 @@ interface Route {
   subItems?: { label: string; path: string; icon: string }[];
 }
 
-const DRAWER_ROUTES: Route[] = [
-  { label: 'Dashboard', path: '/', icon: 'dashboard' },
-  { label: 'Metas', path: '/metas', icon: 'flag' },
-  { label: 'CRM / Clientes', path: '/clientes', icon: 'group' },
-  { 
-    label: 'Vendas', 
-    icon: 'shopping_cart',
-    subItems: [
-      { label: 'Finalizadas', path: '/vendas', icon: 'history' },
-      { label: 'Pedidos', path: '/vendas/pedidos', icon: 'assignment' },
-      { label: 'Agendamentos', path: '/vendas/agendamentos', icon: 'calendar_month' },
-    ]
-  },
-  { label: 'Produtos', path: '/produtos', icon: 'inventory' },
-  { label: 'Estoque', path: '/estoque', icon: 'inventory_2' },
-  { label: 'Logística', path: '/logistica', icon: 'local_shipping' },
-  { label: 'Rotas', path: '/rotas', icon: 'map' },
-  { label: 'Motoristas', path: '/motoristas', icon: 'directions_car' },
-  { label: 'Vendedores', path: '/vendedores', icon: 'person_search' },
-  { label: 'Perfil', path: '/perfil', icon: 'account_circle' },
-];
-
 export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
   const pathname = usePathname();
   const [openMenus, setOpenMenus] = useState<string[]>(['Vendas']);
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    const fetchRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        if (data) setRole(data.role);
+      }
+    };
+    fetchRole();
+  }, []);
+
+  const getDrawerRoutes = () => {
+    if (role === 'embaixador') {
+      return [
+        { label: 'Visão geral', path: '/embaixador/dashboard', icon: 'dashboard' },
+        { label: 'Meu link', path: '/embaixador/meu-link', icon: 'link' },
+        { label: 'Minhas indicações', path: '/embaixador/indicacoes', icon: 'group_add' },
+        { label: 'Minhas vendas', path: '/embaixador/vendas', icon: 'shopping_bag' },
+        { label: 'Minhas comissões', path: '/embaixador/comissoes', icon: 'payments' },
+        { label: 'Meus pagamentos', path: '/embaixador/pagamentos', icon: 'account_balance_wallet' },
+        { label: 'Materiais', path: '/embaixador/materiais', icon: 'folder_zip' },
+        { label: 'Meu perfil', path: '/embaixador/perfil', icon: 'account_circle' },
+      ];
+    }
+
+    const baseRoutes = [
+      { label: 'Dashboard', path: '/', icon: 'dashboard' },
+      { label: 'Metas', path: '/metas', icon: 'flag' },
+      { label: 'CRM / Clientes', path: '/clientes', icon: 'group' },
+      { 
+        label: 'Vendas', 
+        icon: 'shopping_cart',
+        subItems: [
+          { label: 'Finalizadas', path: '/vendas', icon: 'history' },
+          { label: 'Pedidos', path: '/vendas/pedidos', icon: 'assignment' },
+          { label: 'Agendamentos', path: '/vendas/agendamentos', icon: 'calendar_month' },
+        ]
+      },
+      { label: 'Produtos', path: '/produtos', icon: 'inventory' },
+      { label: 'Estoque', path: '/estoque', icon: 'inventory_2' },
+      { label: 'Logística', path: '/logistica', icon: 'local_shipping' },
+      { label: 'Rotas', path: '/rotas', icon: 'map' },
+      { label: 'Motoristas', path: '/motoristas', icon: 'directions_car' },
+      { label: 'Vendedores', path: '/vendedores', icon: 'person_search' },
+    ];
+
+    if (role === 'admin') {
+      baseRoutes.push({ label: 'Embaixadores', path: '/embaixadores', icon: 'loyalty' });
+    }
+
+    baseRoutes.push({ label: 'Perfil', path: '/perfil', icon: 'account_circle' });
+    return baseRoutes;
+  };
+
+  const drawerRoutes = getDrawerRoutes();
 
   // Fechar ao pressionar Escape
   useEffect(() => {
@@ -140,7 +181,7 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
 
         {/* Nav Links */}
         <nav style={{ flex: 1, padding: '8px 0' }}>
-          {DRAWER_ROUTES.map((route) => {
+          {drawerRoutes.map((route) => {
             const isParentActive = route.subItems?.some(sub => pathname === sub.path);
             const active = route.path === pathname || isParentActive;
             const hasSubItems = !!route.subItems;

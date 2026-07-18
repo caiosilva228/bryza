@@ -1,7 +1,23 @@
 import styles from './login.module.css';
 import { login } from './actions';
 
-export default function LoginPage() {
+interface PageProps {
+  searchParams: Promise<{ error?: string }>;
+}
+
+export default async function LoginPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const error = params.error;
+
+  let errorMessage = '';
+  if (error === 'InvalidCredentials') {
+    errorMessage = 'Usuário ou senha inválidos.';
+  } else if (error === 'BlockedUser') {
+    errorMessage = 'Sua conta está inativa ou bloqueada. Entre em contato com o suporte.';
+  } else if (error === 'RateLimit') {
+    errorMessage = 'Muitas tentativas de login. Tente novamente mais tarde.';
+  }
+
   return (
     <div className={styles.container}>
       <main className={styles.mainCard}>
@@ -48,17 +64,36 @@ export default function LoginPage() {
             <p style={{ color: 'var(--color-on-surface-variant)', fontSize: '14px' }}>Entre com suas credenciais para continuar.</p>
           </div>
 
+          {errorMessage && (
+            <div style={{ 
+              backgroundColor: 'var(--color-error-container)', 
+              color: 'var(--color-error)', 
+              padding: '12px 16px', 
+              borderRadius: '8px', 
+              fontSize: '13px', 
+              fontWeight: 500,
+              marginBottom: '20px',
+              border: '1px solid rgba(186, 26, 26, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>error</span>
+              {errorMessage}
+            </div>
+          )}
+
           <form action={login} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <div>
-              <label htmlFor="email" className={styles.label}>E-mail</label>
+              <label htmlFor="identifier" className={styles.label}>E-mail ou usuário</label>
               <div className={styles.inputGroup}>
-                <span className={`material-symbols-outlined ${styles.inputIcon}`}>mail</span>
+                <span className={`material-symbols-outlined ${styles.inputIcon}`}>person</span>
                 <input 
-                  type="email" 
-                  id="email" 
-                  name="email" 
+                  type="text" 
+                  id="identifier" 
+                  name="identifier" 
                   className={styles.input} 
-                  placeholder="seu@email.com.br" 
+                  placeholder="seu@email.com ou bryza01" 
                   required 
                 />
               </div>

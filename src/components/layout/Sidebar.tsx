@@ -48,27 +48,50 @@ export const Sidebar = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const routes: Route[] = [
-    { label: 'Dashboard', path: '/', icon: 'dashboard' },
-    { label: 'Metas', path: '/metas', icon: 'flag' },
-    { label: 'CRM/Clientes', path: '/clientes', icon: 'group' },
-    { 
-      label: 'Vendas', 
-      icon: 'shopping_cart',
-      subItems: [
-        { label: 'Finalizadas', path: '/vendas', icon: 'history' },
-        { label: 'Pedidos', path: '/vendas/pedidos', icon: 'assignment' },
-        { label: 'Agendamentos', path: '/vendas/agendamentos', icon: 'calendar_month' },
-      ]
-    },
-    { label: 'Produtos', path: '/produtos', icon: 'inventory' },
-    { label: 'Estoque', path: '/estoque', icon: 'inventory_2' },
-    { label: 'Logística', path: '/logistica', icon: 'local_shipping' },
-    { label: 'Rotas', path: '/rotas', icon: 'map' },
-    { label: 'Motoristas', path: '/motoristas', icon: 'directions_car' },
-    { label: 'Vendedores', path: '/vendedores', icon: 'person_search' },
-    { label: 'Perfil', path: '/perfil', icon: 'account_circle' },
-  ];
+  const getRoutes = () => {
+    if (profile?.role === 'embaixador') {
+      return [
+        { label: 'Visão geral', path: '/embaixador/dashboard', icon: 'dashboard' },
+        { label: 'Meu link', path: '/embaixador/meu-link', icon: 'link' },
+        { label: 'Minhas indicações', path: '/embaixador/indicacoes', icon: 'group_add' },
+        { label: 'Minhas vendas', path: '/embaixador/vendas', icon: 'shopping_bag' },
+        { label: 'Minhas comissões', path: '/embaixador/comissoes', icon: 'payments' },
+        { label: 'Meus pagamentos', path: '/embaixador/pagamentos', icon: 'account_balance_wallet' },
+        { label: 'Materiais', path: '/embaixador/materiais', icon: 'folder_zip' },
+        { label: 'Meu perfil', path: '/embaixador/perfil', icon: 'account_circle' },
+      ];
+    }
+    
+    const baseRoutes = [
+      { label: 'Dashboard', path: '/', icon: 'dashboard' },
+      { label: 'Metas', path: '/metas', icon: 'flag' },
+      { label: 'CRM/Clientes', path: '/clientes', icon: 'group' },
+      { 
+        label: 'Vendas', 
+        icon: 'shopping_cart',
+        subItems: [
+          { label: 'Finalizadas', path: '/vendas', icon: 'history' },
+          { label: 'Pedidos', path: '/vendas/pedidos', icon: 'assignment' },
+          { label: 'Agendamentos', path: '/vendas/agendamentos', icon: 'calendar_month' },
+        ]
+      },
+      { label: 'Produtos', path: '/produtos', icon: 'inventory' },
+      { label: 'Estoque', path: '/estoque', icon: 'inventory_2' },
+      { label: 'Logística', path: '/logistica', icon: 'local_shipping' },
+      { label: 'Rotas', path: '/rotas', icon: 'map' },
+      { label: 'Motoristas', path: '/motoristas', icon: 'directions_car' },
+      { label: 'Vendedores', path: '/vendedores', icon: 'person_search' },
+    ];
+
+    if (profile?.role === 'admin') {
+      baseRoutes.push({ label: 'Embaixadores', path: '/embaixadores', icon: 'loyalty' });
+    }
+
+    baseRoutes.push({ label: 'Perfil', path: '/perfil', icon: 'account_circle' });
+    return baseRoutes;
+  };
+
+  const routes = getRoutes();
 
   const toggleMenu = (label: string) => {
     setOpenMenus(prev => 
@@ -79,7 +102,8 @@ export const Sidebar = () => {
   const roleLabels: Record<string, string> = {
     'admin': 'Administrador',
     'vendedor': 'Vendedor',
-    'logistica': 'Logística'
+    'logistica': 'Logística',
+    'embaixador': 'Embaixador'
   };
 
   return (
