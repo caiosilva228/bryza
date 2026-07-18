@@ -48,6 +48,7 @@ export async function salvarCliente(
       origem: formData.get('origem')?.toString() || 'indicação',
       status_cliente: 'lead' as any,
       vendedor_responsavel_id: vendedorId || profile.id,
+      cpf: formData.get('cpf')?.toString() || null,
     };
 
     const duplicate = await hasDuplicateCliente(payload.nome, payload.telefone);
@@ -110,6 +111,7 @@ export async function atualizarCliente(
       origem: formData.get('origem')?.toString() || 'indicação',
       status_cliente: formData.get('status_cliente')?.toString() as any,
       vendedor_responsavel_id: formData.get('vendedor_responsavel_id')?.toString() || undefined,
+      cpf: formData.get('cpf')?.toString() || null,
     };
 
     const updated = await updateCliente(clienteId, payload);

@@ -132,6 +132,7 @@ export interface Cliente {
   codigo_cliente?: number;
   nome: string;
   telefone: string;
+  cpf?: string | null;
   cep?: string;
   endereco: string;
   numero?: string;

@@ -20,6 +20,7 @@ export function ClienteForm({
   const [formData, setFormData] = useState({
     nome: initialData?.nome || '',
     telefone: initialData?.telefone || '',
+    cpf: initialData?.cpf || '',
     cep: initialData?.cep || '',
     endereco: initialData?.endereco || '',
     numero: initialData?.numero || '',
@@ -213,6 +214,13 @@ export function ClienteForm({
 
     if (name === 'telefone') {
       transformedValue = formatPhone(value);
+    } else if (name === 'cpf') {
+      transformedValue = value
+        .replace(/\D/g, '')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+        .slice(0, 14);
     } else if (e.target instanceof HTMLInputElement && e.target.type !== 'tel' && e.target.type !== 'number') {
       transformedValue = value.toUpperCase();
     }
@@ -343,6 +351,19 @@ export function ClienteForm({
             value={formData.telefone}
             onChange={handleChange}
             maxLength={15}
+          />
+        </div>
+
+        <div>
+          <label style={labelStyle}>CPF</label>
+          <input 
+            type="text" 
+            name="cpf" 
+            placeholder="000.000.000-00" 
+            style={inputStyle} 
+            value={formData.cpf}
+            onChange={handleChange}
+            maxLength={14}
           />
         </div>
 

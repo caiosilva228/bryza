@@ -172,6 +172,14 @@ export default function ClienteInfoModal({ cliente, onClose, isAdmin, onDelete, 
                     </div>
                     <span style={{ fontSize: '15px', fontWeight: 600 }}>{cliente.telefone}</span>
                   </div>
+                  {cliente.cpf && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: 'var(--color-primary-container-low)', display: 'flex', alignItems: 'center', justifyItems: 'center', color: 'var(--color-primary)', justifyContent: 'center' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>badge</span>
+                      </div>
+                      <span style={{ fontSize: '15px', fontWeight: 600 }}>{cliente.cpf}</span>
+                    </div>
+                  )}
                   <div style={{ display: 'flex', gap: '14px' }}>
                     <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: 'var(--color-primary-container-low)', display: 'flex', alignItems: 'center', justifyItems: 'center', color: 'var(--color-primary)', justifyContent: 'center', flexShrink: 0 }}>
                       <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>location_on</span>
