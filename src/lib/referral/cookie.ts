@@ -1,7 +1,16 @@
+import 'server-only';
 import crypto from 'node:crypto';
 
 const COOKIE_NAME = 'bryza_ref';
-const COOKIE_SECRET = process.env.REFERRAL_COOKIE_SECRET || 'bryza_secret_fallback_staging_key_32_bytes!';
+function requireServerSecret(value: string | undefined, name: string): string {
+  if (!value || value.length < 32) throw new Error(`${name} seguro não configurado no servidor.`);
+  return value;
+}
+
+const COOKIE_SECRET = requireServerSecret(
+  process.env.REFERRAL_COOKIE_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY,
+  'REFERRAL_COOKIE_SECRET',
+);
 
 export interface ReferralPayload {
   visit_id?: string;

@@ -89,80 +89,20 @@ export const createAgendamento = async (
 
 export const converterAgendamentoEmPedido = async (agendamentoId: string) => {
   const supabase = await createClient();
+  const { data, error } = await supabase.rpc('fn_converter_agendamento_em_pedido', {
+    p_agendamento_id: agendamentoId,
+  });
 
-  // Busca o agendamento com itens
-  const { data: ag, error: fetchError } = await supabase
-    .from('agendamentos')
-    .select(AGENDAMENTO_SELECT)
-    .eq('id', agendamentoId)
-    .single();
-
-  if (fetchError || !ag) throw new Error('Agendamento não encontrado');
-  if (ag.status !== 'agendado') throw new Error('Agendamento já foi convertido ou cancelado');
-
-  const agendamento = ag as Agendamento;
-
-  // Cria o pedido
-  const pedidoPayload = {
-    cliente_id: agendamento.cliente_id,
-    vendedor_id: agendamento.vendedor_id,
-    valor_total: agendamento.valor_total,
-    desconto_tipo: agendamento.desconto_tipo,
-    desconto_valor: agendamento.desconto_valor,
-    desconto_aplicado: agendamento.desconto_aplicado,
-    forma_pagamento: agendamento.forma_pagamento,
-    observacoes: agendamento.observacoes,
-    nome_cliente: agendamento.nome_cliente,
-    telefone_cliente: agendamento.telefone_cliente,
-    endereco_entrega: agendamento.endereco_entrega,
-    bairro: agendamento.bairro,
-    cidade: agendamento.cidade,
-    estado: agendamento.estado,
-    cep: agendamento.cep,
-    nome_vendedor: agendamento.nome_vendedor,
-    codigo_vendedor: agendamento.codigo_vendedor,
-    status_pedido: 'aguardando_preparacao',
-  };
+  if (error) throw new Error(error.message || 'Não foi possível converter o agendamento');
+  if (!data?.sucesso || !data?.pedido_id) throw new Error('Conversão não confirmada pelo servidor');
 
   const { data: pedidoData, error: pedidoError } = await supabase
     .from('pedidos')
-    .insert([pedidoPayload])
-    .select()
+    .select('*')
+    .eq('id', data.pedido_id)
     .single();
 
-  if (pedidoError) throw pedidoError;
-
-  // Insere os itens do pedido
-  const pedidoItens = (agendamento.itens || []).map(item => ({
-    pedido_id: pedidoData.id,
-    produto_id: item.produto_id,
-    quantidade: item.quantidade,
-    preco_unitario: item.preco_unitario,
-    subtotal: item.subtotal,
-    desconto_tipo: item.desconto_tipo,
-    desconto_valor: item.desconto_valor,
-    desconto_aplicado: item.desconto_aplicado,
-  }));
-
-  if (pedidoItens.length > 0) {
-    const { error: itensError } = await supabase
-      .from('pedido_itens')
-      .insert(pedidoItens);
-
-    if (itensError) {
-      await supabase.from('pedidos').delete().eq('id', pedidoData.id);
-      throw itensError;
-    }
-  }
-
-  // Marca agendamento como convertido
-  const { error: updateError } = await supabase
-    .from('agendamentos')
-    .update({ status: 'convertido', pedido_id: pedidoData.id, updated_at: new Date().toISOString() })
-    .eq('id', agendamentoId);
-
-  if (updateError) throw updateError;
-
+  if (pedidoError || !pedidoData) throw new Error('Pedido convertido, mas não foi possível carregar os dados');
   return pedidoData;
 };
 

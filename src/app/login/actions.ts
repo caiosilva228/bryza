@@ -44,7 +44,21 @@ export async function login(formData: FormData) {
 
   // 2. Resolução do Username para e-mail sintético
   let resolvedEmail = normalizedUsername;
-  if (/^bryza\d+$/.test(normalizedUsername)) {
+  if (/^[0-9]{11}$/.test(normalizedUsername)) {
+    const { data: phoneEmail, error: phoneResolutionError } = await adminClient.rpc(
+      'fn_resolve_login_phone',
+      { p_phone: normalizedUsername },
+    );
+
+    if (phoneResolutionError) {
+      console.error('Erro ao resolver telefone de login:', phoneResolutionError.code);
+    }
+
+    // Mantém a mesma resposta genérica para telefone inexistente ou ambíguo.
+    resolvedEmail = typeof phoneEmail === 'string' && phoneEmail
+      ? phoneEmail
+      : `telefone-invalido-${normalizedUsername}@usuarios.bryza.internal`;
+  } else if (/^bryza\d+$/.test(normalizedUsername)) {
     resolvedEmail = `${normalizedUsername}@usuarios.bryza.internal`;
   }
 

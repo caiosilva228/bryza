@@ -177,6 +177,18 @@ export async function createPublicSchedulingAction(
       return { success: false, error: 'A oferta contém um item inválido.' };
     }
 
+    const { data: programSettings, error: programSettingsError } = await supabaseAdmin
+      .from('ambassador_program_settings')
+      .select('program_status')
+      .eq('singleton', true)
+      .single();
+    if (programSettingsError || !programSettings) {
+      return { success: false, error: 'O programa de embaixadores está temporariamente indisponível.' };
+    }
+    if (programSettings.program_status !== 'ativo') {
+      return { success: false, error: 'O programa de embaixadores está pausado para novas operações.' };
+    }
+
     const cookieStore = await cookies();
     const rawCookie = cookieStore.get(COOKIE_NAME)?.value;
     const verifiedReferral = verifyAndParseReferralCookie(rawCookie);

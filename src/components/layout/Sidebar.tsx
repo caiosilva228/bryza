@@ -17,13 +17,16 @@ interface Route {
 
 export const Sidebar = () => {
   const pathname = usePathname();
-  const [openMenus, setOpenMenus] = useState<string[]>(['Vendas']);
+  const [openMenus, setOpenMenus] = useState<string[]>(['Vendas', 'Minhas indicações', 'Programa de Embaixadores']);
   const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
     
     const fetchProfile = async () => {
+      // Falhar fechado: nunca manter/exibir rotas de outro papel enquanto a
+      // sessão atual está sendo resolvida.
+      setProfile(null);
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data } = await supabase
@@ -42,6 +45,8 @@ export const Sidebar = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
         fetchProfile();
+      } else if (event === 'SIGNED_OUT') {
+        setProfile(null);
       }
     });
 
@@ -49,14 +54,25 @@ export const Sidebar = () => {
   }, []);
 
   const getRoutes = () => {
+    // Sem perfil confirmado, não renderizar o menu operacional padrão.
+    if (!profile) return [];
+
     if (profile?.role === 'embaixador') {
       return [
         { label: 'Visão geral', path: '/embaixador/dashboard', icon: 'dashboard' },
         { label: 'Meu link', path: '/embaixador/meu-link', icon: 'link' },
-        { label: 'Minhas indicações', path: '/embaixador/indicacoes', icon: 'group_add' },
+        {
+          label: 'Minhas indicações',
+          icon: 'group_add',
+          subItems: [
+            { label: 'Clientes indicados', path: '/embaixador/indicacoes', icon: 'person_add' },
+            { label: 'Minha Rede', path: '/embaixador/minha-rede', icon: 'account_tree' },
+          ],
+        },
         { label: 'Minhas vendas', path: '/embaixador/vendas', icon: 'shopping_bag' },
         { label: 'Minhas comissões', path: '/embaixador/comissoes', icon: 'payments' },
         { label: 'Meus pagamentos', path: '/embaixador/pagamentos', icon: 'account_balance_wallet' },
+        { label: 'Calculadora de ganhos', path: '/embaixador/calculadora-de-ganhos', icon: 'calculate' },
         { label: 'Materiais', path: '/embaixador/materiais', icon: 'folder_zip' },
         { label: 'Meu perfil', path: '/embaixador/perfil', icon: 'account_circle' },
       ];
@@ -84,7 +100,15 @@ export const Sidebar = () => {
     ];
 
     if (profile?.role === 'admin') {
-      baseRoutes.push({ label: 'Embaixadores', path: '/embaixadores', icon: 'loyalty' });
+      baseRoutes.push({
+        label: 'Programa de Embaixadores',
+        icon: 'loyalty',
+        subItems: [
+          { label: 'Embaixadores', path: '/embaixadores', icon: 'groups' },
+          { label: 'Pagamentos', path: '/embaixadores/pagamentos', icon: 'account_balance_wallet' },
+          { label: 'Configurações', path: '/embaixadores/configuracoes', icon: 'settings' },
+        ],
+      });
     }
 
     baseRoutes.push({ label: 'Perfil', path: '/perfil', icon: 'account_circle' });
@@ -92,6 +116,17 @@ export const Sidebar = () => {
   };
 
   const routes = getRoutes();
+
+  const isRouteActive = (path: string) => {
+    if (path === '/embaixadores') {
+      return pathname === path || (
+        pathname.startsWith('/embaixadores/') &&
+        !pathname.startsWith('/embaixadores/pagamentos') &&
+        !pathname.startsWith('/embaixadores/configuracoes')
+      );
+    }
+    return pathname === path;
+  };
 
   const toggleMenu = (label: string) => {
     setOpenMenus(prev => 
@@ -129,8 +164,8 @@ export const Sidebar = () => {
       
       <nav style={{ flex: 1 }}>
         {routes.map(r => {
-          const isParentActive = r.subItems?.some(sub => pathname === sub.path);
-          const isActive = r.path === pathname || isParentActive;
+          const isParentActive = r.subItems?.some(sub => isRouteActive(sub.path));
+          const isActive = (r.path ? isRouteActive(r.path) : false) || isParentActive;
           const hasSubItems = !!r.subItems;
           const isOpen = openMenus.includes(r.label);
 
@@ -164,7 +199,7 @@ export const Sidebar = () => {
               {hasSubItems && isOpen && (
                 <div style={{ marginLeft: '12px', borderLeft: '1px solid var(--color-outline-variant)', marginBottom: '4px' }}>
                   {r.subItems!.map(sub => {
-                    const isSubActive = pathname === sub.path;
+                    const isSubActive = isRouteActive(sub.path);
                     return (
                       <Link 
                         key={sub.path} 

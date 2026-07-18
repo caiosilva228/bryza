@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useTransition } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { getPortalDashboardData, atualizarMeuPerfil, getSignedProfilePhotoUrl } from '../actions';
+import { getMeuPerfilData, atualizarMeuPerfil, getSignedProfilePhotoUrl, type AmbassadorProfileData } from '../actions';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'sonner';
 
 export default function MeuPerfilPage() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<AmbassadorProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
 
@@ -16,7 +16,7 @@ export default function MeuPerfilPage() {
   const [instagram, setInstagram] = useState('');
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
-  const [pixType, setPixType] = useState('pix');
+  const [pixType, setPixType] = useState<AmbassadorProfileData['pix_type']>('chave_aleatoria');
   const [pixKey, setPixKey] = useState('');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
@@ -24,8 +24,14 @@ export default function MeuPerfilPage() {
   const loadProfile = async () => {
     setLoading(true);
     try {
-      const res = await getPortalDashboardData();
+      const res = await getMeuPerfilData();
       setData(res);
+      setPhone(res.phone);
+      setInstagram(res.instagram);
+      setCity(res.city);
+      setState(res.state);
+      setPixType(res.pix_type);
+      setPixKey(res.pix_key_masked);
       if (res.photo_path) {
         getSignedProfilePhotoUrl(res.photo_path).then(setPhotoUrl);
       }
@@ -80,15 +86,18 @@ export default function MeuPerfilPage() {
         }
 
         const isPixKeyMasked = pixKey.includes('*');
+        if (pixType !== data?.pix_type && isPixKeyMasked) {
+          throw new Error('Ao alterar o tipo da chave Pix, informe também a nova chave.');
+        }
 
         await atualizarMeuPerfil({
           phone,
           instagram,
           city,
           state,
-          pix_type: pixType,
+          pix_type: pixType !== data?.pix_type ? pixType : undefined,
           pix_key: isPixKeyMasked ? undefined : pixKey,
-          photo_path: finalPhotoPath
+          photo_path: finalPhotoPath || undefined
         });
 
         toast.success('Perfil atualizado com sucesso!');
@@ -178,16 +187,17 @@ export default function MeuPerfilPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '16px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>Tipo de Chave</label>
-                <select value={pixType} onChange={e => setPixType(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)' }}>
-                  <option value="pix">Chave Aleatória / Outro</option>
+                <select disabled={!data?.allow_pix_edit || data?.require_pix_change_approval} value={pixType} onChange={e => setPixType(e.target.value as AmbassadorProfileData['pix_type'])} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)' }}>
+                  <option value="chave_aleatoria">Chave Aleatória / Outro</option>
                   <option value="cpf">CPF</option>
+                  <option value="cnpj">CNPJ</option>
                   <option value="email">E-mail</option>
                   <option value="telefone">Telefone</option>
                 </select>
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>Chave Pix</label>
-                <input type="text" value={pixKey} onChange={e => setPixKey(e.target.value)} placeholder="Digite sua chave Pix" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)' }} />
+                <input disabled={!data?.allow_pix_edit || data?.require_pix_change_approval} type="text" value={pixKey} onChange={e => setPixKey(e.target.value)} placeholder="Digite sua chave Pix" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)' }} />
               </div>
             </div>
           </div>

@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { MetricCard } from '@/components/dashboard/MetricCard';
-import { getPortalDashboardData } from '../actions';
+import { getPortalDashboardData, type AmbassadorDashboardMetrics } from '../actions';
 import { formatCurrency } from '@/utils/format';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
 export default function EmbaixadorDashboardPage() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<AmbassadorDashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -76,6 +76,7 @@ export default function EmbaixadorDashboardPage() {
     comissao_aguardando,
     comissao_disponivel,
     total_recebido,
+    first_purchase_bonus_total,
     clientes_indicados,
     grafico_mensal
   } = data;
@@ -168,6 +169,14 @@ export default function EmbaixadorDashboardPage() {
             suffix="Saques efetuados"
             icon="payments"
             colorHint="secondary"
+          />
+          <MetricCard
+            label="BÔNUS ACUMULADO"
+            value={formatCurrency(first_purchase_bonus_total ?? 0).replace('R$', '')}
+            prefix="R$"
+            suffix="Bônus de primeira compra"
+            icon="redeem"
+            colorHint="tertiary"
           />
           <MetricCard 
             label="CLIENTES INDICADOS" 

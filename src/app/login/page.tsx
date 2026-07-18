@@ -85,7 +85,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
 
           <form action={login} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <div>
-              <label htmlFor="identifier" className={styles.label}>E-mail ou usuário</label>
+              <label htmlFor="identifier" className={styles.label}>E-mail, usuário ou telefone</label>
               <div className={styles.inputGroup}>
                 <span className={`material-symbols-outlined ${styles.inputIcon}`}>person</span>
                 <input 
@@ -93,7 +93,11 @@ export default async function LoginPage({ searchParams }: PageProps) {
                   id="identifier" 
                   name="identifier" 
                   className={styles.input} 
-                  placeholder="seu@email.com ou bryza01" 
+                  placeholder="seu@email.com, bryza01 ou 61982115107"
+                  autoComplete="username"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  maxLength={254}
                   required 
                 />
               </div>

@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
-import crypto from 'crypto';
+import { generateIpHash } from '@/lib/referral/ip-hash';
 
 // Helpers de Mascaramento
 function maskCPF(cpf: string): string {
@@ -40,8 +40,7 @@ function maskPix(key: string, type: string): string {
 
 function getIpHash(reqHeaders: Headers): string {
   const ip = reqHeaders.get('x-nf-client-connection-ip') || reqHeaders.get('client-ip') || 'unknown-ip';
-  const secret = process.env.IP_HASH_SECRET || 'fallback_secret_key_123';
-  return crypto.createHmac('sha256', secret).update(ip).digest('hex');
+  return generateIpHash(ip);
 }
 
 // Validar se o usuário logado é Admin Ativo
@@ -50,13 +49,21 @@ async function checkAdminAccess() {
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) throw new Error('Não autorizado');
 
-  const { data: profile } = await supabase
+  // A identidade vem da sessão validada acima. A leitura administrativa do
+  // perfil não deve depender das policies de SELECT da tabela profiles.
+  const adminClient = createAdminClient();
+  const { data: profile, error: profileError } = await adminClient
     .from('profiles')
     .select('role, ativo')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
-  if (!profile || !profile.ativo || profile.role !== 'admin') {
+  if (profileError) {
+    console.error('Erro ao validar perfil administrativo:', profileError);
+    throw new Error('Não foi possível validar o acesso administrativo');
+  }
+
+  if (!profile || profile.ativo !== true || profile.role !== 'admin') {
     throw new Error('Acesso negado');
   }
 
@@ -119,31 +126,56 @@ export async function getEmbaixadorDetails(id: string) {
 
   const { data: amb, error } = await adminClient
     .from('ambassadors')
-    .select(`
-      *,
-      commission_plans (
-        id,
-        name,
-        base_commission_percentage
-      ),
-      parent:parent_ambassador_id (
-        id,
-        full_name,
-        username
-      )
-    `)
+    .select('*')
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
-  if (error || !amb) {
+  if (error) {
+    console.error('Erro ao consultar embaixador:', error);
+    throw new Error('Falha ao carregar os dados do embaixador');
+  }
+
+  if (!amb) {
     throw new Error('Embaixador não encontrado');
   }
+
+  const [planResult, parentResult] = await Promise.all([
+    amb.commission_plan_id
+      ? adminClient
+          .from('commission_plans')
+          .select('id, name, direct_percentage, level_2_percentage, level_3_percentage, multilevel_enabled')
+          .eq('id', amb.commission_plan_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+    amb.parent_ambassador_id
+      ? adminClient
+          .from('ambassadors')
+          .select('id, full_name, username')
+          .eq('id', amb.parent_ambassador_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null })
+  ]);
+
+  if (planResult.error || parentResult.error) {
+    console.error('Erro ao consultar relacionamentos do embaixador:', planResult.error || parentResult.error);
+    throw new Error('Falha ao carregar o plano ou a indicação do embaixador');
+  }
+
+  const commissionPlan = planResult.data
+    ? {
+        ...planResult.data,
+        base_commission_percentage: planResult.data.direct_percentage
+      }
+    : null;
 
   // Mascarar dados sensíveis
   return {
     ...amb,
     cpf_masked: maskCPF(amb.cpf),
-    pix_key_masked: maskPix(amb.pix_key, amb.pix_type)
+    pix_type: amb.pix_key_type,
+    pix_key_masked: maskPix(amb.pix_key, amb.pix_key_type),
+    commission_plans: commissionPlan,
+    parent: parentResult.data
   };
 }
 
@@ -154,7 +186,7 @@ export async function revelarDadosSensiveis(ambassadorId: string, campo: 'cpf' |
 
   const { data: amb, error } = await adminClient
     .from('ambassadors')
-    .select('cpf, pix_key, pix_type, username')
+    .select('cpf, pix_key, pix_key_type, username')
     .eq('id', ambassadorId)
     .single();
 
@@ -294,22 +326,30 @@ export async function editarEmbaixador(ambassadorId: string, data: any) {
     normalizedPixType = 'chave_aleatoria';
   }
 
+  const updateData: Record<string, string | null> = {
+    full_name,
+    display_name: display_name || full_name,
+    phone: phone || null,
+    email: email.trim().toLowerCase(),
+    instagram: instagram || null,
+    city: city ? city.trim() : null,
+    state: normalizedState,
+    notes: notes || null,
+    photo_path: photo_path || null
+  };
+
+  // Uma chave mascarada/omitida significa "preservar a chave atual".
+  if (typeof pix_key === 'string' && pix_key.trim() && !pix_key.includes('*')) {
+    updateData.pix_key_type = normalizedPixType;
+    updateData.pix_key = pix_key.trim();
+  }
+
   const { error } = await adminClient
     .from('ambassadors')
-    .update({
-      full_name,
-      display_name: display_name || full_name,
-      phone: phone || null,
-      email: email.trim().toLowerCase(),
-      instagram: instagram || null,
-      city: city ? city.trim() : null,
-      state: normalizedState,
-      pix_key_type: normalizedPixType,
-      pix_key: pix_key ? pix_key.trim() : null,
-      notes: notes || null,
-      photo_path: photo_path || null
-    })
-    .eq('id', ambassadorId);
+    .update(updateData)
+    .eq('id', ambassadorId)
+    .select('id')
+    .single();
 
   if (error) throw new Error('Falha ao atualizar dados do embaixador');
 
@@ -343,16 +383,26 @@ export async function alterarStatus(ambassadorId: string, newStatus: string) {
   const admin = await checkAdminAccess();
   const adminClient = createAdminClient();
 
-  const { data: amb } = await adminClient
+  const allowedStatuses = ['pendente', 'ativo', 'inativo', 'bloqueado'];
+  if (!allowedStatuses.includes(newStatus)) {
+    throw new Error('Status de embaixador inválido');
+  }
+
+  const { data: amb, error: findError } = await adminClient
     .from('ambassadors')
     .select('user_id, username')
     .eq('id', ambassadorId)
-    .single();
+    .maybeSingle();
+
+  if (findError) throw new Error('Falha ao consultar o embaixador');
+  if (!amb) throw new Error('Embaixador não encontrado');
 
   const { error } = await adminClient
     .from('ambassadors')
     .update({ status: newStatus })
-    .eq('id', ambassadorId);
+    .eq('id', ambassadorId)
+    .select('id')
+    .single();
 
   if (error) throw new Error('Falha ao atualizar status');
 

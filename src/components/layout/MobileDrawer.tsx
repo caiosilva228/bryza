@@ -20,12 +20,13 @@ interface Route {
 
 export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
   const pathname = usePathname();
-  const [openMenus, setOpenMenus] = useState<string[]>(['Vendas']);
+  const [openMenus, setOpenMenus] = useState<string[]>(['Vendas', 'Minhas indicações', 'Programa de Embaixadores']);
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
     const fetchRole = async () => {
+      setRole(null);
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data } = await supabase
@@ -37,17 +38,37 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
       }
     };
     fetchRole();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        fetchRole();
+      } else if (event === 'SIGNED_OUT') {
+        setRole(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const getDrawerRoutes = () => {
+    if (role === null) return [];
+
     if (role === 'embaixador') {
       return [
         { label: 'Visão geral', path: '/embaixador/dashboard', icon: 'dashboard' },
         { label: 'Meu link', path: '/embaixador/meu-link', icon: 'link' },
-        { label: 'Minhas indicações', path: '/embaixador/indicacoes', icon: 'group_add' },
+        {
+          label: 'Minhas indicações',
+          icon: 'group_add',
+          subItems: [
+            { label: 'Clientes indicados', path: '/embaixador/indicacoes', icon: 'person_add' },
+            { label: 'Minha Rede', path: '/embaixador/minha-rede', icon: 'account_tree' },
+          ],
+        },
         { label: 'Minhas vendas', path: '/embaixador/vendas', icon: 'shopping_bag' },
         { label: 'Minhas comissões', path: '/embaixador/comissoes', icon: 'payments' },
         { label: 'Meus pagamentos', path: '/embaixador/pagamentos', icon: 'account_balance_wallet' },
+        { label: 'Calculadora de ganhos', path: '/embaixador/calculadora-de-ganhos', icon: 'calculate' },
         { label: 'Materiais', path: '/embaixador/materiais', icon: 'folder_zip' },
         { label: 'Meu perfil', path: '/embaixador/perfil', icon: 'account_circle' },
       ];
@@ -75,7 +96,15 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
     ];
 
     if (role === 'admin') {
-      baseRoutes.push({ label: 'Embaixadores', path: '/embaixadores', icon: 'loyalty' });
+      baseRoutes.push({
+        label: 'Programa de Embaixadores',
+        icon: 'loyalty',
+        subItems: [
+          { label: 'Embaixadores', path: '/embaixadores', icon: 'groups' },
+          { label: 'Pagamentos', path: '/embaixadores/pagamentos', icon: 'account_balance_wallet' },
+          { label: 'Configurações', path: '/embaixadores/configuracoes', icon: 'settings' },
+        ],
+      });
     }
 
     baseRoutes.push({ label: 'Perfil', path: '/perfil', icon: 'account_circle' });
@@ -101,7 +130,14 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
 
   const isActive = (path: string) => {
     if (path === '/') return pathname === '/';
-    return pathname.startsWith(path);
+    if (path === '/embaixadores') {
+      return pathname === path || (
+        pathname.startsWith('/embaixadores/') &&
+        !pathname.startsWith('/embaixadores/pagamentos') &&
+        !pathname.startsWith('/embaixadores/configuracoes')
+      );
+    }
+    return pathname === path;
   };
 
   const toggleMenu = (label: string) => {
@@ -182,8 +218,8 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
         {/* Nav Links */}
         <nav style={{ flex: 1, padding: '8px 0' }}>
           {drawerRoutes.map((route) => {
-            const isParentActive = route.subItems?.some(sub => pathname === sub.path);
-            const active = route.path === pathname || isParentActive;
+            const isParentActive = route.subItems?.some(sub => isActive(sub.path));
+            const active = (route.path ? isActive(route.path) : false) || isParentActive;
             const hasSubItems = !!route.subItems;
             const isOpenMenu = openMenus.includes(route.label);
 
@@ -251,7 +287,7 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
                 {hasSubItems && isOpenMenu && (
                   <div style={{ marginLeft: '24px', borderLeft: '1px solid var(--color-outline-variant)', marginBottom: '8px' }}>
                     {route.subItems!.map(sub => {
-                      const isSubActive = pathname === sub.path;
+                      const isSubActive = isActive(sub.path);
                       return (
                         <Link
                           key={sub.path}

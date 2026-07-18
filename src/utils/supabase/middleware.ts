@@ -39,11 +39,13 @@ export async function updateSession(request: NextRequest) {
   const isAuthRoute = pathname.startsWith('/login');
   const isPrimeiroAcesso = pathname.startsWith('/primeiro-acesso');
   const isPublicIndication = pathname.startsWith('/r/');
+  const isPublicSalesPage = /^\/bryza[0-9]+$/.test(pathname.toLowerCase());
+  const isPublicEarningsCalculator = pathname === '/calculadora-de-ganhos';
   
   // Ignorar assets estáticos comuns
   const isStaticAsset = pathname.match(/\.(svg|png|jpg|jpeg|gif|webp|ico|css|js)$/) || pathname.includes('_next/');
 
-  if (isStaticAsset || isPublicIndication) {
+  if (isStaticAsset || isPublicIndication || isPublicSalesPage || isPublicEarningsCalculator) {
     return supabaseResponse;
   }
 
@@ -156,6 +158,19 @@ export async function updateSession(request: NextRequest) {
     }
     // Admin e Vendedor continuam em "/" sem redirecionar
     return supabaseResponse;
+  }
+
+  // O backoffice de embaixadores é exclusivo de administradores. Impedir o
+  // acesso aqui evita que outros perfis renderizem a página e disparem Server
+  // Actions que, corretamente, recusariam a requisição.
+  if (pathname.startsWith('/embaixadores') && profile.role !== 'admin') {
+    if (profile.role === 'embaixador') {
+      return NextResponse.redirect(new URL('/embaixador/dashboard', request.url));
+    }
+    if (profile.role === 'logistica') {
+      return NextResponse.redirect(new URL('/logistica', request.url));
+    }
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   // G. Restrições de Acesso por Papel (RBAC) - Camada de Roteamento

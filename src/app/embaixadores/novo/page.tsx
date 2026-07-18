@@ -46,10 +46,18 @@ export default function NovoEmbaixadorPage() {
       const { data: plansData } = await supabase
         .from('commission_plans')
         .select('id, name')
+        .eq('status', 'ativo')
         .order('name');
       if (plansData) {
         setPlans(plansData);
-        if (plansData.length > 0) setPlanId(plansData[0].id);
+        const { data: settings } = await supabase
+          .from('ambassador_program_settings')
+          .select('default_commission_plan_id')
+          .eq('singleton', true)
+          .maybeSingle();
+        const defaultPlan = plansData.find(plan => plan.id === settings?.default_commission_plan_id);
+        if (defaultPlan) setPlanId(defaultPlan.id);
+        else if (plansData.length > 0) setPlanId(plansData[0].id);
       }
 
       // Buscar Embaixadores para Patrocinadores

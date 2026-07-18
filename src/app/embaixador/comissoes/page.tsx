@@ -89,7 +89,7 @@ export default function ComissoesPage() {
                       <th style={{ padding: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Data</th>
                       <th style={{ padding: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Pedido</th>
                       <th style={{ padding: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600, textAlign: 'right' }}>Valor do Pedido</th>
-                      <th style={{ padding: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600, textAlign: 'center' }}>% Comissão</th>
+                      <th style={{ padding: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600, textAlign: 'center' }}>Comissão</th>
                       <th style={{ padding: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600, textAlign: 'right' }}>Valor Comissão</th>
                       <th style={{ padding: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Status</th>
                     </tr>
@@ -100,7 +100,9 @@ export default function ComissoesPage() {
                         <td style={{ padding: '12px' }}>{formatDate(item.created_at)}</td>
                         <td style={{ padding: '12px', fontWeight: 700, fontFamily: 'monospace' }}>{item.order_code}</td>
                         <td style={{ padding: '12px', textAlign: 'right', fontWeight: 600 }}>{formatCurrency(item.order_amount)}</td>
-                        <td style={{ padding: '12px', textAlign: 'center', fontWeight: 700 }}>{item.commission_percentage}%</td>
+                        <td style={{ padding: '12px', textAlign: 'center', fontWeight: 700 }}>
+                          {item.commission_type === 'first_purchase_bonus' ? 'Bônus 1ª compra' : `${item.commission_percentage}%`}
+                        </td>
                         <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700, color: 'var(--color-primary)' }}>
                           {formatCurrency(item.commission_amount)}
                         </td>

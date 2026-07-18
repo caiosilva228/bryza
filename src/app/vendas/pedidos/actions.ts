@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { unstable_rethrow } from 'next/navigation';
 import * as pedidoService from '@/services/pedidos';
 import { getProdutos } from '@/services/produtos';
 import { StatusPedido, Pedido, PedidoItem } from '@/models/types';
@@ -9,6 +10,7 @@ export async function getPedidos() {
   try {
     return await pedidoService.fetchPedidos();
   } catch (error) {
+    unstable_rethrow(error);
     console.error('Erro ao buscar pedidos:', error);
     throw new Error('Falha ao carregar lista de pedidos.');
   }
@@ -18,6 +20,7 @@ export async function getPedidoById(id: string) {
   try {
     return await pedidoService.fetchPedidoById(id);
   } catch (error) {
+    unstable_rethrow(error);
     console.error('Erro ao buscar detalhes do pedido:', error);
     throw new Error('Falha ao carregar detalhes do pedido.');
   }
@@ -27,6 +30,7 @@ export async function getProdutosAction() {
   try {
     return await getProdutos();
   } catch (error) {
+    unstable_rethrow(error);
     console.error('Erro ao buscar produtos:', error);
     throw new Error('Falha ao carregar produtos.');
   }
@@ -44,6 +48,7 @@ export async function savePedido(
     revalidatePath('/vendas');
     return data;
   } catch (error) {
+    unstable_rethrow(error);
     console.error('Erro ao salvar pedido:', error);
     throw new Error('Falha ao salvar o pedido. Verifique os dados e tente novamente.');
   }
@@ -72,6 +77,7 @@ export async function updatePedidoStatus(id: string, status: StatusPedido) {
     
     return data;
   } catch (error) {
+    unstable_rethrow(error);
     console.error('Erro ao atualizar status do pedido:', error);
     throw new Error(error instanceof Error ? error.message : 'Falha ao atualizar o status do pedido.');
   }
@@ -81,6 +87,7 @@ export async function getPedidosStats() {
   try {
     return await pedidoService.fetchPedidosStats();
   } catch (error) {
+    unstable_rethrow(error);
     console.error('Erro ao buscar estatísticas de pedidos:', error);
     return { total: 0, preparacao: 0, rota: 0, entregues: 0, finalizados: 0 };
   }
@@ -95,6 +102,7 @@ export async function finalizarPedidoAction(id: string) {
     revalidatePath('/estoque');
     return result;
   } catch (error) {
+    unstable_rethrow(error);
     console.error('Erro ao finalizar pedido:', error);
     throw new Error(error instanceof Error ? error.message : 'Falha ao finalizar o pedido.');
   }
@@ -108,6 +116,7 @@ export async function cancelarPedidoAction(id: string) {
     revalidatePath('/estoque');
     return result;
   } catch (error) {
+    unstable_rethrow(error);
     console.error('Erro ao cancelar pedido:', error);
     throw new Error(error instanceof Error ? error.message : 'Falha ao cancelar o pedido.');
   }
@@ -126,6 +135,7 @@ export async function updatePedidoAction(
     revalidatePath('/vendas');
     return result;
   } catch (error) {
+    unstable_rethrow(error);
     console.error('Erro ao editar pedido:', error);
     throw new Error(error instanceof Error ? error.message : 'Falha ao editar o pedido.');
   }

@@ -133,6 +133,18 @@ export async function POST(req: NextRequest) {
 
     // 4. Fluxo de Transação Compensatória (Evitar órfãos)
     const adminClient = createAdminClient();
+    let resolvedCommissionPlanId = commission_plan_id || null;
+    if (!resolvedCommissionPlanId) {
+      const { data: programSettings, error: settingsError } = await adminClient
+        .from('ambassador_program_settings')
+        .select('default_commission_plan_id')
+        .eq('singleton', true)
+        .single();
+      if (settingsError || !programSettings?.default_commission_plan_id) {
+        return NextResponse.json({ error: 'Plano padrão do programa não configurado.' }, { status: 500 });
+      }
+      resolvedCommissionPlanId = programSettings.default_commission_plan_id;
+    }
     
     // Inserção inicial em public.ambassadors com user_id nulo para gerar o username bryzaNN
     const { data: newAmb, error: ambInsertError } = await adminClient
@@ -148,7 +160,7 @@ export async function POST(req: NextRequest) {
         state: normalizedState,
         pix_key_type: normalizedPixType,
         pix_key: pix_key ? pix_key.trim() : null,
-        commission_plan_id: commission_plan_id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', // default plan ID
+        commission_plan_id: resolvedCommissionPlanId,
         parent_ambassador_id: parent_ambassador_id || null,
         status: status || 'pendente',
         notes: notes || null,
