@@ -332,7 +332,7 @@ export async function editarEmbaixador(ambassadorId: string, data: any) {
     normalizedPixType = 'chave_aleatoria';
   }
 
-  const updateData: Record<string, string | null> = {
+  const updateData: Record<string, any> = {
     full_name,
     display_name: display_name || full_name,
     phone: phone || null,

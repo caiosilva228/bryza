@@ -54,6 +54,12 @@ export type AmbassadorProfileData = {
   instagram: string;
   city: string;
   state: string;
+  cep: string;
+  address: string;
+  number: string;
+  neighborhood: string;
+  latitude: string;
+  longitude: string;
   pix_type: 'cpf' | 'cnpj' | 'email' | 'telefone' | 'chave_aleatoria';
   pix_key_masked: string;
   photo_path: string | null;
@@ -151,7 +157,7 @@ export async function getMeuPerfilData(): Promise<AmbassadorProfileData> {
   const [{ data: ambassador, error: ambassadorError }, { data: settings, error: settingsError }] = await Promise.all([
     admin
       .from('ambassadors')
-      .select('referral_code, display_name, full_name, phone, instagram, city, state, pix_key_type, pix_key, photo_path, status')
+      .select('referral_code, display_name, full_name, phone, instagram, city, state, cep, address, number, neighborhood, latitude, longitude, pix_key_type, pix_key, photo_path, status')
       .eq('user_id', user.id)
       .single(),
     admin
@@ -180,6 +186,12 @@ export async function getMeuPerfilData(): Promise<AmbassadorProfileData> {
     instagram: ambassador.instagram || '',
     city: ambassador.city || '',
     state: ambassador.state || '',
+    cep: ambassador.cep || '',
+    address: ambassador.address || '',
+    number: ambassador.number || '',
+    neighborhood: ambassador.neighborhood || '',
+    latitude: ambassador.latitude?.toString() || '',
+    longitude: ambassador.longitude?.toString() || '',
     pix_type: pixType,
     pix_key_masked: maskOwnPix(ambassador.pix_key),
     photo_path: ambassador.photo_path || null,
@@ -328,6 +340,12 @@ export async function atualizarMeuPerfil(payload: {
   instagram?: string;
   city?: string;
   state?: string;
+  cep?: string;
+  address?: string;
+  number?: string;
+  neighborhood?: string;
+  latitude?: string;
+  longitude?: string;
   pix_type?: string;
   pix_key?: string;
   photo_path?: string;
@@ -383,6 +401,22 @@ export async function atualizarMeuPerfil(payload: {
   if (error) {
     console.error('Erro ao atualizar perfil do embaixador:', error);
     throw new Error(error.message || 'Falha ao atualizar perfil');
+  }
+
+  // Update additional address fields directly since the RPC doesn't cover them
+  const { error: addressError } = await admin.from('ambassadors')
+    .update({
+      cep: payload.cep !== undefined ? payload.cep : null,
+      address: payload.address !== undefined ? payload.address : null,
+      number: payload.number !== undefined ? payload.number : null,
+      neighborhood: payload.neighborhood !== undefined ? payload.neighborhood : null,
+      latitude: payload.latitude ? Number(payload.latitude) : null,
+      longitude: payload.longitude ? Number(payload.longitude) : null,
+    })
+    .eq('user_id', user.id);
+
+  if (addressError) {
+    console.error('Erro ao atualizar endereço do embaixador:', addressError);
   }
 
   revalidatePath('/embaixador/perfil');
