@@ -20,7 +20,7 @@ export function ClienteForm({
   const [formData, setFormData] = useState({
     nome: initialData?.nome || '',
     telefone: initialData?.telefone || '',
-    cpf: initialData?.cpf || '',
+    cpf: initialData?.cpf ? initialData.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : '',
     cep: initialData?.cep || '',
     endereco: initialData?.endereco || '',
     numero: initialData?.numero || '',

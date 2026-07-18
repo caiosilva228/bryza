@@ -78,7 +78,7 @@ function buildPayload(formData: FormData, profileRole: 'admin' | 'vendedor' | 'l
     origem: formData.get('origem')?.toString() || 'indicação',
     status_cliente: formData.get('status_cliente')?.toString() || 'lead',
     vendedor_responsavel_id: vendedorResponsavelId,
-    cpf: formData.get('cpf')?.toString() || null,
+    cpf: formData.get('cpf')?.toString().replace(/\D/g, '') || null,
     latitude: formData.get('latitude') ? Number(formData.get('latitude')) : null,
     longitude: formData.get('longitude') ? Number(formData.get('longitude')) : null,
   };

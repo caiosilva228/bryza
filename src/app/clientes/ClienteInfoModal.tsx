@@ -177,7 +177,9 @@ export default function ClienteInfoModal({ cliente, onClose, isAdmin, onDelete, 
                       <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: 'var(--color-primary-container-low)', display: 'flex', alignItems: 'center', justifyItems: 'center', color: 'var(--color-primary)', justifyContent: 'center' }}>
                         <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>badge</span>
                       </div>
-                      <span style={{ fontSize: '15px', fontWeight: 600 }}>{cliente.cpf}</span>
+                      <span style={{ fontSize: '15px', fontWeight: 600 }}>
+                        {cliente.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')}
+                      </span>
                     </div>
                   )}
                   <div style={{ display: 'flex', gap: '14px' }}>
