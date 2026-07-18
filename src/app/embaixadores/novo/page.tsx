@@ -10,7 +10,8 @@ import { toast } from 'sonner';
 export default function NovoEmbaixadorPage() {
   const router = useRouter();
   const [plans, setPlans] = useState<{ id: string; name: string }[]>([]);
-  const [sponsors, setSponsors] = useState<{ id: string; full_name: string; username: string }[]>([]);
+  const [sponsors, setSponsors] = useState<{ id: string; full_name: string; username: string; cpf: string; referral_code: string }[]>([]);
+  const [sponsorSearch, setSponsorSearch] = useState('');
   
   // Estados do formulário
   const [fullName, setFullName] = useState('');
@@ -231,7 +232,7 @@ export default function NovoEmbaixadorPage() {
       // Buscar Embaixadores para Patrocinadores
       const { data: ambData } = await supabase
         .from('ambassadors')
-        .select('id, full_name, username')
+        .select('id, full_name, username, cpf, referral_code')
         .eq('status', 'ativo')
         .order('full_name');
       if (ambData) setSponsors(ambData);
@@ -683,13 +684,28 @@ export default function NovoEmbaixadorPage() {
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>Patrocinador Futuro (Opcional)</label>
-                <select value={sponsorId} onChange={e => setSponsorId(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)' }}>
-                  <option value="">Nenhum / Sem Patrocinador</option>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>Indicado por (Opcional)</label>
+                <input 
+                  type="text" 
+                  value={sponsorSearch} 
+                  onChange={e => {
+                    setSponsorSearch(e.target.value);
+                    const selected = sponsors.find(s => {
+                      const text = `${s.full_name} | CPF: ${s.cpf || 'N/A'} | Cód: ${s.referral_code || s.username}`;
+                      return text === e.target.value;
+                    });
+                    if (selected) setSponsorId(selected.id);
+                    else setSponsorId('');
+                  }} 
+                  list="sponsors-list" 
+                  placeholder="Pesquise por nome, CPF ou código"
+                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)' }} 
+                />
+                <datalist id="sponsors-list">
                   {sponsors.map(s => (
-                    <option key={s.id} value={s.id}>{s.full_name} ({s.username})</option>
+                    <option key={s.id} value={`${s.full_name} | CPF: ${s.cpf || 'N/A'} | Cód: ${s.referral_code || s.username}`} />
                   ))}
-                </select>
+                </datalist>
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>Status Inicial *</label>
