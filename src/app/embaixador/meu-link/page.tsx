@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { getReferralUrl } from '@/utils/env';
 import { getPortalDashboardData } from '../actions';
 import { toast } from 'sonner';
 
@@ -25,7 +26,7 @@ export default function MeuLinkPage() {
   }
 
   const code = data?.referral_code || 'bryza01';
-  const fullUrl = `https://bryzasistem.netlify.app/r/${code}`;
+  const fullUrl = getReferralUrl(code);
   const qrCodeUrl = `/api/r/${code}/qrcode`;
   const whatsappMsg = encodeURIComponent(`Olá! Compre na Bryza utilizando meu link exclusivo de indicação: ${fullUrl}`);
 

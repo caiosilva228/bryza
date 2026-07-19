@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
+import { getSyntheticEmail } from '@/utils/env';
 
 // Validador de CPF padrão (algoritmo dos dígitos verificadores)
 function isValidCPF(cpf: string): boolean {
@@ -195,7 +196,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Gerar e-mail sintético e criar conta auth
-    const syntheticEmail = `${newAmb.username}@usuarios.bryza.internal`;
+    const syntheticEmail = getSyntheticEmail(newAmb.username);
 
     const { data: authData, error: createUserError } = await adminClient.auth.admin.createUser({
       email: syntheticEmail,

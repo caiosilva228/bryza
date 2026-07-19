@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
+import { getSyntheticEmail } from '@/utils/env';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { headers } from 'next/headers';
 import crypto from 'crypto';
@@ -57,9 +58,9 @@ export async function login(formData: FormData) {
     // Mantém a mesma resposta genérica para telefone inexistente ou ambíguo.
     resolvedEmail = typeof phoneEmail === 'string' && phoneEmail
       ? phoneEmail
-      : `telefone-invalido-${normalizedUsername}@usuarios.bryza.internal`;
+      : getSyntheticEmail(`telefone-invalido-${normalizedUsername}`);
   } else if (/^bryza\d+$/.test(normalizedUsername)) {
-    resolvedEmail = `${normalizedUsername}@usuarios.bryza.internal`;
+    resolvedEmail = getSyntheticEmail(normalizedUsername);
   }
 
   // 3. Autenticação no Supabase Auth

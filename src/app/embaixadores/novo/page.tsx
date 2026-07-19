@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { getReferralUrl } from '@/utils/env';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { editarEmbaixador } from '../actions';
@@ -350,7 +351,7 @@ export default function NovoEmbaixadorPage() {
         setCreatedData({
           username: newAmb.username,
           phoneClean,
-          referralLink: `https://bryzasistem.netlify.app/r/${newAmb.username}`
+          referralLink: getReferralUrl(newAmb.username)
         });
 
       } catch (err: any) {

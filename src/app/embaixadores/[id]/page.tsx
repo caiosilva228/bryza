@@ -13,6 +13,7 @@ import {
   getSignedPhotoUrl 
 } from '../actions';
 import { formatCurrency, formatDate } from '@/utils/format';
+import { getReferralUrl } from '@/utils/env';
 import { toast } from 'sonner';
 
 interface Context {
@@ -585,7 +586,7 @@ export default function EmbaixadorDetailsPage({ params }: Context) {
 
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(`https://bryzasistem.netlify.app/r/${amb.username}`);
+                      navigator.clipboard.writeText(getReferralUrl(amb.username));
                       toast.success('Link copiado!');
                     }}
                     style={{
