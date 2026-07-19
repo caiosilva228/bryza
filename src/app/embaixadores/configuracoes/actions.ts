@@ -12,6 +12,13 @@ export type CommissionLevelConfig = {
   enabled: boolean;
 };
 
+export type CommissionPlanData = {
+  id: string;
+  name: string;
+  commissionBase: 'valor_final' | 'valor_bruto' | 'valor_liquido';
+  levels: CommissionLevelConfig[];
+};
+
 export type ProgramSettingsData = {
   programStatus: 'ativo' | 'pausado' | 'encerrado';
   referralAttributionDays: number;
@@ -29,16 +36,13 @@ export type ProgramSettingsData = {
   firstPurchaseBonusEnabled: boolean;
   firstPurchaseMinimumAmount: number;
   firstPurchaseBonusAmount: number;
-  defaultPlan: {
-    id: string;
-    name: string;
-    commissionBase: 'valor_final' | 'valor_bruto' | 'valor_liquido';
-    levels: CommissionLevelConfig[];
-  };
+  plans: CommissionPlanData[];
+  defaultPlan: CommissionPlanData;
 };
 
-export type ProgramSettingsInput = Omit<ProgramSettingsData, 'defaultPlan'> & {
+export type ProgramSettingsInput = Omit<ProgramSettingsData, 'defaultPlan' | 'plans'> & {
   defaultPlan: Omit<ProgramSettingsData['defaultPlan'], 'id'> & { id: string };
+  plans?: CommissionPlanData[];
 };
 
 async function requireAdmin() {
@@ -106,8 +110,10 @@ function normalizeInput(input: ProgramSettingsInput): ProgramSettingsInput {
 
   const planName = String(input.defaultPlan.name || '').trim().slice(0, 100);
   if (!planName) throw new Error('Informe o nome do plano de comissão.');
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(input.defaultPlan.id))) {
-    throw new Error('Plano de comissão inválido.');
+  
+  let planId = String(input.defaultPlan.id || '');
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(planId)) {
+    planId = crypto.randomUUID();
   }
 
   const referralDestinationUrl = String(input.referralDestinationUrl || '').trim();
@@ -153,7 +159,7 @@ function normalizeInput(input: ProgramSettingsInput): ProgramSettingsInput {
     firstPurchaseMinimumAmount,
     firstPurchaseBonusAmount,
     defaultPlan: {
-      id: String(input.defaultPlan.id),
+      id: planId,
       name: planName,
       commissionBase: input.defaultPlan.commissionBase,
       levels,
@@ -173,12 +179,45 @@ export async function getAmbassadorProgramSettings(): Promise<ProgramSettingsDat
     throw new Error('Configurações do programa não encontradas.');
   }
 
-  const [{ data: plan, error: planError }, { data: levels, error: levelsError }] = await Promise.all([
-    admin.from('commission_plans').select('id, name, commission_base').eq('id', settings.default_commission_plan_id).single(),
-    admin.from('commission_plan_levels').select('id, level_number, name, percentage, enabled').eq('commission_plan_id', settings.default_commission_plan_id).order('level_number'),
-  ]);
+  // 1. Buscar todos os planos de comissão ativos
+  const { data: dbPlans } = await admin
+    .from('commission_plans')
+    .select('id, name, commission_base, status')
+    .eq('status', 'ativo')
+    .order('created_at', { ascending: false });
 
-  if (planError || !plan || levelsError) throw new Error('Plano de comissão padrão não encontrado.');
+  const planIds = (dbPlans || []).map(p => p.id);
+  const { data: dbLevels } = await admin
+    .from('commission_plan_levels')
+    .select('id, commission_plan_id, level_number, name, percentage, enabled')
+    .in('commission_plan_id', planIds)
+    .order('level_number');
+
+  const plansMap: Record<string, CommissionPlanData> = {};
+
+  (dbPlans || []).forEach(p => {
+    const levelsForPlan = (dbLevels || [])
+      .filter(l => l.commission_plan_id === p.id)
+      .map(l => ({
+        id: l.id,
+        level_number: Number(l.level_number),
+        name: l.name,
+        percentage: Number(l.percentage),
+        enabled: Boolean(l.enabled),
+      }));
+
+    plansMap[p.id] = {
+      id: p.id,
+      name: p.name,
+      commissionBase: p.commission_base as any,
+      levels: levelsForPlan.length > 0 ? levelsForPlan : [
+        { level_number: 1, name: 'Nível 1', percentage: 7, enabled: true }
+      ]
+    };
+  });
+
+  const plans = Object.values(plansMap);
+  const defaultPlan = plansMap[settings.default_commission_plan_id] || plans[0];
 
   return {
     programStatus: settings.program_status,
@@ -197,18 +236,8 @@ export async function getAmbassadorProgramSettings(): Promise<ProgramSettingsDat
     firstPurchaseBonusEnabled: Boolean(settings.first_purchase_bonus_enabled),
     firstPurchaseMinimumAmount: Number(settings.first_purchase_minimum_amount),
     firstPurchaseBonusAmount: Number(settings.first_purchase_bonus_amount),
-    defaultPlan: {
-      id: plan.id,
-      name: plan.name,
-      commissionBase: plan.commission_base,
-      levels: (levels || []).map((level) => ({
-        id: level.id,
-        level_number: Number(level.level_number),
-        name: level.name,
-        percentage: Number(level.percentage),
-        enabled: Boolean(level.enabled),
-      })),
-    },
+    plans,
+    defaultPlan,
   };
 }
 

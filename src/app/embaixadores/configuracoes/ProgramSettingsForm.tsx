@@ -213,7 +213,51 @@ export function ProgramSettingsForm({ initialSettings }: Props) {
         <section className={styles.card} id="comissoes">
           <SectionHeading icon="account_tree" title="Níveis e comissões" description="Expanda a rede com níveis configuráveis e percentuais independentes." />
           <div className={styles.planBar}>
-            <Field label="Nome do plano"><input data-field="planName" value={settings.defaultPlan.name} maxLength={80} onChange={(event) => updatePlan('name', event.target.value)} /></Field>
+            <Field label="Selecione o plano">
+              <select
+                value={settings.defaultPlan.id}
+                onChange={(event) => {
+                  const planId = event.target.value;
+                  if (planId === 'new') {
+                    setSettings((current) => ({
+                      ...current,
+                      defaultPlan: {
+                        id: 'new',
+                        name: 'Novo Plano de Comissões',
+                        commissionBase: 'valor_final',
+                        levels: [
+                          { level_number: 1, name: 'Nível 1', percentage: 5, enabled: true },
+                        ],
+                      },
+                    }));
+                  } else {
+                    const selected = (initialSettings.plans || []).find((p) => p.id === planId);
+                    if (selected) {
+                      setSettings((current) => ({
+                        ...current,
+                        defaultPlan: structuredClone(selected),
+                      }));
+                    }
+                  }
+                }}
+              >
+                {(initialSettings.plans || []).map((plan) => (
+                  <option key={plan.id} value={plan.id}>
+                    {plan.name}
+                  </option>
+                ))}
+                <option value="new">+ Criar novo plano...</option>
+              </select>
+            </Field>
+            <Field label="Nome do plano">
+              <input
+                data-field="planName"
+                value={settings.defaultPlan.name}
+                maxLength={80}
+                onChange={(event) => updatePlan('name', event.target.value)}
+                placeholder="Ex: Embaixador Ouro"
+              />
+            </Field>
             <Field label="Base de cálculo"><select value={settings.defaultPlan.commissionBase} onChange={(event) => updatePlan('commissionBase', event.target.value as ProgramSettingsInput['defaultPlan']['commissionBase'])}><option value="valor_final">Valor final da venda</option><option value="valor_bruto">Valor bruto</option><option value="valor_liquido">Valor líquido</option></select></Field>
             <div className={styles.commissionTotal}><small>Total dos níveis ativos</small><strong className={enabledCommissionTotal > 100 ? styles.totalDanger : ''}>{enabledCommissionTotal.toFixed(2).replace('.', ',')}%</strong><span>Limite combinado: 100%</span></div>
           </div>
