@@ -78,12 +78,12 @@ export async function POST(req: NextRequest) {
     } = body;
 
     // Validações básicas
-    if (!full_name || !cpf || !email) {
-      return NextResponse.json({ error: 'Nome completo, CPF e E-mail são obrigatórios.' }, { status: 400 });
+    if (!full_name || !email) {
+      return NextResponse.json({ error: 'Nome completo e E-mail são obrigatórios.' }, { status: 400 });
     }
 
-    const normalizedCpf = cpf.replace(/\D/g, '');
-    if (!isValidCPF(normalizedCpf)) {
+    const normalizedCpf = cpf ? cpf.replace(/\D/g, '') : null;
+    if (normalizedCpf && !isValidCPF(normalizedCpf)) {
       return NextResponse.json({ error: 'CPF inválido.' }, { status: 400 });
     }
 
@@ -189,12 +189,17 @@ export async function POST(req: NextRequest) {
       }, { status: 500 });
     }
 
+    const phoneClean = (phone || '').replace(/\D/g, '');
+    if (!phoneClean || phoneClean.length < 10) {
+      return NextResponse.json({ error: 'Telefone com DDD é obrigatório para gerar a senha inicial.' }, { status: 400 });
+    }
+
     // Gerar e-mail sintético e criar conta auth
     const syntheticEmail = `${newAmb.username}@usuarios.bryza.internal`;
 
     const { data: authData, error: createUserError } = await adminClient.auth.admin.createUser({
       email: syntheticEmail,
-      password: normalizedCpf,
+      password: phoneClean,
       email_confirm: true,
       user_metadata: {
         nome: full_name,

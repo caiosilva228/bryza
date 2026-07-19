@@ -220,19 +220,22 @@ export async function redefinirAcesso(ambassadorId: string) {
 
   const { data: amb, error } = await adminClient
     .from('ambassadors')
-    .select('user_id, cpf, username')
+    .select('user_id, cpf, phone, username')
     .eq('id', ambassadorId)
     .single();
 
   if (error || !amb || !amb.user_id) throw new Error('Embaixador não possui usuário auth ativo');
 
-  const cleanCpf = amb.cpf.replace(/\D/g, '');
+  const cleanPhone = amb.phone ? amb.phone.replace(/\D/g, '') : '';
+  const initialPassword = cleanPhone || (amb.cpf ? amb.cpf.replace(/\D/g, '') : '');
+  if (!initialPassword) throw new Error('Telefone ou CPF do embaixador não encontrado para redefinir senha.');
+
   const reqHeaders = await headers();
   const ipHash = getIpHash(reqHeaders);
 
-  // 1. Atualizar senha no Supabase Auth para o CPF limpo
+  // 1. Atualizar senha no Supabase Auth para o telefone limpo
   const { error: authError } = await adminClient.auth.admin.updateUserById(amb.user_id, {
-    password: cleanCpf
+    password: initialPassword
   });
 
   if (authError) throw new Error(`Falha ao redefinir credenciais: ${authError.message}`);

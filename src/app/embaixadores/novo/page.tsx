@@ -44,7 +44,7 @@ export default function NovoEmbaixadorPage() {
   // Estados de confirmação
   const [createdData, setCreatedData] = useState<{
     username: string;
-    cpfClean: string;
+    phoneClean: string;
     referralLink: string;
   } | null>(null);
 
@@ -346,9 +346,10 @@ export default function NovoEmbaixadorPage() {
         toast.success('Embaixador cadastrado com sucesso!');
         
         // 3. Exibir tela de confirmação
+        const phoneClean = phone.replace(/\D/g, '');
         setCreatedData({
           username: newAmb.username,
-          cpfClean,
+          phoneClean,
           referralLink: `https://bryzasistem.netlify.app/r/${newAmb.username}`
         });
 
@@ -409,11 +410,11 @@ export default function NovoEmbaixadorPage() {
               </div>
 
               <div style={{ borderTop: '1px solid var(--color-outline-variant)', paddingTop: '16px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>SENHA INICIAL (CPF informado)</span>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>SENHA INICIAL (Telefone informado)</span>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                  <span style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 700, color: 'var(--color-on-surface)' }}>{createdData.cpfClean}</span>
+                  <span style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 700, color: 'var(--color-on-surface)' }}>{createdData.phoneClean}</span>
                   <button 
-                    onClick={() => handleCopy(createdData.cpfClean, 'Senha inicial')}
+                    onClick={() => handleCopy(createdData.phoneClean, 'Senha inicial')}
                     style={{ background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 600 }}
                   >
                     <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>content_copy</span> Copiar
@@ -500,24 +501,24 @@ export default function NovoEmbaixadorPage() {
                 <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value.toUpperCase())} placeholder="Como aparecerá na plataforma (opcional)" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)', textTransform: 'uppercase' }} />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>CPF *</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>CPF (Opcional)</label>
                 <input type="text" value={cpf} onChange={e => {
                   let v = e.target.value.replace(/\D/g, '');
                   v = v.replace(/(\d{3})(\d)/, '$1.$2');
                   v = v.replace(/(\d{3})(\d)/, '$1.$2');
                   v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
                   setCpf(v.slice(0, 14));
-                }} required placeholder="Ex: 123.456.789-00" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)' }} maxLength={14} />
+                }} placeholder="Ex: 123.456.789-00" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)' }} maxLength={14} />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>Telefone</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>Telefone *</label>
                 <input type="text" value={phone} onChange={e => {
                   let v = e.target.value.replace(/\D/g, '');
                   if (v.length <= 11) {
                     v = v.replace(/^(\d{2})(\d)/g, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2");
                   }
                   setPhone(v.slice(0, 15));
-                }} placeholder="Ex: (11) 98888-8888" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)' }} maxLength={15} />
+                }} required placeholder="Ex: (11) 98888-8888" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)' }} maxLength={15} />
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>E-mail de Contato *</label>

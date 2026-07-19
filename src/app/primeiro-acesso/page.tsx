@@ -6,6 +6,7 @@ import { logout } from '../login/actions';
 import styles from './primeiro-acesso.module.css';
 
 export default function PrimeiroAcessoPage() {
+  const [cpf, setCpf] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -13,16 +14,24 @@ export default function PrimeiroAcessoPage() {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  const cpfClean = useMemo(() => cpf.replace(/\D/g, ''), [cpf]);
+
   const passwordState = useMemo(() => ({
+    hasValidCpf: cpfClean.length === 11,
     hasMinimumLength: newPassword.length >= 8,
     passwordsMatch: confirmPassword.length > 0 && newPassword === confirmPassword,
-  }), [newPassword, confirmPassword]);
+  }), [cpfClean, newPassword, confirmPassword]);
 
-  const canSubmit = passwordState.hasMinimumLength && passwordState.passwordsMatch && !isPending;
+  const canSubmit = passwordState.hasValidCpf && passwordState.hasMinimumLength && passwordState.passwordsMatch && !isPending;
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+
+    if (cpfClean.length !== 11) {
+      setError('Informe um CPF válido com 11 dígitos.');
+      return;
+    }
 
     if (!passwordState.hasMinimumLength) {
       setError('A senha deve conter no mínimo 8 caracteres.');
@@ -35,13 +44,14 @@ export default function PrimeiroAcessoPage() {
     }
 
     const formData = new FormData();
+    formData.append('cpf', cpfClean);
     formData.append('newPassword', newPassword);
     formData.append('confirmPassword', confirmPassword);
 
     startTransition(async () => {
       const result = await alterarSenhaPrimeiroAcesso(null, formData);
       if (result && !result.success) {
-        setError(result.error || 'Ocorreu um erro ao atualizar a senha.');
+        setError(result.error || 'Ocorreu um erro ao atualizar os dados.');
       }
     });
   };
@@ -65,15 +75,15 @@ export default function PrimeiroAcessoPage() {
 
             <h2>Falta pouco para acessar seu painel.</h2>
             <p>
-              A senha inicial é temporária. Crie uma senha pessoal para proteger
-              seus dados, vendas e comissões.
+              Complete seus dados informando seu CPF e criando uma nova senha pessoal para proteger
+              sua conta.
             </p>
           </div>
 
           <ul className={styles.benefits}>
+            <li><span className="material-symbols-outlined">badge</span> CPF obrigatório para validação da conta</li>
             <li><span className="material-symbols-outlined">lock</span> Sua senha é armazenada com segurança</li>
             <li><span className="material-symbols-outlined">shield_person</span> Somente você terá acesso ao painel</li>
-            <li><span className="material-symbols-outlined">check_circle</span> A troca é necessária apenas uma vez</li>
           </ul>
         </aside>
 
@@ -86,9 +96,9 @@ export default function PrimeiroAcessoPage() {
           </div>
 
           <span className={styles.step}>Primeiro acesso</span>
-          <h1 id="first-access-title">Crie sua nova senha</h1>
+          <h1 id="first-access-title">Informe seu CPF e crie uma senha</h1>
           <p className={styles.subtitle}>
-            Escolha uma senha diferente da senha inicial e dos seus dados pessoais.
+            Informe seu CPF para validação e escolha uma nova senha pessoal.
           </p>
 
           {error && (
@@ -99,6 +109,32 @@ export default function PrimeiroAcessoPage() {
           )}
 
           <form onSubmit={handleSubmit} className={styles.form}>
+            <div className={styles.field}>
+              <label htmlFor="cpf">CPF *</label>
+              <div className={styles.inputShell}>
+                <span className={`material-symbols-outlined ${styles.leadingIcon}`}>badge</span>
+                <input
+                  type="text"
+                  id="cpf"
+                  name="cpf"
+                  value={cpf}
+                  onChange={(event) => {
+                    let v = event.target.value.replace(/\D/g, '');
+                    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                    v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                    v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                    setCpf(v.slice(0, 14));
+                    setError(null);
+                  }}
+                  placeholder="Ex: 123.456.789-00"
+                  maxLength={14}
+                  required
+                  disabled={isPending}
+                  autoFocus
+                />
+              </div>
+            </div>
+
             <div className={styles.field}>
               <label htmlFor="newPassword">Nova senha</label>
               <div className={styles.inputShell}>
@@ -118,7 +154,6 @@ export default function PrimeiroAcessoPage() {
                   minLength={8}
                   required
                   disabled={isPending}
-                  autoFocus
                 />
                 <button
                   type="button"
@@ -163,9 +198,13 @@ export default function PrimeiroAcessoPage() {
             </div>
 
             <div id="password-rules" className={styles.rules} aria-live="polite">
+              <div className={passwordState.hasValidCpf ? styles.ruleValid : ''}>
+                <span className="material-symbols-outlined">{passwordState.hasValidCpf ? 'check_circle' : 'radio_button_unchecked'}</span>
+                CPF com 11 dígitos preenchido
+              </div>
               <div className={passwordState.hasMinimumLength ? styles.ruleValid : ''}>
                 <span className="material-symbols-outlined">{passwordState.hasMinimumLength ? 'check_circle' : 'radio_button_unchecked'}</span>
-                Pelo menos 8 caracteres
+                Pelo menos 8 caracteres na senha
               </div>
               <div className={passwordState.passwordsMatch ? styles.ruleValid : ''}>
                 <span className="material-symbols-outlined">{passwordState.passwordsMatch ? 'check_circle' : 'radio_button_unchecked'}</span>
@@ -177,7 +216,7 @@ export default function PrimeiroAcessoPage() {
               {isPending ? (
                 <><span className={`material-symbols-outlined ${styles.spinner}`}>progress_activity</span> Atualizando...</>
               ) : (
-                <>Salvar senha e continuar <span className="material-symbols-outlined">arrow_forward</span></>
+                <>Salvar dados e continuar <span className="material-symbols-outlined">arrow_forward</span></>
               )}
             </button>
           </form>
