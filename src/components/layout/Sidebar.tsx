@@ -22,9 +22,19 @@ export const Sidebar = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchProfile = async () => {
-      const data = await getCurrentProfile();
-      if (data) setProfile(data);
+      try {
+        const res = await fetch('/api/auth/profile');
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data?.profile) {
+            setProfile(data.profile);
+          }
+        }
+      } catch (e) {
+        // Silencioso em caso de HMR
+      }
     };
 
     fetchProfile();
@@ -34,11 +44,14 @@ export const Sidebar = () => {
       if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
         fetchProfile();
       } else if (event === 'SIGNED_OUT') {
-        setProfile(null);
+        if (isMounted) setProfile(null);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const getRoutes = () => {

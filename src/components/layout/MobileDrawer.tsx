@@ -27,9 +27,19 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchRole = async () => {
-      const data = await getCurrentProfile();
-      if (data) setRole(data.role);
+      try {
+        const res = await fetch('/api/auth/profile');
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data?.profile) {
+            setRole(data.profile.role);
+          }
+        }
+      } catch (e) {
+        // Silencioso em caso de HMR
+      }
     };
     fetchRole();
 
@@ -38,11 +48,14 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
       if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
         fetchRole();
       } else if (event === 'SIGNED_OUT') {
-        setRole(null);
+        if (isMounted) setRole(null);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const getDrawerRoutes = () => {
