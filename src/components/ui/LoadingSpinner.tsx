@@ -17,7 +17,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
       <div className={styles.logoWrapper}>
         <div className={styles.glowEffect} />
         <img
-          src="/logo-wave.png"
+          src="/onda-bryza.svg"
           alt="Bryza Loading"
           className={styles.logoImage}
         />
