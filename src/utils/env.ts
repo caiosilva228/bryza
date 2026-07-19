@@ -13,7 +13,7 @@ export const env = {
   appUrl: (
     process.env.NEXT_PUBLIC_APP_URL ||
     process.env.NEXT_PUBLIC_SITE_URL ||
-    'https://bryzasistem.netlify.app'
+    'https://bryza.com.br'
   ).replace(/\/$/, ''),
 
   // Domínio dos E-mails Sintéticos dos Usuários

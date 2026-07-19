@@ -32,7 +32,7 @@ export async function GET(
   }
 
   // 3. Gerar URL pública oficial
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://bryzasistem.netlify.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://bryza.com.br';
   const trackingUrl = `${baseUrl}/r/${codeParam}`;
 
   try {
