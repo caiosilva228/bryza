@@ -493,11 +493,11 @@ export default function NovoEmbaixadorPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>Nome Completo *</label>
-                <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} required placeholder="Ex: Caio Silva" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)' }} />
+                <input type="text" value={fullName} onChange={e => setFullName(e.target.value.toUpperCase())} required placeholder="Ex: CAIO SILVA" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)', textTransform: 'uppercase' }} />
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>Nome de Exibição</label>
-                <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Como aparecerá na plataforma (opcional)" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)' }} />
+                <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value.toUpperCase())} placeholder="Como aparecerá na plataforma (opcional)" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)', textTransform: 'uppercase' }} />
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>CPF *</label>
