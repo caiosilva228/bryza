@@ -7,9 +7,9 @@ export const metadata: Metadata = {
   title: 'BRYZA SYSTEM - Gestão Operacional',
   description: 'Sistema de gestão do Programa de Embaixadores Bryza.',
   icons: {
-    icon: '/onda-bryza.svg',
-    shortcut: '/onda-bryza.svg',
-    apple: '/onda-bryza.svg',
+    icon: '/fiveicon.svg',
+    shortcut: '/fiveicon.svg',
+    apple: '/fiveicon.svg',
   },
 };
 
@@ -21,8 +21,8 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/onda-bryza.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/onda-bryza.svg" />
+        <link rel="icon" href="/fiveicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/fiveicon.svg" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
