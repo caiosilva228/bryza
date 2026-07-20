@@ -141,10 +141,40 @@ export const LandingPage: React.FC = () => {
             }}
           >
             <span>Conheça a Loja</span>
-            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>shopping_cart</span>
-          </a>
         </div>
       </header>
+
+      {/* Animated Red Alert Banner */}
+      <div style={{
+        backgroundColor: '#dc2626',
+        color: '#ffffff',
+        padding: '9px 0',
+        overflow: 'hidden',
+        position: 'relative',
+        zIndex: 90,
+        boxShadow: '0 2px 8px rgba(220, 38, 38, 0.25)',
+        borderBottom: '1px solid #b91c1c'
+      }}>
+        <div style={{
+          display: 'flex',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          width: '100%'
+        }}>
+          <div className="marquee-track" style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            fontSize: '13.5px',
+            fontWeight: 700,
+            letterSpacing: '0.02em',
+            gap: '40px'
+          }}>
+            <span>⚠️ Atenção, por enquanto nossa área de atuação é apenas entorno sul de Brasília: Cidade Ocidental, Valparaíso de Goiás, Novo Gama e Luziânia.</span>
+            <span>⚠️ Atenção, por enquanto nossa área de atuação é apenas entorno sul de Brasília: Cidade Ocidental, Valparaíso de Goiás, Novo Gama e Luziânia.</span>
+            <span>⚠️ Atenção, por enquanto nossa área de atuação é apenas entorno sul de Brasília: Cidade Ocidental, Valparaíso de Goiás, Novo Gama e Luziânia.</span>
+          </div>
+        </div>
+      </div>
 
       {/* Hero Section */}
       <section id="hero" style={{
@@ -744,6 +774,16 @@ export const LandingPage: React.FC = () => {
       <style jsx global>{`
         html {
           scroll-behavior: smooth;
+        }
+        @keyframes marquee {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-33.333%); }
+        }
+        .marquee-track {
+          animation: marquee 25s linear infinite;
+        }
+        .marquee-track:hover {
+          animation-play-state: paused;
         }
         @media (max-width: 992px) {
           .navbar-container {
