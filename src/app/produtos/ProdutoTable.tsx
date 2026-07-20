@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Produto } from '@/models/types';
 
 interface ProdutoTableProps {
@@ -537,7 +537,7 @@ export default function ProdutoTable({ produtos, onEdit, onToggleAtivo }: Produt
               width: '100%',
               padding: '16px 24px',
               display: 'flex',
-              justify: 'space-between',
+              justifyContent: 'space-between',
               alignItems: 'center',
               backgroundColor: 'var(--color-surface-container-lowest)',
               borderBottom: '1px solid var(--color-outline-variant)'
@@ -578,7 +578,7 @@ export default function ProdutoTable({ produtos, onEdit, onToggleAtivo }: Produt
             <div style={{
               padding: '32px',
               display: 'flex',
-              justify: 'center',
+              justifyContent: 'center',
               alignItems: 'center',
               backgroundColor: '#fafafa',
               maxHeight: 'calc(90vh - 70px)',
