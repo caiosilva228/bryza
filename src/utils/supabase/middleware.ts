@@ -180,6 +180,11 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(new URL(redirectUrl, request.url));
   }
 
+  // Se estiver no domínio público (bryza.com.br) e na raiz (/), permitir visualizar a Landing Page mesmo logado
+  if (subdomain === 'public' && pathname === '/') {
+    return supabaseResponse;
+  }
+
   // F. Proteção Cross-Subdomain e RBAC
   if (profile.role === 'embaixador') {
     // Embaixadores devem estar no subdomínio EV
