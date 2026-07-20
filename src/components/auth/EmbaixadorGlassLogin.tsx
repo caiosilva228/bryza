@@ -27,8 +27,8 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
       position: 'fixed',
       inset: 0,
       width: '100vw',
-      height: '100vh',
-      overflow: 'auto',
+      height: '100dvh',
+      overflow: 'hidden',
       fontFamily: "'Poppins', system-ui, sans-serif",
       backgroundImage: "url('/bg-embaixadores.jpg')",
       backgroundSize: 'cover',
@@ -66,14 +66,16 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
         zIndex: 2,
         width: '100%',
         maxWidth: '1440px',
-        minHeight: '100vh',
+        height: '100%',
         padding: '32px 48px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         margin: '0 auto',
         boxSizing: 'border-box'
-      }}>
+      }}
+      className="main-container"
+    >
 
         {/* Left Side: Branding & Value Proposition */}
         <div className="branding-section" style={{
@@ -314,7 +316,7 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
             )}
 
             {/* Card Top Header */}
-            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <div className="login-header" style={{ textAlign: 'center', marginBottom: '32px' }}>
               <h2 style={{
                 fontSize: '28px',
                 fontWeight: 700,
@@ -357,7 +359,7 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
           )}
 
           {/* Login Form */}
-          <form action={login} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <form action={login} className="login-form" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* Email / Identifier Input */}
             <div>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.9)', marginBottom: '8px' }}>
@@ -485,7 +487,7 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
             </div>
 
             {/* Remember Me & Forgot Password */}
-            <div style={{
+            <div className="remember-row" style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -523,9 +525,9 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
               </a>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
+              className="submit-btn"
               style={{
                 width: '100%',
                 height: '60px',
@@ -561,7 +563,7 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
             </button>
 
             {/* Footer Security Note */}
-            <div style={{
+            <div className="security-note" style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -584,6 +586,13 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
         .mobile-header {
           display: none;
         }
+        .main-container {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          height: 100%;
+        }
         input::placeholder,
         input::-webkit-input-placeholder,
         input::-moz-placeholder,
@@ -593,6 +602,10 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
           font-weight: 400 !important;
         }
         @media (max-width: 992px) {
+          .main-container {
+            padding: 16px 0 !important;
+            justify-content: center !important;
+          }
           .branding-section {
             display: none !important;
           }
@@ -601,20 +614,63 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
             flex-direction: column !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 12px !important;
-            margin-bottom: 24px !important;
-            text-align: center !important;
+            gap: 8px !important;
+            margin-bottom: 12px !important;
+            flex-shrink: 0 !important;
+          }
+          .mobile-header img {
+            height: 48px !important;
+          }
+          .mobile-header span {
+            font-size: 10px !important;
+            padding: 4px 10px !important;
           }
           .right-panel-wrapper {
             max-width: 100% !important;
             width: 100% !important;
-            padding: 16px !important;
+            padding: 0 14px !important;
+            justify-content: center !important;
+            overflow-y: auto !important;
           }
           .glass-card {
             max-width: 100% !important;
             width: 100% !important;
-            padding: 32px 20px !important;
-            border-radius: 28px !important;
+            padding: 20px 18px !important;
+            border-radius: 24px !important;
+          }
+          .login-header {
+            margin-bottom: 18px !important;
+          }
+          .login-header h2 {
+            font-size: 22px !important;
+            margin-bottom: 3px !important;
+          }
+          .login-header p {
+            font-size: 13px !important;
+          }
+          .glass-card label {
+            font-size: 11.5px !important;
+            margin-bottom: 5px !important;
+          }
+          .glass-card input[type=text],
+          .glass-card input[type=password] {
+            height: 46px !important;
+            font-size: 13.5px !important;
+          }
+          .login-form {
+            gap: 12px !important;
+          }
+          .submit-btn {
+            height: 50px !important;
+            font-size: 15px !important;
+            margin-top: 2px !important;
+          }
+          .security-note {
+            margin-top: 8px !important;
+            font-size: 11px !important;
+          }
+          .remember-row {
+            font-size: 12px !important;
           }
         }
       `}</style>
