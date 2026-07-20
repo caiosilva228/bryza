@@ -31,7 +31,7 @@ export const LandingPage: React.FC = () => {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <img
-            src="https://kkjrunhubqixftemndrm.supabase.co/storage/v1/object/public/Bryza/New%20Logo%20Bryza.svg"
+            src="/Logo%20Bryza.svg"
             alt="Bryza Logo"
             style={{ height: '36px', width: 'auto' }}
           />

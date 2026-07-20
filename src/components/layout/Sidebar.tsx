@@ -146,7 +146,7 @@ export const Sidebar = () => {
     <aside className={styles.sidebar}>
       <div style={{ padding: '16px 16px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <img 
-          src="https://kkjrunhubqixftemndrm.supabase.co/storage/v1/object/public/Bryza/New%20Logo%20Bryza.svg" 
+          src="/Logo%20Bryza.svg" 
           alt="Bryza Logo" 
           style={{ width: '130px', height: 'auto' }}
         />

@@ -63,7 +63,7 @@ export default function PrimeiroAcessoPage() {
           <div>
             <div className={styles.logoBox}>
               <img
-                src="https://kkjrunhubqixftemndrm.supabase.co/storage/v1/object/public/Bryza/New%20Logo%20Bryza.svg"
+                src="/Logo%20Bryza.svg"
                 alt="Bryza"
               />
             </div>
@@ -90,7 +90,7 @@ export default function PrimeiroAcessoPage() {
         <div className={styles.formPanel}>
           <div className={styles.mobileLogo}>
             <img
-              src="https://kkjrunhubqixftemndrm.supabase.co/storage/v1/object/public/Bryza/New%20Logo%20Bryza.svg"
+              src="/Logo%20Bryza.svg"
               alt="Bryza"
             />
           </div>

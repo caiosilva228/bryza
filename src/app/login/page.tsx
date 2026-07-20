@@ -26,7 +26,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
           <div className={styles.brandingContent}>
             <div style={{ marginBottom: '40px' }}>
               <img 
-                src="https://kkjrunhubqixftemndrm.supabase.co/storage/v1/object/public/Bryza/New%20Logo%20Bryza.svg" 
+                src="/Logo%20Bryza.svg" 
                 alt="Bryza Logo" 
                 style={{ width: '200px', height: 'auto' }}
               />
@@ -53,7 +53,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
         <section className={styles.formSide}>
           <div className={styles.mobileLogo} style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px' }}>
             <img 
-              src="https://kkjrunhubqixftemndrm.supabase.co/storage/v1/object/public/Bryza/New%20Logo%20Bryza.svg" 
+              src="/Logo%20Bryza.svg" 
               alt="Bryza Logo" 
               style={{ height: '60px', width: 'auto' }}
             />

@@ -9,7 +9,7 @@ export default function MateriaisPage() {
       title: 'Logomarca Bryza Oficial',
       description: 'Arquivos em alta definição nos formatos SVG e PNG transparente.',
       category: 'Branding',
-      url: 'https://kkjrunhubqixftemndrm.supabase.co/storage/v1/object/public/Bryza/New%20Logo%20Bryza.svg'
+      url: '/Logo%20Bryza.svg'
     },
     {
       title: 'Banner de Divulgação Instagram Stories (1080x1920)',
