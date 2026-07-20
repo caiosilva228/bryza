@@ -97,7 +97,14 @@ export async function getPedidosDoProdutoAction(produtoId: string) {
   }
 
   return (data || [])
-    .filter((item: any) => item.pedidos !== null && item.pedidos !== undefined)
+    .filter((item: any) => {
+      const status = item.pedidos?.status_pedido;
+      // Apenas pedidos que reservam estoque (excluir finalizado e cancelado)
+      return item.pedidos !== null &&
+        item.pedidos !== undefined &&
+        status !== 'finalizado' &&
+        status !== 'cancelado';
+    })
     .sort((a: any, b: any) => {
       const dateA = a.pedidos?.created_at ? new Date(a.pedidos.created_at).getTime() : 0;
       const dateB = b.pedidos?.created_at ? new Date(b.pedidos.created_at).getTime() : 0;

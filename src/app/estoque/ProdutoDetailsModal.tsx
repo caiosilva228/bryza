@@ -136,8 +136,8 @@ export const ProdutoDetailsModal = ({ produto, onClose }: ProdutoDetailsModalPro
                 transition: 'all 0.2s'
               }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>receipt_long</span>
-              Pedidos Vinculados ({pedidos.length})
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>inventory_2</span>
+              Reservando Estoque ({pedidos.length})
             </button>
 
             <button
@@ -171,7 +171,8 @@ export const ProdutoDetailsModal = ({ produto, onClose }: ProdutoDetailsModalPro
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {pedidos.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-on-surface-variant)', border: '1.5px dashed var(--color-outline-variant)', borderRadius: '16px' }}>
-                  Nenhum pedido vinculado a este produto até o momento.
+                  <span className="material-symbols-outlined" style={{ fontSize: '32px', display: 'block', marginBottom: '8px', opacity: 0.4 }}>inventory_2</span>
+                  Nenhum pedido ativo reservando estoque deste produto.
                 </div>
               ) : (
                 pedidos.map(ped => {
