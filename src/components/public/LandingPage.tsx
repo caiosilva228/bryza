@@ -165,32 +165,40 @@ export const LandingPage: React.FC = () => {
           gap: '40px',
           alignItems: 'center'
         }} className="hero-grid">
-          {/* Left Text */}
-          <div>
+          {/* Left Text Box (High Legibility Card) */}
+          <div style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.88)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            borderRadius: '24px',
+            padding: '36px 36px',
+            border: '1px solid rgba(255, 255, 255, 0.9)',
+            boxShadow: '0 12px 40px rgba(0, 43, 92, 0.08)'
+          }}>
             <h1 style={{
-              fontSize: '44px',
+              fontSize: '42px',
               fontWeight: 800,
               color: '#002b5c',
               lineHeight: 1.18,
               letterSpacing: '-0.02em',
-              marginBottom: '20px'
+              marginBottom: '18px'
             }}>
               Produtos que cuidam da sua casa e deixam sua presença.
             </h1>
 
             <p style={{
-              fontSize: '16.5px',
-              color: '#475569',
+              fontSize: '16px',
+              color: '#334155',
               lineHeight: 1.6,
-              marginBottom: '32px',
+              marginBottom: '28px',
               maxWidth: '520px',
-              fontWeight: 400
+              fontWeight: 500
             }}>
               Limpeza eficiente, alto rendimento e perfume marcante para tornar o cuidado com a casa mais leve.
             </p>
 
             {/* CTA Button */}
-            <div style={{ marginBottom: '36px' }}>
+            <div style={{ marginBottom: '32px' }}>
               <a
                 href={evUrl}
                 style={{
@@ -204,7 +212,7 @@ export const LandingPage: React.FC = () => {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '10px',
-                  boxShadow: '0 8px 24px rgba(166, 206, 57, 0.4)',
+                  boxShadow: '0 8px 24px rgba(166, 206, 57, 0.45)',
                   transition: 'transform 0.2s'
                 }}
               >
@@ -217,25 +225,25 @@ export const LandingPage: React.FC = () => {
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '24px',
+              gap: '20px',
               flexWrap: 'wrap',
-              marginBottom: '14px'
+              marginBottom: '12px'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', fontWeight: 600, color: '#1e293b' }}>
-                <span className="material-symbols-outlined" style={{ color: '#002b5c', fontSize: '20px' }}>verified_user</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: '#002b5c' }}>
+                <span className="material-symbols-outlined" style={{ color: '#65a30d', fontSize: '20px' }}>verified_user</span>
                 <span>Pague somente na entrega</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', fontWeight: 600, color: '#1e293b' }}>
-                <span className="material-symbols-outlined" style={{ color: '#002b5c', fontSize: '20px' }}>local_shipping</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: '#002b5c' }}>
+                <span className="material-symbols-outlined" style={{ color: '#65a30d', fontSize: '20px' }}>local_shipping</span>
                 <span>Frete grátis*</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', fontWeight: 600, color: '#1e293b' }}>
-                <span className="material-symbols-outlined" style={{ color: '#002b5c', fontSize: '20px' }}>groups</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: '#002b5c' }}>
+                <span className="material-symbols-outlined" style={{ color: '#65a30d', fontSize: '20px' }}>groups</span>
                 <span>Ganhe indicando nossos produtos</span>
               </div>
             </div>
 
-            <p style={{ fontSize: '11.5px', color: '#94a3b8', margin: 0 }}>
+            <p style={{ fontSize: '11px', color: '#64748b', margin: 0, fontWeight: 500 }}>
               *Consulte regiões e condições no momento do pedido.
             </p>
           </div>
