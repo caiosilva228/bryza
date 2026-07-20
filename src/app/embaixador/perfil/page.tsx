@@ -70,44 +70,52 @@ export default function MeuPerfilPage() {
   }, []);
 
   useEffect(() => {
-    if (!mapLoaded || !(window as any).L) return;
-    const L = (window as any).L;
-    const initialLat = lat || -15.793889;
-    const initialLng = lng || -47.882778;
-    const zoom = lat && lng ? 16 : 12;
+    if (loading || !mapLoaded || !(window as any).L) return;
+    const container = document.getElementById('map-container');
+    if (!container) return;
 
-    const container = L.DomUtil.get('map-container');
-    if (container) (container as any)._leaflet_id = null;
+    try {
+      const L = (window as any).L;
+      const initialLat = lat || -15.793889;
+      const initialLng = lng || -47.882778;
+      const zoom = lat && lng ? 16 : 12;
 
-    const map = L.map('map-container').setView([initialLat, initialLng], zoom);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+      (container as any)._leaflet_id = null;
 
-    const marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
+      const map = L.map('map-container').setView([initialLat, initialLng], zoom);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
 
-    const updateCoords = (newLat: number, newLng: number) => {
-      setLat(newLat);
-      setLng(newLng);
-      setLatitude(newLat.toFixed(6));
-      setLongitude(newLng.toFixed(6));
-    };
+      const marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
 
-    marker.on('dragend', () => {
-      const position = marker.getLatLng();
-      updateCoords(position.lat, position.lng);
-    });
+      const updateCoords = (newLat: number, newLng: number) => {
+        setLat(newLat);
+        setLng(newLng);
+        setLatitude(newLat.toFixed(6));
+        setLongitude(newLng.toFixed(6));
+      };
 
-    map.on('click', (e: any) => {
-      marker.setLatLng(e.latlng);
-      updateCoords(e.latlng.lat, e.latlng.lng);
-    });
+      marker.on('dragend', () => {
+        const position = marker.getLatLng();
+        updateCoords(position.lat, position.lng);
+      });
 
-    (window as any).leafletMap = map;
-    (window as any).leafletMarker = marker;
+      map.on('click', (e: any) => {
+        marker.setLatLng(e.latlng);
+        updateCoords(e.latlng.lat, e.latlng.lng);
+      });
 
-    return () => map.remove();
-  }, [mapLoaded, lat, lng]);
+      (window as any).leafletMap = map;
+      (window as any).leafletMarker = marker;
+
+      return () => {
+        try { map.remove(); } catch (e) {}
+      };
+    } catch (err) {
+      console.error('Erro ao inicializar mapa:', err);
+    }
+  }, [loading, mapLoaded, lat, lng]);
 
   const handleSearchAddress = async (queryText: string) => {
     if (!queryText) return;
