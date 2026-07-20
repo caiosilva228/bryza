@@ -153,6 +153,34 @@ export async function POST(req: NextRequest) {
       resolvedCommissionPlanId = programSettings.default_commission_plan_id;
     }
     
+    // Tentar localizar automaticamente o patrocinador a partir do cadastro do cliente por CPF ou Telefone
+    let resolvedParentId = parent_ambassador_id || null;
+    if (!resolvedParentId) {
+      if (normalizedCpf) {
+        const { data: clientMatch } = await supabase
+          .from('clientes')
+          .select('ambassador_id')
+          .eq('cpf', normalizedCpf)
+          .maybeSingle();
+        if (clientMatch?.ambassador_id) {
+          resolvedParentId = clientMatch.ambassador_id;
+        }
+      }
+      if (!resolvedParentId && phone) {
+        const phoneClean = phone.replace(/\D/g, '');
+        if (phoneClean) {
+          const { data: clientPhoneMatch } = await supabase
+            .from('clientes')
+            .select('ambassador_id')
+            .eq('telefone', phoneClean)
+            .maybeSingle();
+          if (clientPhoneMatch?.ambassador_id) {
+            resolvedParentId = clientPhoneMatch.ambassador_id;
+          }
+        }
+      }
+    }
+
     // Inserção inicial em public.ambassadors com user_id nulo para gerar o username bryzaNN
     const { data: newAmb, error: ambInsertError } = await adminClient
       .from('ambassadors')
@@ -168,7 +196,7 @@ export async function POST(req: NextRequest) {
         pix_key_type: normalizedPixType,
         pix_key: pix_key ? pix_key.trim() : null,
         commission_plan_id: resolvedCommissionPlanId,
-        parent_ambassador_id: parent_ambassador_id || null,
+        parent_ambassador_id: resolvedParentId,
         status: status || 'pendente',
         notes: notes || null,
         photo_path: photo_path || null,
