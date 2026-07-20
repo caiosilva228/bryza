@@ -149,8 +149,11 @@ export const LandingPage: React.FC = () => {
       {/* Hero Section */}
       <section id="hero" style={{
         backgroundColor: '#f8fafc',
-        backgroundImage: "radial-gradient(circle at 80% 30%, rgba(166, 206, 57, 0.08) 0%, transparent 60%)",
-        padding: '60px 40px 70px',
+        backgroundImage: "url('/hero-site-bryza.webp')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center center',
+        backgroundRepeat: 'no-repeat',
+        padding: '70px 40px 80px',
         position: 'relative',
         borderBottom: '1px solid #f1f5f9'
       }}>
@@ -237,19 +240,8 @@ export const LandingPage: React.FC = () => {
             </p>
           </div>
 
-          {/* Right Product Image */}
-          <div style={{ textAlign: 'center', position: 'relative' }}>
-            <img
-              src="/hero-site-bryza.webp"
-              alt="Produtos Bryza Sabão Líquido e Amaciante 5L"
-              style={{
-                width: '100%',
-                maxHeight: '460px',
-                objectFit: 'contain',
-                filter: 'drop-shadow(0 12px 24px rgba(0, 43, 92, 0.15))'
-              }}
-            />
-          </div>
+          {/* Right Spacer for Background Image */}
+          <div style={{ minHeight: '340px' }} />
         </div>
       </section>
 
