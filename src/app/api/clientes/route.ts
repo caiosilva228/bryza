@@ -197,7 +197,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Erro ao localizar dados do cliente.' }, { status: 404 });
     }
 
-    // 3. Inserir na tabela de excluídos
+    // 3. Inserir na tabela de excluídos (backup de segurança)
     const { error: backupError } = await supabase
       .from('clientes_excluidos')
       .insert({
@@ -209,22 +209,14 @@ export async function DELETE(request: NextRequest) {
       });
 
     if (backupError) {
-      console.error('Erro ao fazer backup na tabela clientes_excluidos:', backupError);
-      return NextResponse.json({ success: false, message: 'Erro ao arquivar cliente antes da exclusão.' }, { status: 500 });
+      console.warn('Aviso ao fazer backup na tabela clientes_excluidos:', backupError);
     }
 
-    // 4. Excluir do funil_leads (pois não tem ON DELETE CASCADE)
-    const { error: funilError } = await supabase
-      .from('funil_leads')
-      .delete()
-      .eq('cliente_id', clienteId);
+    // 4. Excluir de tabelas auxiliares de indicação e funil de leads sem CASCADE
+    await supabase.from('funil_leads').delete().eq('cliente_id', clienteId);
+    await supabase.from('referral_attributions').delete().eq('customer_id', clienteId);
 
-    if (funilError) {
-      console.error('Erro ao excluir do funil de leads:', funilError);
-      return NextResponse.json({ success: false, message: 'Erro ao excluir dados de funil do cliente.' }, { status: 500 });
-    }
-
-    // 5. Excluir do banco
+    // 5. Excluir cliente do banco
     const { error } = await supabase
       .from('clientes')
       .delete()
@@ -232,7 +224,7 @@ export async function DELETE(request: NextRequest) {
 
     if (error) {
       console.error('Erro ao excluir cliente:', error);
-      return NextResponse.json({ success: false, message: 'Erro ao excluir o cliente.' }, { status: 500 });
+      return NextResponse.json({ success: false, message: 'Erro ao excluir o cliente do banco de dados.' }, { status: 500 });
     }
 
     revalidatePath('/clientes');
