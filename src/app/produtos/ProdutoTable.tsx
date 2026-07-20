@@ -11,6 +11,21 @@ interface ProdutoTableProps {
 
 export default function ProdutoTable({ produtos, onEdit, onToggleAtivo }: ProdutoTableProps) {
   const [sortConfig, setSortConfig] = useState<{ key: keyof Produto | 'disponivel', direction: 'asc' | 'desc' } | null>(null);
+  const [expandedImage, setExpandedImage] = useState<{ url: string; title: string } | null>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setExpandedImage(null);
+      }
+    };
+    if (expandedImage) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [expandedImage]);
 
   const sortedProdutos = useMemo(() => {
     let sortableItems = [...produtos];
@@ -131,18 +146,30 @@ export default function ProdutoTable({ produtos, onEdit, onToggleAtivo }: Produt
                   </td>
                   <td style={{ padding: '10px 16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '8px',
-                        backgroundColor: 'var(--color-surface-container-high)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        overflow: 'hidden',
-                        flexShrink: 0,
-                        border: '1px solid var(--color-outline-variant)'
-                      }}>
+                      <div 
+                        onClick={() => p.imagem_url && setExpandedImage({ url: p.imagem_url, title: p.nome_produto })}
+                        title={p.imagem_url ? 'Clique para expandir a imagem' : undefined}
+                        style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '8px',
+                          backgroundColor: 'var(--color-surface-container-high)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          overflow: 'hidden',
+                          flexShrink: 0,
+                          border: '1px solid var(--color-outline-variant)',
+                          cursor: p.imagem_url ? 'pointer' : 'default',
+                          transition: 'transform 0.15s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (p.imagem_url) e.currentTarget.style.transform = 'scale(1.08)';
+                        }}
+                        onMouseLeave={(e) => {
+                          if (p.imagem_url) e.currentTarget.style.transform = 'scale(1)';
+                        }}
+                      >
                         {p.imagem_url ? (
                           <img
                             src={p.imagem_url}
@@ -273,18 +300,23 @@ export default function ProdutoTable({ produtos, onEdit, onToggleAtivo }: Produt
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
                 <div style={{ display: 'flex', gap: '12px', minWidth: 0, flex: 1, alignItems: 'center' }}>
-                  <div style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '10px',
-                    backgroundColor: 'var(--color-surface-container-high)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    overflow: 'hidden',
-                    flexShrink: 0,
-                    border: '1px solid var(--color-outline-variant)'
-                  }}>
+                  <div 
+                    onClick={() => p.imagem_url && setExpandedImage({ url: p.imagem_url, title: p.nome_produto })}
+                    title={p.imagem_url ? 'Clique para expandir a imagem' : undefined}
+                    style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '10px',
+                      backgroundColor: 'var(--color-surface-container-high)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      overflow: 'hidden',
+                      flexShrink: 0,
+                      border: '1px solid var(--color-outline-variant)',
+                      cursor: p.imagem_url ? 'pointer' : 'default'
+                    }}
+                  >
                     {p.imagem_url ? (
                       <img
                         src={p.imagem_url}
@@ -463,6 +495,110 @@ export default function ProdutoTable({ produtos, onEdit, onToggleAtivo }: Produt
           );
         })}
       </div>
+
+      {/* Modal de Imagem Expandida (Lightbox) */}
+      {expandedImage && (
+        <div
+          onClick={() => setExpandedImage(null)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '24px',
+            animation: 'fadeIn 0.2s ease-out'
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'relative',
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              backgroundColor: 'var(--color-surface)',
+              borderRadius: '24px',
+              overflow: 'hidden',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              border: '1px solid var(--color-outline-variant)'
+            }}
+          >
+            {/* Header com Nome do Produto e Botão X */}
+            <div style={{
+              width: '100%',
+              padding: '16px 24px',
+              display: 'flex',
+              justify: 'space-between',
+              alignItems: 'center',
+              backgroundColor: 'var(--color-surface-container-lowest)',
+              borderBottom: '1px solid var(--color-outline-variant)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--color-primary)' }}>
+                  image
+                </span>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: 'var(--color-on-surface)' }}>
+                  {expandedImage.title}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setExpandedImage(null)}
+                title="Fechar (ESC)"
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  backgroundColor: 'var(--color-surface-container-high)',
+                  border: 'none',
+                  color: 'var(--color-on-surface)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-container-highest)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-container-high)'}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
+              </button>
+            </div>
+
+            {/* Imagem Expandida */}
+            <div style={{
+              padding: '32px',
+              display: 'flex',
+              justify: 'center',
+              alignItems: 'center',
+              backgroundColor: '#fafafa',
+              maxHeight: 'calc(90vh - 70px)',
+              overflow: 'auto'
+            }}>
+              <img
+                src={expandedImage.url}
+                alt={expandedImage.title}
+                style={{
+                  maxWidth: '80vw',
+                  maxHeight: '70vh',
+                  objectFit: 'contain',
+                  borderRadius: '12px',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.15)'
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
