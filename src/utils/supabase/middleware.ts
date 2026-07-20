@@ -32,7 +32,7 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const host = request.headers.get('host') || '';
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || '';
   const subdomain = getSubdomainType(host);
   const pathname = request.nextUrl.pathname;
 

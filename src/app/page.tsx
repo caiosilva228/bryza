@@ -22,7 +22,7 @@ interface PageProps {
 
 export default async function Home({ searchParams }: PageProps) {
   const headersList = await headers();
-  const host = headersList.get('host') || '';
+  const host = headersList.get('x-forwarded-host') || headersList.get('host') || '';
   const subdomain = getSubdomainType(host);
 
   if (subdomain === 'public') {

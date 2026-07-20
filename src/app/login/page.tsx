@@ -15,7 +15,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
   const typeParam = params.type;
 
   const reqHeaders = await headers();
-  const host = reqHeaders.get('host');
+  const host = reqHeaders.get('x-forwarded-host') || reqHeaders.get('host');
   const subdomain = getSubdomainType(host);
 
   let errorMessage = '';
