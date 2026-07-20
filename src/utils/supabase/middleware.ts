@@ -1,11 +1,14 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { createAdminClient } from './admin';
+import { getSubdomainType, getSubdomainUrl } from '../subdomain';
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
+
+  const cookieDomain = process.env.NEXT_PUBLIC_COOKIE_DOMAIN || undefined;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,25 +19,23 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value));
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({
             request,
           });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
+          cookiesToSet.forEach(({ name, value, options }) => {
+            const finalOptions = cookieDomain ? { ...options, domain: cookieDomain } : options;
+            supabaseResponse.cookies.set(name, value, finalOptions);
+          });
         },
       },
     }
   );
 
-  // 1. Atualizar token de autenticação
-  const {
-    data: { user },
-    error: getUserError
-  } = await supabase.auth.getUser();
-
+  const host = request.headers.get('host') || '';
+  const subdomain = getSubdomainType(host);
   const pathname = request.nextUrl.pathname;
+
   const isApiRoute = pathname.startsWith('/api/');
   const isAuthRoute = pathname.startsWith('/login');
   const isPrimeiroAcesso = pathname.startsWith('/primeiro-acesso');
@@ -49,9 +50,15 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
+  // 1. Atualizar token de autenticação
+  const {
+    data: { user },
+    error: getUserError
+  } = await supabase.auth.getUser();
+
   // 2. Se houver erro de autenticação ou se NÃO estiver autenticado
   if (getUserError || !user) {
-    // Se o token de refresh estiver corrompido ou expirado, apagar cookies inválidos do Supabase
+    // Apagar cookies inválidos se o token estiver corrompido
     const allCookies = request.cookies.getAll();
     allCookies.forEach(({ name }) => {
       if (name.startsWith('sb-') || name.includes('auth-token')) {
@@ -60,15 +67,20 @@ export async function updateSession(request: NextRequest) {
     });
 
     if (isApiRoute) {
-      // Ignorar rotas de autenticação pública se houver
       if (pathname.startsWith('/api/auth/')) {
         return supabaseResponse;
       }
       return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
     }
 
+    // Se estiver no domínio público (bryza.com.br) e na raiz (/), permitir visualizar a Landing Page
+    if (subdomain === 'public' && pathname === '/') {
+      return supabaseResponse;
+    }
+
     if (!isAuthRoute) {
-      const redirectRes = NextResponse.redirect(new URL('/login', request.url));
+      const loginTarget = getSubdomainUrl(subdomain === 'ev' ? 'ev' : 'admin', '/login', host);
+      const redirectRes = NextResponse.redirect(new URL(loginTarget, request.url));
       allCookies.forEach(({ name }) => {
         if (name.startsWith('sb-') || name.includes('auth-token')) {
           redirectRes.cookies.delete(name);
@@ -79,7 +91,7 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
-  // 3. Se autenticado, verificar status e permissões no banco usando o cliente administrativo isolado
+  // 3. Se autenticado, verificar status e permissões no banco usando o cliente administrativo
   const adminClient = createAdminClient();
   const { data: profile, error: profileError } = await adminClient
     .from('profiles')
@@ -89,8 +101,8 @@ export async function updateSession(request: NextRequest) {
 
   if (profileError || !profile) {
     console.error('Perfil não encontrado para o usuário autenticado:', profileError);
-    // Deslogar usuário
-    const response = NextResponse.redirect(new URL('/login?error=BlockedUser', request.url));
+    const loginTarget = getSubdomainUrl(subdomain === 'ev' ? 'ev' : 'admin', '/login?error=BlockedUser', host);
+    const response = NextResponse.redirect(new URL(loginTarget, request.url));
     response.cookies.delete('sb-access-token');
     response.cookies.delete('sb-refresh-token');
     await supabase.auth.signOut();
@@ -99,7 +111,8 @@ export async function updateSession(request: NextRequest) {
 
   // A. Conta Inativa/Bloqueada
   if (!profile.ativo) {
-    const response = NextResponse.redirect(new URL('/login?error=BlockedUser', request.url));
+    const loginTarget = getSubdomainUrl(subdomain === 'ev' ? 'ev' : 'admin', '/login?error=BlockedUser', host);
+    const response = NextResponse.redirect(new URL(loginTarget, request.url));
     response.cookies.delete('sb-access-token');
     response.cookies.delete('sb-refresh-token');
     await supabase.auth.signOut();
@@ -115,8 +128,8 @@ export async function updateSession(request: NextRequest) {
       .single();
 
     if (ambError || !amb || amb.status !== 'ativo') {
-      // Status pendente, inativo ou bloqueado
-      const response = NextResponse.redirect(new URL('/login?error=BlockedUser', request.url));
+      const loginTarget = getSubdomainUrl('ev', '/login?error=BlockedUser', host);
+      const response = NextResponse.redirect(new URL(loginTarget, request.url));
       response.cookies.delete('sb-access-token');
       response.cookies.delete('sb-refresh-token');
       await supabase.auth.signOut();
@@ -127,7 +140,6 @@ export async function updateSession(request: NextRequest) {
   // C. Primeiro Acesso Obrigatório (must_change_password = true)
   if (profile.must_change_password) {
     if (isApiRoute) {
-      // Permitir apenas logout ou ações de primeiro acesso
       if (pathname.startsWith('/api/auth/logout') || pathname === '/api/primeiro-acesso') {
         return supabaseResponse;
       }
@@ -142,54 +154,42 @@ export async function updateSession(request: NextRequest) {
 
   // D. Se must_change_password = false e tentar ir para /primeiro-acesso, redirecionar
   if (isPrimeiroAcesso) {
-    let dashboardUrl = '/';
+    let dashboardPath = '/';
+    let targetSubdomain: 'ev' | 'admin' = 'admin';
     if (profile.role === 'embaixador') {
-      dashboardUrl = '/embaixador/dashboard';
+      dashboardPath = '/embaixador/dashboard';
+      targetSubdomain = 'ev';
     } else if (profile.role === 'logistica') {
-      dashboardUrl = '/logistica';
+      dashboardPath = '/logistica';
     }
-    return NextResponse.redirect(new URL(dashboardUrl, request.url));
+    const redirectUrl = getSubdomainUrl(targetSubdomain, dashboardPath, host);
+    return NextResponse.redirect(new URL(redirectUrl, request.url));
   }
 
   // E. Se tentar ir para a tela de login já estando autenticado
   if (isAuthRoute) {
-    let dashboardUrl = '/';
+    let dashboardPath = '/';
+    let targetSubdomain: 'ev' | 'admin' = 'admin';
     if (profile.role === 'embaixador') {
-      dashboardUrl = '/embaixador/dashboard';
+      dashboardPath = '/embaixador/dashboard';
+      targetSubdomain = 'ev';
     } else if (profile.role === 'logistica') {
-      dashboardUrl = '/logistica';
+      dashboardPath = '/logistica';
     }
-    return NextResponse.redirect(new URL(dashboardUrl, request.url));
+    const redirectUrl = getSubdomainUrl(targetSubdomain, dashboardPath, host);
+    return NextResponse.redirect(new URL(redirectUrl, request.url));
   }
 
-  // F. Redirecionamentos na Rota Raiz (/) para evitar loops
-  if (pathname === '/') {
-    if (profile.role === 'embaixador') {
-      return NextResponse.redirect(new URL('/embaixador/dashboard', request.url));
-    }
-    if (profile.role === 'logistica') {
-      return NextResponse.redirect(new URL('/logistica', request.url));
-    }
-    // Admin e Vendedor continuam em "/" sem redirecionar
-    return supabaseResponse;
-  }
-
-  // O backoffice de embaixadores é exclusivo de administradores. Impedir o
-  // acesso aqui evita que outros perfis renderizem a página e disparem Server
-  // Actions que, corretamente, recusariam a requisição.
-  if (pathname.startsWith('/embaixadores') && profile.role !== 'admin') {
-    if (profile.role === 'embaixador') {
-      return NextResponse.redirect(new URL('/embaixador/dashboard', request.url));
-    }
-    if (profile.role === 'logistica') {
-      return NextResponse.redirect(new URL('/logistica', request.url));
-    }
-    return NextResponse.redirect(new URL('/', request.url));
-  }
-
-  // G. Restrições de Acesso por Papel (RBAC) - Camada de Roteamento
+  // F. Proteção Cross-Subdomain e RBAC
   if (profile.role === 'embaixador') {
-    const isRestrictedPath = [
+    // Embaixadores devem estar no subdomínio EV
+    if (subdomain === 'admin') {
+      const redirectUrl = getSubdomainUrl('ev', '/embaixador/dashboard', host);
+      return NextResponse.redirect(new URL(redirectUrl, request.url));
+    }
+
+    // Se estiver na raiz de qualquer domínio ou tentando acessar rotas administrativas restritas
+    const isRestrictedAdminPath = [
       '/vendas',
       '/vendedores',
       '/clientes',
@@ -198,11 +198,26 @@ export async function updateSession(request: NextRequest) {
       '/rotas',
       '/motoristas',
       '/logistica',
-      '/metas'
+      '/metas',
+      '/embaixadores'
     ].some(prefix => pathname.startsWith(prefix));
 
-    if (isRestrictedPath) {
-      return NextResponse.redirect(new URL('/embaixador/dashboard', request.url));
+    if (pathname === '/' || isRestrictedAdminPath) {
+      const redirectUrl = getSubdomainUrl('ev', '/embaixador/dashboard', host);
+      return NextResponse.redirect(new URL(redirectUrl, request.url));
+    }
+  } else {
+    // Admin, Vendedor, Logística devem estar no subdomínio ADMIN ou público
+    if (subdomain === 'ev') {
+      const targetPath = profile.role === 'logistica' ? '/logistica' : '/';
+      const redirectUrl = getSubdomainUrl('admin', targetPath, host);
+      return NextResponse.redirect(new URL(redirectUrl, request.url));
+    }
+
+    if (pathname.startsWith('/embaixador/')) {
+      const targetPath = profile.role === 'logistica' ? '/logistica' : '/';
+      const redirectUrl = getSubdomainUrl('admin', targetPath, host);
+      return NextResponse.redirect(new URL(redirectUrl, request.url));
     }
   }
 

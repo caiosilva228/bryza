@@ -1,3 +1,4 @@
+import { headers } from 'next/headers';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { DashboardService } from '@/services/dashboard';
 import { DashboardBlock } from '@/components/dashboard/DashboardBlock';
@@ -9,6 +10,8 @@ import { DashboardAutoRefresh } from '@/components/dashboard/DashboardAutoRefres
 import { MetasService, calcularDiasUteisRestantes } from '@/services/metas';
 import { formatCurrency } from '@/utils/format';
 import { format, parseISO, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { getSubdomainType } from '@/utils/subdomain';
+import { LandingPage } from '@/components/public/LandingPage';
 import styles from './page.module.css';
 
 export const revalidate = 0;
@@ -18,6 +21,14 @@ interface PageProps {
 }
 
 export default async function Home({ searchParams }: PageProps) {
+  const headersList = await headers();
+  const host = headersList.get('host') || '';
+  const subdomain = getSubdomainType(host);
+
+  if (subdomain === 'public') {
+    return <LandingPage />;
+  }
+
   const { data: paramData, periodo, from, to, period } = await searchParams;
 
   const today = new Date();
