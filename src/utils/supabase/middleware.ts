@@ -49,8 +49,16 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
-  // 2. Se NÃO autenticado
-  if (!user) {
+  // 2. Se houver erro de autenticação ou se NÃO estiver autenticado
+  if (getUserError || !user) {
+    // Se o token de refresh estiver corrompido ou expirado, apagar cookies inválidos do Supabase
+    const allCookies = request.cookies.getAll();
+    allCookies.forEach(({ name }) => {
+      if (name.startsWith('sb-') || name.includes('auth-token')) {
+        supabaseResponse.cookies.delete(name);
+      }
+    });
+
     if (isApiRoute) {
       // Ignorar rotas de autenticação pública se houver
       if (pathname.startsWith('/api/auth/')) {
@@ -60,7 +68,13 @@ export async function updateSession(request: NextRequest) {
     }
 
     if (!isAuthRoute) {
-      return NextResponse.redirect(new URL('/login', request.url));
+      const redirectRes = NextResponse.redirect(new URL('/login', request.url));
+      allCookies.forEach(({ name }) => {
+        if (name.startsWith('sb-') || name.includes('auth-token')) {
+          redirectRes.cookies.delete(name);
+        }
+      });
+      return redirectRes;
     }
     return supabaseResponse;
   }
