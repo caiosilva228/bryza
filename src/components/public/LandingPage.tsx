@@ -813,9 +813,6 @@ export const LandingPage: React.FC = () => {
                   <h3 style={{ fontSize: '20px', fontWeight: 800, margin: 0, color: '#ffffff' }}>
                     Futura fábrica Bryza
                   </h3>
-                  <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.85)', margin: '4px 0 0' }}>
-                    Cidade Ocidental – GO
-                  </p>
                 </div>
               </div>
             </div>
