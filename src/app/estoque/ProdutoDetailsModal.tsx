@@ -189,7 +189,7 @@ export const ProdutoDetailsModal = ({ produto, onClose }: ProdutoDetailsModalPro
                       borderRadius: '14px',
                       border: '1px solid var(--color-outline-variant)',
                       display: 'flex',
-                      justify: 'space-between',
+                      justifyContent: 'space-between',
                       alignItems: 'center',
                       gap: '16px'
                     }}>
