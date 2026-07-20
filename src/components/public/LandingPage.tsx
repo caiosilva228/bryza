@@ -675,31 +675,51 @@ export const LandingPage: React.FC = () => {
               O perfume que anuncia a Presença.
             </p>
             <div style={{ display: 'flex', gap: '12px' }}>
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '50%',
-                backgroundColor: 'rgba(255,255,255,0.1)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#ffffff',
-                textDecoration: 'none'
-              }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>photo_camera</span>
+              <a
+                href="https://www.instagram.com/bryza.of"
+                target="_blank"
+                rel="noreferrer"
+                title="Instagram @bryza.of"
+                style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#ffffff',
+                  textDecoration: 'none',
+                  transition: 'background-color 0.2s, transform 0.2s'
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                </svg>
               </a>
-              <a href="https://wa.me/5561982115107" target="_blank" rel="noreferrer" style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '50%',
-                backgroundColor: 'rgba(255,255,255,0.1)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#ffffff',
-                textDecoration: 'none'
-              }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>chat</span>
+              <a
+                href="https://wa.me/556132462117?text=Ol%C3%A1%2C%20vim%20do%20site!"
+                target="_blank"
+                rel="noreferrer"
+                title="WhatsApp (61) 3246-2117"
+                style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#25D366',
+                  textDecoration: 'none',
+                  transition: 'background-color 0.2s, transform 0.2s'
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.758.459 3.474 1.33 4.982l-1.413 5.161 5.284-1.385a9.948 9.948 0 0 0 4.787 1.226h.004c5.505 0 9.988-4.478 9.989-9.984 0-2.669-1.038-5.176-2.925-7.062a9.925 9.925 0 0 0-7.066-2.922zm0 1.666c4.587 0 8.322 3.734 8.323 8.318 0 2.227-.866 4.319-2.441 5.892a8.27 8.27 0 0 1-5.882 2.436h-.003a8.29 8.29 0 0 1-4.225-1.155l-.303-.18-3.136.822.836-3.056-.197-.314a8.292 8.292 0 0 1-1.296-4.444c.001-4.584 3.737-8.319 8.327-8.319zm-3.6 3.6c-.206 0-.539.077-.822.385s-1.077 1.052-1.077 2.565 1.103 2.975 1.257 3.181c.154.205 2.132 3.324 5.235 4.607 2.585 1.069 3.111.856 3.676.804.564-.051 1.821-.744 2.077-1.462.257-.718.257-1.334.18-1.462-.077-.128-.282-.205-.59-.359s-1.821-.898-2.103-1.001c-.282-.103-.487-.154-.693.154s-.8 1.001-.979 1.206c-.18.205-.359.231-.667.077-.308-.154-1.301-.48-2.478-1.53-1.177-1.05-1.972-2.348-2.203-2.743-.231-.395-.025-.609.129-.762.138-.138.308-.359.462-.539.154-.18.205-.308.308-.513.103-.205.051-.385-.026-.539-.077-.154-.693-1.667-.949-2.283-.249-.601-.502-.519-.693-.529z"/>
+                </svg>
               </a>
             </div>
           </div>
@@ -728,7 +748,7 @@ export const LandingPage: React.FC = () => {
           <div>
             <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '16px', color: '#A6CE39' }}>Atendimento</h4>
             <a
-              href="https://wa.me/5561982115107"
+              href="https://wa.me/556132462117?text=Ol%C3%A1%2C%20vim%20do%20site!"
               target="_blank"
               rel="noreferrer"
               style={{
@@ -742,10 +762,13 @@ export const LandingPage: React.FC = () => {
                 fontWeight: 600,
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '10px',
+                transition: 'background-color 0.2s, border-color 0.2s'
               }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#25D366' }}>chat</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366">
+                <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.758.459 3.474 1.33 4.982l-1.413 5.161 5.284-1.385a9.948 9.948 0 0 0 4.787 1.226h.004c5.505 0 9.988-4.478 9.989-9.984 0-2.669-1.038-5.176-2.925-7.062a9.925 9.925 0 0 0-7.066-2.922zm0 1.666c4.587 0 8.322 3.734 8.323 8.318 0 2.227-.866 4.319-2.441 5.892a8.27 8.27 0 0 1-5.882 2.436h-.003a8.29 8.29 0 0 1-4.225-1.155l-.303-.18-3.136.822.836-3.056-.197-.314a8.292 8.292 0 0 1-1.296-4.444c.001-4.584 3.737-8.319 8.327-8.319zm-3.6 3.6c-.206 0-.539.077-.822.385s-1.077 1.052-1.077 2.565 1.103 2.975 1.257 3.181c.154.205 2.132 3.324 5.235 4.607 2.585 1.069 3.111.856 3.676.804.564-.051 1.821-.744 2.077-1.462.257-.718.257-1.334.18-1.462-.077-.128-.282-.205-.59-.359s-1.821-.898-2.103-1.001c-.282-.103-.487-.154-.693.154s-.8 1.001-.979 1.206c-.18.205-.359.231-.667.077-.308-.154-1.301-.48-2.478-1.53-1.177-1.05-1.972-2.348-2.203-2.743-.231-.395-.025-.609.129-.762.138-.138.308-.359.462-.539.154-.18.205-.308.308-.513.103-.205.051-.385-.026-.539-.077-.154-.693-1.667-.949-2.283-.249-.601-.502-.519-.693-.529z"/>
+              </svg>
               <span>Fale conosco pelo WhatsApp</span>
             </a>
           </div>
