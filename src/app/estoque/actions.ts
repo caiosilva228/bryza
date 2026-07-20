@@ -79,7 +79,7 @@ export async function getPedidosDoProdutoAction(produtoId: string) {
       id,
       quantidade,
       preco_unitario,
-      valor_total,
+      subtotal,
       pedidos (
         id,
         numero_pedido,
@@ -89,21 +89,25 @@ export async function getPedidosDoProdutoAction(produtoId: string) {
         nome_vendedor
       )
     `)
-    .eq('produto_id', produtoId)
-    .order('created_at', { ascending: false });
+    .eq('produto_id', produtoId);
 
   if (error) {
-    console.error('Erro ao buscar pedidos do produto:', error);
+    console.error('Erro ao buscar pedidos do produto:', error.message, error.details);
     return [];
   }
 
   return (data || [])
     .filter((item: any) => item.pedidos !== null && item.pedidos !== undefined)
+    .sort((a: any, b: any) => {
+      const dateA = a.pedidos?.created_at ? new Date(a.pedidos.created_at).getTime() : 0;
+      const dateB = b.pedidos?.created_at ? new Date(b.pedidos.created_at).getTime() : 0;
+      return dateB - dateA;
+    })
     .map((item: any) => ({
       id: item.id,
       quantidade: item.quantidade,
       preco_unitario: item.preco_unitario || 0,
-      valor_total: item.valor_total || ((item.quantidade || 0) * (item.preco_unitario || 0)),
+      valor_total: item.subtotal || ((item.quantidade || 0) * (item.preco_unitario || 0)),
       pedido_id: item.pedidos?.id,
       numero_pedido: item.pedidos?.numero_pedido,
       status_pedido: item.pedidos?.status_pedido,
