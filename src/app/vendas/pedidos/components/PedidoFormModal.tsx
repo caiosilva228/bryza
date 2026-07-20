@@ -704,11 +704,11 @@ export default function PedidoFormModal({
                   </div>
 
                   {produtos
-                    .filter(p => !productSearch || 
+                    .filter(p => p.ativo !== false && (!productSearch || 
                       p.nome_produto.toLowerCase().includes(productSearch.toLowerCase()) || 
                       p.categoria.toLowerCase().includes(productSearch.toLowerCase()) ||
                       p.codigo_produto?.toString().includes(productSearch)
-                    )
+                    ))
                     .map(p => {
                       const disponivel = (p.estoque_atual || 0) - (p.estoque_reservado || 0);
                       const isOutOfStock = disponivel <= 0;
