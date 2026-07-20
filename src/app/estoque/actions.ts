@@ -86,8 +86,7 @@ export async function getPedidosDoProdutoAction(produtoId: string) {
         status_pedido,
         created_at,
         nome_cliente,
-        nome_vendedor,
-        cliente:clientes(nome)
+        nome_vendedor
       )
     `)
     .eq('produto_id', produtoId)
@@ -103,13 +102,13 @@ export async function getPedidosDoProdutoAction(produtoId: string) {
     .map((item: any) => ({
       id: item.id,
       quantidade: item.quantidade,
-      preco_unitario: item.preco_unitario,
-      valor_total: item.valor_total,
+      preco_unitario: item.preco_unitario || 0,
+      valor_total: item.valor_total || ((item.quantidade || 0) * (item.preco_unitario || 0)),
       pedido_id: item.pedidos?.id,
       numero_pedido: item.pedidos?.numero_pedido,
       status_pedido: item.pedidos?.status_pedido,
       created_at: item.pedidos?.created_at,
-      cliente_nome: item.pedidos?.nome_cliente || item.pedidos?.cliente?.nome || 'Cliente não informado',
+      cliente_nome: item.pedidos?.nome_cliente || 'Cliente não informado',
       vendedor_nome: item.pedidos?.nome_vendedor || 'Vendedor'
     }));
 }
