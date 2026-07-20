@@ -240,11 +240,11 @@ export const LandingPage: React.FC = () => {
           {/* Right Product Image */}
           <div style={{ textAlign: 'center', position: 'relative' }}>
             <img
-              src="/hero-bg.webp"
+              src="/hero-site-bryza.webp"
               alt="Produtos Bryza Sabão Líquido e Amaciante 5L"
               style={{
                 width: '100%',
-                maxHeight: '440px',
+                maxHeight: '460px',
                 objectFit: 'contain',
                 filter: 'drop-shadow(0 12px 24px rgba(0, 43, 92, 0.15))'
               }}
