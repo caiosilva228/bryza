@@ -199,7 +199,7 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
           <img
             src="/Logo%20Bryza.svg"
             alt="Bryza Logo"
-            style={{ width: '120px', height: 'auto' }}
+            style={{ width: '145px', height: 'auto' }}
           />
           <button
             onClick={onClose}

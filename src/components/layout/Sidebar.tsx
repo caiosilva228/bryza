@@ -148,16 +148,16 @@ export const Sidebar = () => {
         <img 
           src="/Logo%20Bryza.svg" 
           alt="Bryza Logo" 
-          style={{ width: '130px', height: 'auto' }}
+          style={{ width: '160px', height: 'auto' }}
         />
         <p style={{ 
-          margin: '-2px 0 0', 
+          margin: '8px 0 0', 
           fontSize: '9px', 
           color: 'var(--color-on-surface-variant)', 
           textTransform: 'uppercase', 
           letterSpacing: '0.05em',
-          fontWeight: 500,
-          opacity: 0.7
+          fontWeight: 600,
+          opacity: 0.8
         }}>
           Sistema de Gestão Versão 1.0
         </p>
