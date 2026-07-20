@@ -763,7 +763,7 @@ export const LandingPage: React.FC = () => {
           flexWrap: 'wrap',
           gap: '12px'
         }} className="footer-bottom">
-          <div>© 2025 Bryza. Todos os direitos reservados.</div>
+          <div>© {new Date().getFullYear()} Bryza. Todos os direitos reservados.</div>
           <div style={{ display: 'flex', gap: '16px' }}>
             <a href="#" onClick={(e) => e.preventDefault()} style={{ color: 'inherit', textDecoration: 'none' }}>Política de Privacidade</a>
             <span>|</span>
