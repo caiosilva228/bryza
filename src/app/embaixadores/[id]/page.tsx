@@ -34,7 +34,7 @@ export default function EmbaixadorDetailsPage({ params }: Context) {
   const [revealedPix, setRevealedPix] = useState<string | null>(null);
 
   // Abas
-  const [activeTab, setActiveTab] = useState<'dados' | 'indicacoes' | 'vendas' | 'comissoes' | 'pagamentos' | 'auditoria'>('dados');
+  const [activeTab, setActiveTab] = useState<'dados' | 'rede' | 'indicacoes' | 'vendas' | 'comissoes' | 'pagamentos' | 'auditoria'>('dados');
 
   // Planos de comissão (para alteração)
   const [plans, setPlans] = useState<any[]>([]);
@@ -94,15 +94,16 @@ export default function EmbaixadorDetailsPage({ params }: Context) {
     const supabase = createClient();
 
     const fetchTabData = async () => {
-      if (activeTab === 'indicacoes') {
-        const [v, a, net] = await Promise.all([
+      if (activeTab === 'rede') {
+        const net = await getEmbaixadorNetwork(amb.id);
+        if (net) setNetworkData(net);
+      } else if (activeTab === 'indicacoes') {
+        const [v, a] = await Promise.all([
           supabase.from('referral_visits').select('*').eq('ambassador_id', amb.id).order('created_at', { ascending: false }),
-          supabase.from('referral_attributions').select('*, clientes(nome)').eq('ambassador_id', amb.id).order('created_at', { ascending: false }),
-          getEmbaixadorNetwork(amb.id)
+          supabase.from('referral_attributions').select('*, clientes(nome)').eq('ambassador_id', amb.id).order('created_at', { ascending: false })
         ]);
         if (v.data) setVisits(v.data);
         if (a.data) setAttributions(a.data);
-        if (net) setNetworkData(net);
       } else if (activeTab === 'vendas') {
         const { data } = await supabase
           .from('pedidos')
@@ -332,25 +333,35 @@ export default function EmbaixadorDetailsPage({ params }: Context) {
           marginBottom: '24px',
           gap: '8px'
         }}>
-          {(['dados', 'indicacoes', 'vendas', 'comissoes', 'pagamentos', 'auditoria'] as const).map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                padding: '12px 20px',
-                background: 'none',
-                border: 'none',
-                borderBottom: activeTab === tab ? '3px solid var(--color-primary)' : '3px solid transparent',
-                color: activeTab === tab ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
-                fontWeight: activeTab === tab ? 700 : 500,
-                fontSize: '14px',
-                cursor: 'pointer',
-                textTransform: 'capitalize'
-              }}
-            >
-              {tab === 'indicacoes' ? 'Indicações' : tab}
-            </button>
-          ))}
+          {(['dados', 'rede', 'indicacoes', 'vendas', 'comissoes', 'pagamentos', 'auditoria'] as const).map(tab => {
+            const labels: Record<string, string> = {
+              dados: 'Dados',
+              rede: 'Rede',
+              indicacoes: 'Indicações',
+              vendas: 'Vendas',
+              comissoes: 'Comissões',
+              pagamentos: 'Pagamentos',
+              auditoria: 'Auditoria'
+            };
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                style={{
+                  padding: '12px 20px',
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: activeTab === tab ? '3px solid var(--color-primary)' : '3px solid transparent',
+                  color: activeTab === tab ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
+                  fontWeight: activeTab === tab ? 700 : 500,
+                  fontSize: '14px',
+                  cursor: 'pointer'
+                }}
+              >
+                {labels[tab] || tab}
+              </button>
+            );
+          })}
         </div>
 
         {/* Conteúdo das Abas */}
@@ -618,8 +629,8 @@ export default function EmbaixadorDetailsPage({ params }: Context) {
             </div>
           )}
 
-          {/* TAB INDICAÇÕES */}
-          {activeTab === 'indicacoes' && (
+          {/* TAB REDE */}
+          {activeTab === 'rede' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               {/* Quadro da Rede de Embaixadores Indicados (Multinível) */}
               <div style={{
@@ -743,6 +754,12 @@ export default function EmbaixadorDetailsPage({ params }: Context) {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* TAB INDICAÇÕES */}
+          {activeTab === 'indicacoes' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
               {/* Quadro de Visitas */}
               <div style={{
