@@ -1083,6 +1083,18 @@ export const LandingPage: React.FC = () => {
               </svg>
               <span>Fale conosco pelo WhatsApp</span>
             </a>
+            <div style={{
+              marginTop: '10px',
+              fontSize: '14px',
+              color: 'rgba(255, 255, 255, 0.85)',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#A6CE39' }}>phone</span>
+              <span>(61) 3246-2117</span>
+            </div>
           </div>
         </div>
 
