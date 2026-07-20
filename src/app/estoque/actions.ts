@@ -63,9 +63,52 @@ export async function getReservasProdutoAction(produtoId: string) {
 
   return data.map((item: any) => ({
     quantidade: item.quantidade,
-    numero_pedido: item.pedidos.numero_pedido,
-    nome_vendedor: item.pedidos.nome_vendedor,
-    status_pedido: item.pedidos.status_pedido,
-    data: item.pedidos.created_at
+    numero_pedido: item.pedidos?.numero_pedido,
+    nome_vendedor: item.pedidos?.nome_vendedor,
+    status_pedido: item.pedidos?.status_pedido,
+    data: item.pedidos?.created_at
+  }));
+}
+
+export async function getPedidosDoProdutoAction(produtoId: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('pedido_itens')
+    .select(`
+      id,
+      quantidade,
+      preco_unitario,
+      valor_total,
+      pedidos (
+        id,
+        numero_pedido,
+        status_pedido,
+        created_at,
+        vendedor_id,
+        cliente_id,
+        cliente:clientes(nome),
+        vendedor:profiles(nome)
+      )
+    `)
+    .eq('produto_id', produtoId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Erro ao buscar pedidos do produto:', error);
+    return [];
+  }
+
+  return (data || []).map((item: any) => ({
+    id: item.id,
+    quantidade: item.quantidade,
+    preco_unitario: item.preco_unitario,
+    valor_total: item.valor_total,
+    pedido_id: item.pedidos?.id,
+    numero_pedido: item.pedidos?.numero_pedido,
+    status_pedido: item.pedidos?.status_pedido,
+    created_at: item.pedidos?.created_at,
+    cliente_nome: item.pedidos?.cliente?.nome || 'Cliente não informado',
+    vendedor_nome: item.pedidos?.vendedor?.nome || 'Vendedor'
   }));
 }
