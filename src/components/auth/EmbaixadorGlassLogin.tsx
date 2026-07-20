@@ -83,28 +83,28 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
           color: '#ffffff'
         }}>
           {/* Logo & Badge */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '44px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '44px' }}>
             <img
               src="/Logo%20Bryza.svg"
               alt="Bryza Logo"
               style={{
-                height: '52px',
+                height: '85px',
                 width: 'auto',
-                filter: 'brightness(0) invert(1) drop-shadow(0 2px 8px rgba(0,0,0,0.3))'
+                filter: 'brightness(0) invert(1) drop-shadow(0 4px 12px rgba(0,0,0,0.5))'
               }}
             />
             <span style={{
-              backgroundColor: 'rgba(166, 206, 57, 0.15)',
-              border: '1px solid rgba(166, 206, 57, 0.4)',
+              backgroundColor: 'rgba(166, 206, 57, 0.2)',
+              border: '1.5px solid rgba(166, 206, 57, 0.5)',
               color: '#A6CE39',
-              fontSize: '11px',
+              fontSize: '12px',
               fontWeight: 700,
-              padding: '6px 14px',
-              borderRadius: '20px',
+              padding: '8px 18px',
+              borderRadius: '24px',
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
               backdropFilter: 'blur(10px)',
-              boxShadow: '0 0 16px rgba(166, 206, 57, 0.2)'
+              boxShadow: '0 0 20px rgba(166, 206, 57, 0.3)'
             }}>
               Embaixadores
             </span>
@@ -367,25 +367,26 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
                   style={{
                     width: '100%',
                     height: '58px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    border: '1px solid rgba(255, 255, 255, 0.28)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+                    border: '1px solid rgba(255, 255, 255, 0.35)',
                     borderRadius: '14px',
                     padding: '0 20px 0 52px',
                     fontSize: '14.5px',
                     color: '#ffffff',
+                    fontWeight: 500,
                     outline: 'none',
                     boxSizing: 'border-box',
                     transition: 'border-color 0.2s, box-shadow 0.2s, background-color 0.2s'
                   }}
                   onFocus={(e) => {
                     e.target.style.borderColor = '#A6CE39';
-                    e.target.style.boxShadow = '0 0 18px rgba(166, 206, 57, 0.35)';
-                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.16)';
+                    e.target.style.boxShadow = '0 0 18px rgba(166, 206, 57, 0.4)';
+                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.28)';
+                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.35)';
                     e.target.style.boxShadow = 'none';
-                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.14)';
                   }}
                 />
               </div>
@@ -393,7 +394,7 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
 
             {/* Password Input */}
             <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.9)', marginBottom: '8px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.95)', marginBottom: '8px' }}>
                 Sua senha
               </label>
               <div style={{ position: 'relative' }}>
@@ -402,7 +403,7 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
                   left: '18px',
                   top: '50%',
                   transform: 'translateY(-50%)',
-                  color: 'rgba(255, 255, 255, 0.85)',
+                  color: 'rgba(255, 255, 255, 0.9)',
                   fontSize: '20px',
                   pointerEvents: 'none'
                 }}>
@@ -418,25 +419,26 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
                   style={{
                     width: '100%',
                     height: '58px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    border: '1px solid rgba(255, 255, 255, 0.28)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+                    border: '1px solid rgba(255, 255, 255, 0.35)',
                     borderRadius: '14px',
                     padding: '0 52px 0 52px',
                     fontSize: '14.5px',
                     color: '#ffffff',
+                    fontWeight: 500,
                     outline: 'none',
                     boxSizing: 'border-box',
                     transition: 'border-color 0.2s, box-shadow 0.2s, background-color 0.2s'
                   }}
                   onFocus={(e) => {
                     e.target.style.borderColor = '#A6CE39';
-                    e.target.style.boxShadow = '0 0 18px rgba(166, 206, 57, 0.35)';
-                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.16)';
+                    e.target.style.boxShadow = '0 0 18px rgba(166, 206, 57, 0.4)';
+                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.28)';
+                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.35)';
                     e.target.style.boxShadow = 'none';
-                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.14)';
                   }}
                 />
                 <button
@@ -557,8 +559,16 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
         </div>
       </div>
 
-      {/* Global CSS for Mobile Responsiveness */}
+      {/* Global CSS for Mobile Responsiveness & Placeholder High Visibility */}
       <style jsx global>{`
+        input::placeholder,
+        input::-webkit-input-placeholder,
+        input::-moz-placeholder,
+        input:-ms-input-placeholder {
+          color: rgba(255, 255, 255, 0.78) !important;
+          opacity: 1 !important;
+          font-weight: 400 !important;
+        }
         @media (max-width: 992px) {
           .branding-section {
             display: none !important;
