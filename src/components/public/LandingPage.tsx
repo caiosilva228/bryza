@@ -141,6 +141,8 @@ export const LandingPage: React.FC = () => {
             }}
           >
             <span>Conheça a Loja</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>shopping_cart</span>
+          </a>
         </div>
       </header>
 
