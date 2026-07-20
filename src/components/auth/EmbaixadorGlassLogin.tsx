@@ -619,7 +619,7 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
             flex-shrink: 0 !important;
           }
           .mobile-header img {
-            height: 48px !important;
+            height: 68px !important;
           }
           .mobile-header span {
             font-size: 10px !important;
