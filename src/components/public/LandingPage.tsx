@@ -14,7 +14,7 @@ export const LandingPage: React.FC = () => {
   const faqList = [
     {
       question: 'Onde a Bryza realiza entregas?',
-      answer: 'Entregamos em diversas regiões do Brasil com entrega própria e transportadoras parceiras. Consulte a disponibilidade para seu endereço no momento do pedido.'
+      answer: 'Estamos expandindo! Entregamos em todo o Entorno Sul de Brasília: Cidade Ocidental, Valparaíso, Luziânia, Novo Gama e regiões atendidas. Consulte a disponibilidade para seu endereço no momento do pedido.'
     },
     {
       question: 'O frete é grátis?',
