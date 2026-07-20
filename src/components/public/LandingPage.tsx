@@ -148,12 +148,12 @@ export const LandingPage: React.FC = () => {
 
       {/* Hero Section */}
       <section id="hero" style={{
-        backgroundColor: '#f8fafc',
-        backgroundImage: "url('/hero-site-bryza.webp')",
+        backgroundColor: '#0a111c',
+        backgroundImage: "linear-gradient(90deg, rgba(5, 15, 32, 0.82) 0%, rgba(5, 15, 32, 0.55) 48%, rgba(5, 15, 32, 0.12) 100%), url('/hero-site-bryza.webp')",
         backgroundSize: 'cover',
         backgroundPosition: 'center center',
         backgroundRepeat: 'no-repeat',
-        padding: '70px 40px 80px',
+        padding: '80px 40px 90px',
         position: 'relative',
         borderBottom: '1px solid #f1f5f9'
       }}>
@@ -165,54 +165,48 @@ export const LandingPage: React.FC = () => {
           gap: '40px',
           alignItems: 'center'
         }} className="hero-grid">
-          {/* Left Text Box (High Legibility Card) */}
-          <div style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.88)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            borderRadius: '24px',
-            padding: '36px 36px',
-            border: '1px solid rgba(255, 255, 255, 0.9)',
-            boxShadow: '0 12px 40px rgba(0, 43, 92, 0.08)'
-          }}>
+          {/* Left Text (No Card, White Text) */}
+          <div>
             <h1 style={{
-              fontSize: '42px',
+              fontSize: '46px',
               fontWeight: 800,
-              color: '#002b5c',
-              lineHeight: 1.18,
+              color: '#ffffff',
+              lineHeight: 1.16,
               letterSpacing: '-0.02em',
-              marginBottom: '18px'
+              marginBottom: '20px',
+              textShadow: '0 3px 12px rgba(0, 0, 0, 0.6)'
             }}>
               Produtos que cuidam da sua casa e deixam sua presença.
             </h1>
 
             <p style={{
-              fontSize: '16px',
-              color: '#334155',
+              fontSize: '17px',
+              color: 'rgba(255, 255, 255, 0.92)',
               lineHeight: 1.6,
-              marginBottom: '28px',
+              marginBottom: '32px',
               maxWidth: '520px',
-              fontWeight: 500
+              fontWeight: 400,
+              textShadow: '0 2px 8px rgba(0, 0, 0, 0.5)'
             }}>
               Limpeza eficiente, alto rendimento e perfume marcante para tornar o cuidado com a casa mais leve.
             </p>
 
             {/* CTA Button */}
-            <div style={{ marginBottom: '32px' }}>
+            <div style={{ marginBottom: '36px' }}>
               <a
                 href={evUrl}
                 style={{
                   textDecoration: 'none',
                   color: '#ffffff',
                   backgroundColor: '#A6CE39',
-                  padding: '14px 32px',
+                  padding: '15px 36px',
                   borderRadius: '28px',
                   fontWeight: 700,
                   fontSize: '16px',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '10px',
-                  boxShadow: '0 8px 24px rgba(166, 206, 57, 0.45)',
+                  boxShadow: '0 8px 28px rgba(166, 206, 57, 0.45)',
                   transition: 'transform 0.2s'
                 }}
               >
@@ -225,31 +219,31 @@ export const LandingPage: React.FC = () => {
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '20px',
+              gap: '24px',
               flexWrap: 'wrap',
-              marginBottom: '12px'
+              marginBottom: '14px'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: '#002b5c' }}>
-                <span className="material-symbols-outlined" style={{ color: '#65a30d', fontSize: '20px' }}>verified_user</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', fontWeight: 600, color: '#ffffff', textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
+                <span className="material-symbols-outlined" style={{ color: '#A6CE39', fontSize: '20px' }}>verified_user</span>
                 <span>Pague somente na entrega</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: '#002b5c' }}>
-                <span className="material-symbols-outlined" style={{ color: '#65a30d', fontSize: '20px' }}>local_shipping</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', fontWeight: 600, color: '#ffffff', textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
+                <span className="material-symbols-outlined" style={{ color: '#A6CE39', fontSize: '20px' }}>local_shipping</span>
                 <span>Frete grátis*</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: '#002b5c' }}>
-                <span className="material-symbols-outlined" style={{ color: '#65a30d', fontSize: '20px' }}>groups</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', fontWeight: 600, color: '#ffffff', textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
+                <span className="material-symbols-outlined" style={{ color: '#A6CE39', fontSize: '20px' }}>groups</span>
                 <span>Ganhe indicando nossos produtos</span>
               </div>
             </div>
 
-            <p style={{ fontSize: '11px', color: '#64748b', margin: 0, fontWeight: 500 }}>
+            <p style={{ fontSize: '11.5px', color: 'rgba(255, 255, 255, 0.7)', margin: 0, fontWeight: 400, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
               *Consulte regiões e condições no momento do pedido.
             </p>
           </div>
 
           {/* Right Spacer for Background Image */}
-          <div style={{ minHeight: '340px' }} />
+          <div style={{ minHeight: '360px' }} />
         </div>
       </section>
 
