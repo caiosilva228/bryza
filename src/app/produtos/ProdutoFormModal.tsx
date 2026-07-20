@@ -46,15 +46,24 @@ export default function ProdutoFormModal({ produto, onClose, onSuccess }: Produt
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const fileExt = file.name.split('.').pop()?.toLowerCase();
+    if (fileExt !== 'svg' && file.type !== 'image/svg+xml') {
+      alert('⚠️ Formato inválido! É OBRIGATÓRIO enviar a imagem do produto no formato SVG (.svg) com tamanho recomendado de 500x500px.');
+      e.target.value = '';
+      return;
+    }
+
     try {
       setUploadingImage(true);
       const supabase = createClient();
-      const fileExt = file.name.split('.').pop() || 'png';
-      const fileName = `prod_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+      const fileName = `prod_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.svg`;
 
       const { error: uploadError } = await supabase.storage
         .from('product-images')
-        .upload(fileName, file, { upsert: true });
+        .upload(fileName, file, { 
+          upsert: true,
+          contentType: 'image/svg+xml'
+        });
 
       if (uploadError) {
         console.error('Erro no upload da imagem:', uploadError);
@@ -212,7 +221,7 @@ export default function ProdutoFormModal({ produto, onClose, onSuccess }: Produt
                       {uploadingImage ? 'Enviando...' : 'Carregar Imagem'}
                       <input
                         type="file"
-                        accept="image/*"
+                        accept=".svg,image/svg+xml"
                         onChange={handleImageFileChange}
                         disabled={uploadingImage}
                         style={{ display: 'none' }}
@@ -237,6 +246,23 @@ export default function ProdutoFormModal({ produto, onClose, onSuccess }: Produt
                         Remover Foto
                       </button>
                     )}
+                  </div>
+
+                  {/* Aviso de formato obrigatório SVG 500x500 */}
+                  <div style={{
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: '#b45309',
+                    backgroundColor: '#fef3c7',
+                    border: '1px solid #fde68a',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#b45309' }}>info</span>
+                    Formato OBRIGATÓRIO: SVG (.svg) | Dimensão recomendada: 500x500px
                   </div>
 
                   {/* URL Input alternativo */}
