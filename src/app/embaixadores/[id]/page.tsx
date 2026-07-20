@@ -10,7 +10,8 @@ import {
   redefinirAcesso, 
   alterarPlano, 
   alterarStatus,
-  getSignedPhotoUrl 
+  getSignedPhotoUrl,
+  getEmbaixadorNetwork
 } from '../actions';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { getReferralUrl } from '@/utils/env';
@@ -42,6 +43,10 @@ export default function EmbaixadorDetailsPage({ params }: Context) {
   // Estados dos dados das abas
   const [visits, setVisits] = useState<any[]>([]);
   const [attributions, setAttributions] = useState<any[]>([]);
+  const [networkData, setNetworkData] = useState<{
+    items: any[];
+    counts: { total: number; level1: number; level2: number; level3: number };
+  } | null>(null);
   const [vendas, setVendas] = useState<any[]>([]);
   const [commissions, setCommissions] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
@@ -90,12 +95,14 @@ export default function EmbaixadorDetailsPage({ params }: Context) {
 
     const fetchTabData = async () => {
       if (activeTab === 'indicacoes') {
-        const [v, a] = await Promise.all([
+        const [v, a, net] = await Promise.all([
           supabase.from('referral_visits').select('*').eq('ambassador_id', amb.id).order('created_at', { ascending: false }),
-          supabase.from('referral_attributions').select('*, clientes(nome)').eq('ambassador_id', amb.id).order('created_at', { ascending: false })
+          supabase.from('referral_attributions').select('*, clientes(nome)').eq('ambassador_id', amb.id).order('created_at', { ascending: false }),
+          getEmbaixadorNetwork(amb.id)
         ]);
         if (v.data) setVisits(v.data);
         if (a.data) setAttributions(a.data);
+        if (net) setNetworkData(net);
       } else if (activeTab === 'vendas') {
         const { data } = await supabase
           .from('pedidos')
@@ -614,6 +621,129 @@ export default function EmbaixadorDetailsPage({ params }: Context) {
           {/* TAB INDICAÇÕES */}
           {activeTab === 'indicacoes' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Quadro da Rede de Embaixadores Indicados (Multinível) */}
+              <div style={{
+                backgroundColor: 'var(--color-surface-container-low)',
+                padding: '24px',
+                borderRadius: '16px',
+                border: '1px solid var(--color-outline-variant)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-on-surface)', margin: 0 }}>
+                      Rede de Embaixadores Indicados ({networkData?.counts.total || 0})
+                    </h3>
+                    <p style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', margin: '4px 0 0 0' }}>
+                      Embaixadores cadastrados na rede deste perfil (até 3 níveis de profundidade).
+                    </p>
+                  </div>
+
+                  {/* Badges dos Níveis */}
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 600, backgroundColor: '#E0F2FE', color: '#0369A1' }}>
+                      Nível 1: {networkData?.counts.level1 || 0}
+                    </span>
+                    <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 600, backgroundColor: '#DCFCE7', color: '#15803D' }}>
+                      Nível 2: {networkData?.counts.level2 || 0}
+                    </span>
+                    <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 600, backgroundColor: '#F3E8FF', color: '#6B21A8' }}>
+                      Nível 3: {networkData?.counts.level3 || 0}
+                    </span>
+                  </div>
+                </div>
+
+                {!networkData || networkData.items.length === 0 ? (
+                  <div style={{ color: 'var(--color-on-surface-variant)', fontSize: '14px', padding: '20px 0' }}>
+                    Nenhum embaixador indicado cadastrado nesta rede ainda.
+                  </div>
+                ) : (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'left' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid var(--color-outline-variant)' }}>
+                          <th style={{ padding: '10px', color: 'var(--color-on-surface-variant)' }}>Nível</th>
+                          <th style={{ padding: '10px', color: 'var(--color-on-surface-variant)' }}>Embaixador</th>
+                          <th style={{ padding: '10px', color: 'var(--color-on-surface-variant)' }}>Patrocinador</th>
+                          <th style={{ padding: '10px', color: 'var(--color-on-surface-variant)' }}>Contato / Local</th>
+                          <th style={{ padding: '10px', color: 'var(--color-on-surface-variant)' }}>Status</th>
+                          <th style={{ padding: '10px', color: 'var(--color-on-surface-variant)' }}>Cadastro</th>
+                          <th style={{ padding: '10px', color: 'var(--color-on-surface-variant)', textAlign: 'right' }}>Ação</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {networkData.items.map((item) => {
+                          const levelBg = item.level === 1 ? '#E0F2FE' : item.level === 2 ? '#DCFCE7' : '#F3E8FF';
+                          const levelColor = item.level === 1 ? '#0369A1' : item.level === 2 ? '#15803D' : '#6B21A8';
+                          const isAtivo = item.status === 'ativo';
+
+                          return (
+                            <tr key={item.id} style={{ borderBottom: '1px solid var(--color-outline-variant)' }}>
+                              <td style={{ padding: '10px' }}>
+                                <span style={{
+                                  backgroundColor: levelBg,
+                                  color: levelColor,
+                                  padding: '2px 8px',
+                                  borderRadius: '12px',
+                                  fontSize: '11px',
+                                  fontWeight: 700
+                                }}>
+                                  Nível {item.level}
+                                </span>
+                              </td>
+                              <td style={{ padding: '10px' }}>
+                                <div style={{ fontWeight: 600, color: 'var(--color-on-surface)' }}>{item.display_name || item.full_name}</div>
+                                <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>@{item.username}</div>
+                              </td>
+                              <td style={{ padding: '10px', fontSize: '13px', color: 'var(--color-on-surface)' }}>
+                                {item.sponsor_name}
+                              </td>
+                              <td style={{ padding: '10px', fontSize: '12px' }}>
+                                <div>{item.phone || '—'}</div>
+                                <div style={{ color: 'var(--color-on-surface-variant)' }}>
+                                  {item.city && item.state ? `${item.city} - ${item.state}` : item.city || item.state || '—'}
+                                </div>
+                              </td>
+                              <td style={{ padding: '10px' }}>
+                                <span style={{
+                                  backgroundColor: isAtivo ? '#E6F4EA' : '#FCE8E6',
+                                  color: isAtivo ? '#137333' : '#C5221F',
+                                  padding: '2px 8px',
+                                  borderRadius: '12px',
+                                  fontSize: '11px',
+                                  fontWeight: 600
+                                }}>
+                                  {isAtivo ? 'Ativo' : 'Inativo'}
+                                </span>
+                              </td>
+                              <td style={{ padding: '10px', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+                                {formatDate(item.created_at)}
+                              </td>
+                              <td style={{ padding: '10px', textAlign: 'right' }}>
+                                <button
+                                  onClick={() => router.push(`/embaixadores/${item.id}`)}
+                                  style={{
+                                    padding: '6px 12px',
+                                    borderRadius: '6px',
+                                    border: '1px solid var(--color-outline)',
+                                    backgroundColor: 'transparent',
+                                    color: 'var(--color-primary)',
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Ver Cadastro
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
               {/* Quadro de Visitas */}
               <div style={{
                 backgroundColor: 'var(--color-surface-container-low)',

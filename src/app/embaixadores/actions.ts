@@ -454,3 +454,73 @@ export async function getSignedPhotoUrl(photoPath: string) {
 
   return data.signedUrl;
 }
+
+// 9. Obter Rede Multinível do Embaixador (Níveis 1, 2 e 3)
+export async function getEmbaixadorNetwork(ambassadorId: string) {
+  await checkAdminAccess();
+  const admin = createAdminClient();
+  const safeColumns = 'id, parent_ambassador_id, full_name, display_name, username, phone, city, state, status, created_at';
+
+  // Buscar dados do embaixador dono da rede
+  const { data: owner } = await admin
+    .from('ambassadors')
+    .select('id, full_name, display_name')
+    .eq('id', ambassadorId)
+    .maybeSingle();
+
+  if (!owner) {
+    return {
+      items: [],
+      counts: { total: 0, level1: 0, level2: 0, level3: 0 }
+    };
+  }
+
+  async function getChildren(parentIds: string[]) {
+    if (parentIds.length === 0) return [];
+
+    const { data, error } = await admin
+      .from('ambassadors')
+      .select(safeColumns)
+      .in('parent_ambassador_id', parentIds)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Erro ao carregar nível da rede do embaixador:', error);
+      return [];
+    }
+
+    return data || [];
+  }
+
+  const level1Rows = await getChildren([owner.id]);
+  const level2Rows = await getChildren(level1Rows.map((item) => item.id));
+  const level3Rows = await getChildren(level2Rows.map((item) => item.id));
+
+  const names = new Map<string, string>([
+    [owner.id, owner.display_name || owner.full_name],
+    ...level1Rows.map((item) => [item.id, item.display_name || item.full_name] as [string, string]),
+    ...level2Rows.map((item) => [item.id, item.display_name || item.full_name] as [string, string]),
+  ]);
+
+  const withLevel = (rows: any[], level: 1 | 2 | 3) => rows.map((item) => ({
+    ...item,
+    level,
+    sponsor_name: item.parent_ambassador_id ? names.get(item.parent_ambassador_id) || 'Patrocinador' : '—',
+  }));
+
+  const items = [
+    ...withLevel(level1Rows, 1),
+    ...withLevel(level2Rows, 2),
+    ...withLevel(level3Rows, 3),
+  ];
+
+  return {
+    items,
+    counts: {
+      total: items.length,
+      level1: level1Rows.length,
+      level2: level2Rows.length,
+      level3: level3Rows.length,
+    }
+  };
+}
