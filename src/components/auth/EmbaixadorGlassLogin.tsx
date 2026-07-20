@@ -30,7 +30,7 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
       height: '100dvh',
       overflow: 'hidden',
       fontFamily: "'Poppins', system-ui, sans-serif",
-      backgroundImage: "url('/bg-embaixadores.jpg')",
+      backgroundImage: "url('/bg-embaixadores.webp')",
       backgroundSize: 'cover',
       backgroundPosition: 'center center',
       backgroundRepeat: 'no-repeat',
