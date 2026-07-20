@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useTransition, use } from 'react';
+import { useState, useEffect, useTransition, use, useMemo } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -16,6 +16,8 @@ import {
 import { formatCurrency, formatDate } from '@/utils/format';
 import { getReferralUrl } from '@/utils/env';
 import { toast } from 'sonner';
+import ClienteTable from '@/app/clientes/ClienteTable';
+import { Cliente } from '@/models/types';
 
 interface Context {
   params: Promise<{ id: string }>;
@@ -43,6 +45,9 @@ export default function EmbaixadorDetailsPage({ params }: Context) {
   // Estados dos dados das abas
   const [visits, setVisits] = useState<any[]>([]);
   const [attributions, setAttributions] = useState<any[]>([]);
+  const [referredClientes, setReferredClientes] = useState<Cliente[]>([]);
+  const [clienteSearch, setClienteSearch] = useState('');
+  const [clienteStatusFilter, setClienteStatusFilter] = useState('');
   const [networkData, setNetworkData] = useState<{
     items: any[];
     counts: { total: number; level1: number; level2: number; level3: number };
@@ -88,6 +93,22 @@ export default function EmbaixadorDetailsPage({ params }: Context) {
     loadPlans();
   }, [id]);
 
+  const filteredReferredClientes = useMemo(() => {
+    return referredClientes.filter(c => {
+      const searchLower = clienteSearch.toLowerCase().trim();
+      const matchSearch = !searchLower || (
+        (c.nome && c.nome.toLowerCase().includes(searchLower)) ||
+        `c${String(c.codigo_cliente || 0).padStart(5, '0')}`.includes(searchLower) ||
+        (c.telefone && c.telefone.includes(searchLower)) ||
+        (c.cidade && c.cidade.toLowerCase().includes(searchLower))
+      );
+
+      const matchStatus = !clienteStatusFilter || c.status_cliente === clienteStatusFilter;
+
+      return matchSearch && matchStatus;
+    });
+  }, [referredClientes, clienteSearch, clienteStatusFilter]);
+
   // Carregar sub-dados com base na aba ativa
   useEffect(() => {
     if (!amb) return;
@@ -98,12 +119,14 @@ export default function EmbaixadorDetailsPage({ params }: Context) {
         const net = await getEmbaixadorNetwork(amb.id);
         if (net) setNetworkData(net);
       } else if (activeTab === 'indicacoes') {
-        const [v, a] = await Promise.all([
+        const [v, a, cRes] = await Promise.all([
           supabase.from('referral_visits').select('*').eq('ambassador_id', amb.id).order('created_at', { ascending: false }),
-          supabase.from('referral_attributions').select('*, clientes(nome)').eq('ambassador_id', amb.id).order('created_at', { ascending: false })
+          supabase.from('referral_attributions').select('*, clientes(nome)').eq('ambassador_id', amb.id).order('created_at', { ascending: false }),
+          supabase.from('clientes').select('*, vendedor:profiles!vendedor_responsavel_id(nome, codigo_vendedor)').eq('ambassador_id', amb.id).order('data_cadastro', { ascending: false })
         ]);
         if (v.data) setVisits(v.data);
         if (a.data) setAttributions(a.data);
+        if (cRes.data) setReferredClientes(cRes.data as any[]);
       } else if (activeTab === 'vendas') {
         const { data } = await supabase
           .from('pedidos')
@@ -760,8 +783,89 @@ export default function EmbaixadorDetailsPage({ params }: Context) {
           {/* TAB INDICAÇÕES */}
           {activeTab === 'indicacoes' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Barra de Filtros e Busca por Cliente */}
+              <div style={{
+                backgroundColor: 'var(--color-surface-container-low)',
+                padding: '20px 24px',
+                borderRadius: '16px',
+                border: '1px solid var(--color-outline-variant)',
+                display: 'flex',
+                gap: '16px',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap'
+              }}>
+                <div style={{ display: 'flex', gap: '12px', flex: 1, minWidth: '280px', flexWrap: 'wrap' }}>
+                  {/* Busca por Nome, Código, Telefone ou Cidade */}
+                  <div style={{ position: 'relative', flex: 1, minWidth: '220px' }}>
+                    <span className="material-symbols-outlined" style={{
+                      position: 'absolute',
+                      left: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      color: 'var(--color-outline)',
+                      fontSize: '20px'
+                    }}>
+                      search
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="Buscar por nome, C00XXX, telefone ou cidade..."
+                      value={clienteSearch}
+                      onChange={(e) => setClienteSearch(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px 10px 40px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--color-outline-variant)',
+                        backgroundColor: 'var(--color-surface)',
+                        color: 'var(--color-on-surface)',
+                        fontSize: '14px'
+                      }}
+                    />
+                  </div>
 
-              {/* Quadro de Visitas */}
+                  {/* Filtro por Situação (LEAD / CLIENTE) */}
+                  <select
+                    value={clienteStatusFilter}
+                    onChange={(e) => setClienteStatusFilter(e.target.value)}
+                    style={{
+                      padding: '10px 14px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--color-outline-variant)',
+                      backgroundColor: 'var(--color-surface)',
+                      color: 'var(--color-on-surface)',
+                      fontSize: '14px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <option value="">Todas as Situações</option>
+                    <option value="CLIENTE">CLIENTE</option>
+                    <option value="LEAD">LEAD</option>
+                  </select>
+                </div>
+
+                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>
+                  Exibindo {filteredReferredClientes.length} de {referredClientes.length} clientes indicados
+                </div>
+              </div>
+
+              {/* Tabela Completa de Clientes Indicados com Ações (Ver Detalhes + WhatsApp) */}
+              <div style={{
+                backgroundColor: 'var(--color-surface-container-low)',
+                borderRadius: '16px',
+                border: '1px solid var(--color-outline-variant)',
+                overflow: 'hidden',
+                padding: '24px'
+              }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-on-surface)', marginBottom: '16px', marginTop: 0 }}>
+                  Clientes Indicados Vinculados ({referredClientes.length})
+                </h3>
+
+                <ClienteTable clientes={filteredReferredClientes} isAdmin={true} />
+              </div>
+
+              {/* Quadro de Visitas Recentes ao Link */}
               <div style={{
                 backgroundColor: 'var(--color-surface-container-low)',
                 padding: '24px',
@@ -790,53 +894,6 @@ export default function EmbaixadorDetailsPage({ params }: Context) {
                           <td style={{ padding: '10px' }}>{v.utm_source || 'Direto'}</td>
                           <td style={{ padding: '10px' }}>{v.destination_path || '/'}</td>
                           <td style={{ padding: '10px', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>{v.user_agent_summary || 'Desconhecido'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-
-              {/* Quadro de Indicações de Clientes */}
-              <div style={{
-                backgroundColor: 'var(--color-surface-container-low)',
-                padding: '24px',
-                borderRadius: '16px',
-                border: '1px solid var(--color-outline-variant)'
-              }}>
-                <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-on-surface)', marginBottom: '16px', marginTop: 0 }}>
-                  Clientes Indicados Vinculados ({attributions.length})
-                </h3>
-                {attributions.length === 0 ? (
-                  <div style={{ color: 'var(--color-on-surface-variant)', fontSize: '14px', padding: '20px 0' }}>Nenhum cliente vinculado ainda.</div>
-                ) : (
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'left' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '1px solid var(--color-outline-variant)' }}>
-                        <th style={{ padding: '10px', color: 'var(--color-on-surface-variant)' }}>Data de Atribuição</th>
-                        <th style={{ padding: '10px', color: 'var(--color-on-surface-variant)' }}>Cliente</th>
-                        <th style={{ padding: '10px', color: 'var(--color-on-surface-variant)' }}>Origem</th>
-                        <th style={{ padding: '10px', color: 'var(--color-on-surface-variant)' }}>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {attributions.map((a) => (
-                        <tr key={a.id} style={{ borderBottom: '1px solid var(--color-outline-variant)' }}>
-                          <td style={{ padding: '10px' }}>{formatDate(a.created_at)}</td>
-                          <td style={{ padding: '10px', fontWeight: 600 }}>{a.clientes?.nome || 'Desconhecido'}</td>
-                          <td style={{ padding: '10px' }}>{a.referral_source || 'Link'}</td>
-                          <td style={{ padding: '10px' }}>
-                            <span style={{
-                              backgroundColor: a.locked_at ? '#E0F2FE' : '#FEF3C7',
-                              color: a.locked_at ? '#0369A1' : '#D97706',
-                              padding: '2px 8px',
-                              borderRadius: '12px',
-                              fontSize: '11px',
-                              fontWeight: 600
-                            }}>
-                              {a.locked_at ? 'Bloqueado/Fixo' : 'Temporário'}
-                            </span>
-                          </td>
                         </tr>
                       ))}
                     </tbody>
