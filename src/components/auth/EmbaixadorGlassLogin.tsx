@@ -245,76 +245,95 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
           </div>
         </div>
 
-        {/* Right Panel: Glassmorphism Login Card */}
-        <div
-          onMouseMove={handleMouseMove}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          className="glass-card"
-          style={{
-            width: '100%',
-            maxWidth: '460px',
-            backgroundColor: 'rgba(255, 255, 255, 0.08)',
-            backdropFilter: 'blur(35px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(35px) saturate(180%)',
-            border: '1px solid rgba(255, 255, 255, 0.18)',
-            borderRadius: '32px',
-            padding: '44px 38px',
-            boxShadow: '0 20px 80px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 40px rgba(166, 206, 57, 0.06)',
-            position: 'relative',
-            overflow: 'hidden',
-            boxSizing: 'border-box',
-            transition: 'transform 0.3s ease, box-shadow 0.3s ease'
-          }}
-        >
-          {/* Subtle Mouse Reflection Overlay */}
-          {isHovered && (
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              pointerEvents: 'none',
-              background: `radial-gradient(circle 260px at ${mousePos.x}px ${mousePos.y}px, rgba(255, 255, 255, 0.12) 0%, transparent 80%)`,
-              transition: 'background 0.05s ease'
-            }} />
-          )}
-
-          {/* Card Top Header */}
-          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <div style={{
-              width: '56px',
-              height: '56px',
-              borderRadius: '18px',
-              backgroundColor: 'rgba(166, 206, 57, 0.12)',
-              border: '1px solid rgba(166, 206, 57, 0.35)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+        {/* Right Panel: Glassmorphism Login Card Wrapper */}
+        <div className="right-panel-wrapper" style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          width: '100%',
+          maxWidth: '460px'
+        }}>
+          {/* Mobile Centered Logo (Outside the Glass Card) */}
+          <div className="mobile-header">
+            <img
+              src="/Logo%20Bryza.svg"
+              alt="Bryza Logo"
+              style={{
+                height: '75px',
+                width: 'auto',
+                filter: 'brightness(0) invert(1) drop-shadow(0 4px 12px rgba(0,0,0,0.5))'
+              }}
+            />
+            <span style={{
+              backgroundColor: 'rgba(166, 206, 57, 0.2)',
+              border: '1.5px solid rgba(166, 206, 57, 0.5)',
               color: '#A6CE39',
-              marginBottom: '18px',
-              boxShadow: '0 0 24px rgba(166, 206, 57, 0.25)'
-            }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '28px' }}>eco</span>
-            </div>
-
-            <h2 style={{
-              fontSize: '28px',
+              fontSize: '11px',
               fontWeight: 700,
-              color: '#ffffff',
-              margin: '0 0 8px',
-              letterSpacing: '-0.01em'
+              padding: '6px 14px',
+              borderRadius: '20px',
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              backdropFilter: 'blur(10px)',
+              boxShadow: '0 0 16px rgba(166, 206, 57, 0.3)'
             }}>
-              Já é cliente?
-            </h2>
-
-            <p style={{
-              fontSize: '14px',
-              color: 'rgba(255, 255, 255, 0.75)',
-              margin: 0,
-              fontWeight: 400
-            }}>
-              Faça login para continuar.
-            </p>
+              Embaixadores
+            </span>
           </div>
+
+          <div
+            onMouseMove={handleMouseMove}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className="glass-card"
+            style={{
+              width: '100%',
+              maxWidth: '460px',
+              backgroundColor: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(35px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(35px) saturate(180%)',
+              border: '1px solid rgba(255, 255, 255, 0.18)',
+              borderRadius: '32px',
+              padding: '44px 38px',
+              boxShadow: '0 20px 80px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 40px rgba(166, 206, 57, 0.06)',
+              position: 'relative',
+              overflow: 'hidden',
+              boxSizing: 'border-box',
+              transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+            }}
+          >
+            {/* Subtle Mouse Reflection Overlay */}
+            {isHovered && (
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                pointerEvents: 'none',
+                background: `radial-gradient(circle 260px at ${mousePos.x}px ${mousePos.y}px, rgba(255, 255, 255, 0.12) 0%, transparent 80%)`,
+                transition: 'background 0.05s ease'
+              }} />
+            )}
+
+            {/* Card Top Header */}
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <h2 style={{
+                fontSize: '28px',
+                fontWeight: 700,
+                color: '#ffffff',
+                margin: '0 0 8px',
+                letterSpacing: '-0.01em'
+              }}>
+                Já é cliente?
+              </h2>
+
+              <p style={{
+                fontSize: '14px',
+                color: 'rgba(255, 255, 255, 0.75)',
+                margin: 0,
+                fontWeight: 400
+              }}>
+                Faça login para continuar.
+              </p>
+            </div>
 
           {/* Error Message */}
           {errorMessage && (
@@ -558,9 +577,13 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
           </form>
         </div>
       </div>
+    </div>
 
       {/* Global CSS for Mobile Responsiveness & Placeholder High Visibility */}
       <style jsx global>{`
+        .mobile-header {
+          display: none;
+        }
         input::placeholder,
         input::-webkit-input-placeholder,
         input::-moz-placeholder,
@@ -573,10 +596,25 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
           .branding-section {
             display: none !important;
           }
+          .mobile-header {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 12px !important;
+            margin-bottom: 24px !important;
+            text-align: center !important;
+          }
+          .right-panel-wrapper {
+            max-width: 100% !important;
+            width: 100% !important;
+            padding: 16px !important;
+          }
           .glass-card {
             max-width: 100% !important;
-            margin: 16px !important;
-            padding: 32px 24px !important;
+            width: 100% !important;
+            padding: 32px 20px !important;
+            border-radius: 28px !important;
           }
         }
       `}</style>
