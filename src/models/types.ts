@@ -171,6 +171,7 @@ export interface Produto {
   estoque_minimo: number;
   estoque_reservado: number;
   ativo: boolean;
+  imagem_url?: string | null;
   created_at?: string;
 }
 

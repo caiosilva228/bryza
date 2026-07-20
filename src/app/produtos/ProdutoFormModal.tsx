@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Produto } from '@/models/types';
 import { saveProduto } from './actions';
+import { createClient } from '@/utils/supabase/client';
 
 interface ProdutoFormModalProps {
   produto?: Produto | null;
@@ -12,6 +13,7 @@ interface ProdutoFormModalProps {
 
 export default function ProdutoFormModal({ produto, onClose, onSuccess }: ProdutoFormModalProps) {
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [formData, setFormData] = useState({
     nome_produto: '',
     categoria: 'Produto Final',
@@ -21,6 +23,7 @@ export default function ProdutoFormModal({ produto, onClose, onSuccess }: Produt
     estoque_atual: 0,
     estoque_minimo: 5,
     ativo: true,
+    imagem_url: '',
   });
 
   useEffect(() => {
@@ -34,9 +37,43 @@ export default function ProdutoFormModal({ produto, onClose, onSuccess }: Produt
         estoque_atual: produto.estoque_atual,
         estoque_minimo: produto.estoque_minimo,
         ativo: produto.ativo,
+        imagem_url: produto.imagem_url || '',
       });
     }
   }, [produto]);
+
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingImage(true);
+      const supabase = createClient();
+      const fileExt = file.name.split('.').pop() || 'png';
+      const fileName = `prod_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) {
+        console.error('Erro no upload da imagem:', uploadError);
+        alert('Falha ao subir a imagem do produto.');
+        return;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(fileName);
+
+      const publicUrl = publicUrlData.publicUrl;
+      setFormData(prev => ({ ...prev, imagem_url: publicUrl }));
+    } catch (err) {
+      console.error('Erro no envio da imagem:', err);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,6 +151,114 @@ export default function ProdutoFormModal({ produto, onClose, onSuccess }: Produt
 
         <form onSubmit={handleSubmit} style={{ padding: '32px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+            {/* Foto / Imagem do Produto */}
+            <div style={{ gridColumn: 'span 2' }}>
+              <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '8px' }}>
+                Foto / Imagem do Produto (E-Commerce & Catálogo)
+              </label>
+
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '20px',
+                padding: '16px',
+                borderRadius: '16px',
+                border: '1.5px dashed var(--color-outline-variant)',
+                backgroundColor: 'var(--color-surface-container-lowest)'
+              }}>
+                {/* Preview Box */}
+                <div style={{
+                  width: '90px',
+                  height: '90px',
+                  borderRadius: '12px',
+                  border: '1px solid var(--color-outline-variant)',
+                  backgroundColor: 'var(--color-surface-container-high)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  overflow: 'hidden',
+                  flexShrink: 0,
+                  position: 'relative'
+                }}>
+                  {formData.imagem_url ? (
+                    <img
+                      src={formData.imagem_url}
+                      alt="Preview do produto"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <span className="material-symbols-outlined" style={{ fontSize: '36px', color: 'var(--color-outline)' }}>
+                      add_a_photo
+                    </span>
+                  )}
+                </div>
+
+                {/* Upload Actions */}
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <label style={{
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      backgroundColor: 'var(--color-primary)',
+                      color: 'white',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: uploadingImage ? 'wait' : 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>upload</span>
+                      {uploadingImage ? 'Enviando...' : 'Carregar Imagem'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageFileChange}
+                        disabled={uploadingImage}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+
+                    {formData.imagem_url && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, imagem_url: '' })}
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          border: '1px solid var(--color-outline)',
+                          backgroundColor: 'transparent',
+                          color: 'var(--color-error)',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Remover Foto
+                      </button>
+                    )}
+                  </div>
+
+                  {/* URL Input alternativo */}
+                  <input
+                    type="url"
+                    placeholder="Ou cole a URL direta da imagem..."
+                    value={formData.imagem_url}
+                    onChange={(e) => setFormData({ ...formData, imagem_url: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--color-outline-variant)',
+                      fontSize: '12px',
+                      backgroundColor: 'white',
+                      color: 'var(--color-on-surface)'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
             <div style={{ gridColumn: 'span 2' }}>
               <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '8px' }}>Nome do Produto</label>
               <input 

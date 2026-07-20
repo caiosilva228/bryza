@@ -130,8 +130,36 @@ export default function ProdutoTable({ produtos, onEdit, onToggleAtivo }: Produt
                     #{p.codigo_produto || '-'}
                   </td>
                   <td style={{ padding: '10px 16px' }}>
-                    <div style={{ fontWeight: 600, color: 'var(--color-on-surface)', fontSize: '13px' }}>{p.nome_produto}</div>
-                    <div style={{ fontSize: '10px', color: 'var(--color-outline)' }}>Unid: {p.unidade}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '8px',
+                        backgroundColor: 'var(--color-surface-container-high)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'hidden',
+                        flexShrink: 0,
+                        border: '1px solid var(--color-outline-variant)'
+                      }}>
+                        {p.imagem_url ? (
+                          <img
+                            src={p.imagem_url}
+                            alt={p.nome_produto}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                        ) : (
+                          <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--color-outline)' }}>
+                            inventory_2
+                          </span>
+                        )}
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--color-on-surface)', fontSize: '13px' }}>{p.nome_produto}</div>
+                        <div style={{ fontSize: '10px', color: 'var(--color-outline)' }}>Unid: {p.unidade}</div>
+                      </div>
+                    </div>
                   </td>
                   <td style={{ padding: '10px 16px' }}>
                     <span
@@ -244,31 +272,57 @@ export default function ProdutoTable({ produtos, onEdit, onToggleAtivo }: Produt
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
-                <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-outline)', fontFamily: 'monospace' }}>
-                      #{p.codigo_produto || '-'}
+                <div style={{ display: 'flex', gap: '12px', minWidth: 0, flex: 1, alignItems: 'center' }}>
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '10px',
+                    backgroundColor: 'var(--color-surface-container-high)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    flexShrink: 0,
+                    border: '1px solid var(--color-outline-variant)'
+                  }}>
+                    {p.imagem_url ? (
+                      <img
+                        src={p.imagem_url}
+                        alt={p.nome_produto}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <span className="material-symbols-outlined" style={{ fontSize: '24px', color: 'var(--color-outline)' }}>
+                        inventory_2
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-outline)', fontFamily: 'monospace' }}>
+                        #{p.codigo_produto || '-'}
+                      </span>
+                      <span
+                        style={{
+                          padding: '3px 8px',
+                          borderRadius: '999px',
+                          fontSize: '10px',
+                          fontWeight: 800,
+                          textTransform: 'uppercase',
+                          backgroundColor: p.ativo ? 'var(--color-primary-container)' : 'var(--color-surface-container-high)',
+                          color: p.ativo ? 'var(--color-on-primary-container)' : 'var(--color-outline)',
+                        }}
+                      >
+                        {p.ativo ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-on-surface)', lineHeight: 1.25 }}>
+                      {p.nome_produto}
                     </span>
-                    <span
-                      style={{
-                        padding: '3px 8px',
-                        borderRadius: '999px',
-                        fontSize: '10px',
-                        fontWeight: 800,
-                        textTransform: 'uppercase',
-                        backgroundColor: p.ativo ? 'var(--color-primary-container)' : 'var(--color-surface-container-high)',
-                        color: p.ativo ? 'var(--color-on-primary-container)' : 'var(--color-outline)',
-                      }}
-                    >
-                      {p.ativo ? 'Ativo' : 'Inativo'}
+                    <span style={{ fontSize: '11px', color: 'var(--color-outline)' }}>
+                      Unid: {p.unidade}
                     </span>
                   </div>
-                  <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-on-surface)', lineHeight: 1.25 }}>
-                    {p.nome_produto}
-                  </span>
-                  <span style={{ fontSize: '11px', color: 'var(--color-outline)' }}>
-                    Unid: {p.unidade}
-                  </span>
                 </div>
 
                 <span
