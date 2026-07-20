@@ -99,11 +99,13 @@ export async function getPedidosDoProdutoAction(produtoId: string) {
   return (data || [])
     .filter((item: any) => {
       const status = item.pedidos?.status_pedido;
-      // Apenas pedidos que reservam estoque (excluir finalizado e cancelado)
+      // Apenas pedidos que reservam estoque ativamente
+      // Excluir: finalizado (baixou estoque físico), cancelado (liberou reserva), entregue (liberou reserva)
       return item.pedidos !== null &&
         item.pedidos !== undefined &&
         status !== 'finalizado' &&
-        status !== 'cancelado';
+        status !== 'cancelado' &&
+        status !== 'entregue';
     })
     .sort((a: any, b: any) => {
       const dateA = a.pedidos?.created_at ? new Date(a.pedidos.created_at).getTime() : 0;
