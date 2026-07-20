@@ -1,13 +1,21 @@
 import styles from './login.module.css';
 import { login } from './actions';
+import { headers } from 'next/headers';
+import { getSubdomainType } from '@/utils/subdomain';
+import { EmbaixadorGlassLogin } from '@/components/auth/EmbaixadorGlassLogin';
 
 interface PageProps {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; type?: string }>;
 }
 
 export default async function LoginPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const error = params.error;
+  const typeParam = params.type;
+
+  const reqHeaders = await headers();
+  const host = reqHeaders.get('host');
+  const subdomain = getSubdomainType(host);
 
   let errorMessage = '';
   if (error === 'InvalidCredentials') {
@@ -18,10 +26,15 @@ export default async function LoginPage({ searchParams }: PageProps) {
     errorMessage = 'Muitas tentativas de login. Tente novamente mais tarde.';
   }
 
+  // Renderiza a versão Embaixador Glassmorphism quando acessado via ev.bryza.com.br ou ?type=ev
+  if (subdomain === 'ev' || typeParam === 'ev') {
+    return <EmbaixadorGlassLogin errorMessage={errorMessage} />;
+  }
+
   return (
     <div className={styles.container}>
       <main className={styles.mainCard}>
-        {/* Lado Institucional (Escondido no mobile via CSS) */}
+        {/* Lado Institucional */}
         <section className={styles.brandingSide}>
           <div className={styles.brandingContent}>
             <div style={{ marginBottom: '40px' }}>
@@ -98,16 +111,12 @@ export default async function LoginPage({ searchParams }: PageProps) {
                   autoCapitalize="none"
                   spellCheck={false}
                   maxLength={254}
-                  required 
                 />
               </div>
             </div>
 
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <label htmlFor="password" className={styles.label}>Senha</label>
-                <a href="#" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-primary)', textDecoration: 'none' }}>Esqueci minha senha</a>
-              </div>
+              <label htmlFor="password" className={styles.label}>Senha</label>
               <div className={styles.inputGroup}>
                 <span className={`material-symbols-outlined ${styles.inputIcon}`}>lock</span>
                 <input 
@@ -115,28 +124,17 @@ export default async function LoginPage({ searchParams }: PageProps) {
                   id="password" 
                   name="password" 
                   className={styles.input} 
-                  placeholder="••••••••" 
-                  required 
+                  placeholder="Sua senha de acesso"
+                  autoComplete="current-password"
+                  maxLength={128}
                 />
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <input type="checkbox" id="remember" style={{ width: '16px', height: '16px', accentColor: 'var(--color-primary)' }} />
-              <label htmlFor="remember" style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', userSelect: 'none' }}>Manter conectado</label>
-            </div>
-
-            <button type="submit" className={styles.submitButton}>
-              Entrar
-              <span className="material-symbols-outlined">arrow_forward</span>
+            <button type="submit" className={styles.submitBtn}>
+              Entrar no sistema
             </button>
           </form>
-
-          <footer style={{ marginTop: '48px', textAlign: 'center' }}>
-            <p style={{ fontSize: '12px', color: 'var(--color-outline)' }}>
-              © 2024 BRYZA Tecnologia S.A. <br/> Todos os direitos reservados.
-            </p>
-          </footer>
         </section>
       </main>
     </div>
