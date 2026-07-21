@@ -124,6 +124,29 @@ export default function MeuLinkPage() {
                   cursor: 'not-allowed'
                 }}
               />
+              <a
+                href={fullUrl}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  textDecoration: 'none',
+                  padding: '12px 20px',
+                  borderRadius: '10px',
+                  backgroundColor: 'var(--color-surface-container-highest, #e2e8f0)',
+                  color: 'var(--color-on-surface)',
+                  border: '1px solid var(--color-outline-variant)',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'background-color 0.2s'
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>open_in_new</span>
+                Acessar
+              </a>
               <button
                 onClick={() => handleCopy(fullUrl, 'Link')}
                 style={{
