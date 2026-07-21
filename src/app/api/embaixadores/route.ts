@@ -268,6 +268,8 @@ export async function POST(req: NextRequest) {
         id: authData.user.id,
         nome: full_name,
         email: syntheticEmail,
+        cpf: normalizedCpf,
+        telefone: phoneClean,
         role: 'embaixador',
         ativo: (status === 'ativo'),
         must_change_password: true
