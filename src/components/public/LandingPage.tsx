@@ -81,8 +81,36 @@ export const LandingPage: React.FC = () => {
         zIndex: 100,
         boxShadow: '0 2px 10px rgba(0, 0, 0, 0.03)'
       }} className="navbar-container">
-        {/* Left Mobile Hamburger Button & Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {/* Logo Bryza (Left) */}
+        <a href="#hero" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+          <img
+            src="/Logo%20Bryza.svg"
+            alt="Bryza Logo"
+            style={{ height: '48px', width: 'auto' }}
+          />
+        </a>
+
+        {/* Menu Navigation Links (Desktop) */}
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '32px' }} className="nav-links">
+          <a href="#hero" style={{ textDecoration: 'none', color: '#0f172a', fontWeight: 600, fontSize: '14.5px', transition: 'color 0.2s' }}>
+            Início
+          </a>
+          <a href="#beneficios" style={{ textDecoration: 'none', color: '#0f172a', fontWeight: 600, fontSize: '14.5px', transition: 'color 0.2s' }}>
+            Benefícios
+          </a>
+          <a href="#embaixador" style={{ textDecoration: 'none', color: '#0f172a', fontWeight: 600, fontSize: '14.5px', transition: 'color 0.2s' }}>
+            Seja Embaixador
+          </a>
+          <a href="#faq" style={{ textDecoration: 'none', color: '#0f172a', fontWeight: 600, fontSize: '14.5px', transition: 'color 0.2s' }}>
+            FAQ
+          </a>
+          <a href="#quem-somos" style={{ textDecoration: 'none', color: '#0f172a', fontWeight: 600, fontSize: '14.5px', transition: 'color 0.2s' }}>
+            Quem Somos
+          </a>
+        </nav>
+
+        {/* Action Buttons (Desktop) & Right Mobile Hamburger Button */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             style={{
@@ -104,75 +132,46 @@ export const LandingPage: React.FC = () => {
             </span>
           </button>
 
-          {/* Logo Bryza */}
-          <a href="#hero" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-            <img
-              src="/Logo%20Bryza.svg"
-              alt="Bryza Logo"
-              style={{ height: '48px', width: 'auto' }}
-            />
-          </a>
-        </div>
-
-        {/* Menu Navigation Links (Desktop) */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '32px' }} className="nav-links">
-          <a href="#hero" style={{ textDecoration: 'none', color: '#0f172a', fontWeight: 600, fontSize: '14.5px', transition: 'color 0.2s' }}>
-            Início
-          </a>
-          <a href="#beneficios" style={{ textDecoration: 'none', color: '#0f172a', fontWeight: 600, fontSize: '14.5px', transition: 'color 0.2s' }}>
-            Benefícios
-          </a>
-          <a href="#embaixador" style={{ textDecoration: 'none', color: '#0f172a', fontWeight: 600, fontSize: '14.5px', transition: 'color 0.2s' }}>
-            Seja Embaixador
-          </a>
-          <a href="#faq" style={{ textDecoration: 'none', color: '#0f172a', fontWeight: 600, fontSize: '14.5px', transition: 'color 0.2s' }}>
-            FAQ
-          </a>
-          <a href="#quem-somos" style={{ textDecoration: 'none', color: '#0f172a', fontWeight: 600, fontSize: '14.5px', transition: 'color 0.2s' }}>
-            Quem Somos
-          </a>
-        </nav>
-
-        {/* Action Buttons (Desktop) */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }} className="nav-actions">
-          <a
-            href={evUrl}
-            style={{
-              textDecoration: 'none',
-              color: '#002b5c',
-              border: '1.5px solid #002b5c',
-              borderRadius: '8px',
-              padding: '8px 14px',
-              fontWeight: 600,
-              fontSize: '13px',
-              transition: 'all 0.2s ease',
-              backgroundColor: 'transparent'
-            }}
-            className="btn-embaixador-nav"
-          >
-            Espaço do Embaixador
-          </a>
-          <a
-            href="#hero"
-            style={{
-              textDecoration: 'none',
-              color: '#ffffff',
-              backgroundColor: '#A6CE39',
-              borderRadius: '8px',
-              padding: '8px 16px',
-              fontWeight: 700,
-              fontSize: '13px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: '0 4px 14px rgba(166, 206, 57, 0.35)',
-              transition: 'transform 0.2s, background-color 0.2s'
-            }}
-            className="btn-loja-nav"
-          >
-            <span>Conheça a Loja</span>
-            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>shopping_cart</span>
-          </a>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }} className="nav-actions">
+            <a
+              href={evUrl}
+              style={{
+                textDecoration: 'none',
+                color: '#002b5c',
+                border: '1.5px solid #002b5c',
+                borderRadius: '8px',
+                padding: '8px 14px',
+                fontWeight: 600,
+                fontSize: '13px',
+                transition: 'all 0.2s ease',
+                backgroundColor: 'transparent'
+              }}
+              className="btn-embaixador-nav"
+            >
+              Espaço do Embaixador
+            </a>
+            <a
+              href="#hero"
+              style={{
+                textDecoration: 'none',
+                color: '#ffffff',
+                backgroundColor: '#A6CE39',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                fontWeight: 700,
+                fontSize: '13px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 4px 14px rgba(166, 206, 57, 0.35)',
+                transition: 'transform 0.2s, background-color 0.2s'
+              }}
+              className="btn-loja-nav"
+            >
+              <span>Conheça a Loja</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>shopping_cart</span>
+            </a>
+          </div>
         </div>
       </header>
 
@@ -211,7 +210,7 @@ export const LandingPage: React.FC = () => {
               onClick={() => setMobileMenuOpen(false)}
               style={{ color: '#ffffff', textDecoration: 'none', fontSize: '17px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}
             >
-              <span className="material-symbols-outlined" style={{ color: '#A6CE39', fontSize: '20px' }}>sparkles</span>
+              <span className="material-symbols-outlined" style={{ color: '#A6CE39', fontSize: '20px' }}>verified</span>
               Benefícios
             </a>
             <a
@@ -419,13 +418,40 @@ export const LandingPage: React.FC = () => {
 
       {/* Seção 3 Benefícios / Features Strip */}
       <section id="beneficios" style={{ padding: '60px 40px', backgroundColor: '#ffffff' }}>
-        <div style={{
-          maxWidth: '1240px',
-          margin: '0 auto',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '32px'
-        }} className="benefits-grid">
+        <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
+          
+          {/* Header da Seção de Benefícios */}
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <span style={{
+              display: 'inline-block',
+              padding: '6px 16px',
+              borderRadius: '20px',
+              backgroundColor: 'rgba(166, 206, 57, 0.15)',
+              color: '#4d7c0f',
+              fontSize: '12.5px',
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              marginBottom: '10px'
+            }}>
+              Por que escolher a Bryza?
+            </span>
+            <h2 style={{
+              fontSize: '34px',
+              fontWeight: 800,
+              color: '#002b5c',
+              letterSpacing: '-0.02em',
+              margin: 0
+            }}>
+              Benefícios
+            </h2>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '32px'
+          }} className="benefits-grid">
           {/* Card 1 */}
           <div style={{
             display: 'flex',
@@ -525,6 +551,7 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
       </section>
 
       {/* Banner Embaixadores (Azul Marinho #002b5c) */}
