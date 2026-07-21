@@ -14,6 +14,7 @@ export async function GET(
 ) {
   const { code } = await params;
   const codeParam = (code || '').toLowerCase().trim();
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || '';
 
   // 1. Validar Regex Estrita
   if (!/^bryza[0-9]+$/.test(codeParam)) {
