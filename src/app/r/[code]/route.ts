@@ -86,7 +86,16 @@ export async function GET(
     // 6. Criar Cookie HMAC de Atribuição (30 dias)
     const signedCookieVal = createSignedReferralCookie(amb.referral_code, visitRecord?.id, 'smart_link');
 
-    const response = NextResponse.redirect(new URL(`/${codeParam}`, request.url), 307);
+    // Sempre redirecionar para a Landing Page pública (bryza.com.br/bryzaNN)
+    const port = host.includes(':') ? `:${host.split(':')[1]}` : '';
+    const isProd = process.env.NODE_ENV === 'production' || host.includes('bryza.com.br');
+    const targetBaseUrl = isProd 
+      ? 'https://bryza.com.br' 
+      : host.includes('.local') 
+        ? `http://bryza.local${port}` 
+        : `http://localhost${port}`;
+
+    const response = NextResponse.redirect(new URL(`/${codeParam}`, targetBaseUrl), 307);
 
     response.cookies.set(COOKIE_NAME, signedCookieVal, {
       httpOnly: true,
@@ -107,6 +116,13 @@ export async function GET(
     return response;
   } catch (error) {
     console.error('Erro no tracking de referral:', error);
-    return NextResponse.redirect(new URL(`/${codeParam}`, request.url), 307);
+    const port = host.includes(':') ? `:${host.split(':')[1]}` : '';
+    const isProd = process.env.NODE_ENV === 'production' || host.includes('bryza.com.br');
+    const targetBaseUrl = isProd 
+      ? 'https://bryza.com.br' 
+      : host.includes('.local') 
+        ? `http://bryza.local${port}` 
+        : `http://localhost${port}`;
+    return NextResponse.redirect(new URL(`/${codeParam}`, targetBaseUrl), 307);
   }
 }
