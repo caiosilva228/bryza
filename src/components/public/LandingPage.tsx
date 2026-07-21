@@ -293,7 +293,7 @@ export const LandingPage: React.FC = () => {
         zIndex: 90,
         boxShadow: '0 2px 8px rgba(220, 38, 38, 0.25)',
         borderBottom: '1px solid #b91c1c'
-      }}>
+      }} className="marquee-banner">
         <div style={{
           display: 'flex',
           whiteSpace: 'nowrap',
@@ -1289,6 +1289,13 @@ export const LandingPage: React.FC = () => {
           .navbar-container {
             padding: 12px 16px !important;
           }
+          .marquee-banner {
+            padding: 5px 0 !important;
+          }
+          .marquee-track {
+            font-size: 11.5px !important;
+            gap: 24px !important;
+          }
           .mobile-hamburger-btn {
             display: flex !important;
           }
@@ -1357,6 +1364,13 @@ export const LandingPage: React.FC = () => {
           }
           .navbar-container img {
             height: 38px !important;
+          }
+          .marquee-banner {
+            padding: 3.5px 0 !important;
+          }
+          .marquee-track {
+            font-size: 10.5px !important;
+            gap: 20px !important;
           }
           #hero {
             padding: 28px 14px 32px !important;
