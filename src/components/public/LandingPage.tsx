@@ -575,6 +575,21 @@ export const LandingPage: React.FC = () => {
         }} className="embaixador-grid">
           {/* Left Text */}
           <div>
+            <span style={{
+              display: 'inline-block',
+              padding: '6px 16px',
+              borderRadius: '20px',
+              backgroundColor: 'rgba(166, 206, 57, 0.2)',
+              color: '#A6CE39',
+              fontSize: '12.5px',
+              fontWeight: 700,
+              letterSpacing: '0.04em',
+              marginBottom: '14px',
+              border: '1px solid rgba(166, 206, 57, 0.35)'
+            }}>
+              Construa uma renda recorrente indicando nossos produtos
+            </span>
+
             <h2 style={{
               fontSize: '32px',
               fontWeight: 800,
