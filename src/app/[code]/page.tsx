@@ -15,6 +15,47 @@ interface PageProps {
   }>;
 }
 
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { code } = await params;
+  const rawCode = (code || '').toLowerCase().trim();
+
+  return {
+    metadataBase: new URL('https://bryza.com.br'),
+    title: 'Bryza | O perfume que anuncia a presença.',
+    description: 'Produtos de alta performance para sua casa. Compre direto da fábrica, pague na entrega e ganhe indicando a Bryza.',
+    alternates: {
+      canonical: `https://bryza.com.br/${rawCode}`,
+    },
+    icons: {
+      icon: '/fiveicon.svg',
+      shortcut: '/fiveicon.svg',
+      apple: '/fiveicon.svg',
+    },
+    openGraph: {
+      title: 'Bryza | O perfume que anuncia a presença.',
+      description: 'Produtos de alta performance para sua casa. Compre direto da fábrica, pague na entrega e ganhe indicando a Bryza.',
+      url: `https://bryza.com.br/${rawCode}`,
+      siteName: 'Bryza',
+      locale: 'pt_BR',
+      type: 'website',
+      images: [
+        {
+          url: 'https://bryza.com.br/images/og-bryza.jpg',
+          width: 1200,
+          height: 630,
+          alt: 'Bryza | O perfume que anuncia a presença.',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Bryza | O perfume que anuncia a presença.',
+      description: 'Produtos de alta performance para sua casa. Compre direto da fábrica, pague na entrega e ganhe indicando a Bryza.',
+      images: ['https://bryza.com.br/images/og-bryza.jpg'],
+    },
+  };
+}
+
 export default async function PublicAmbassadorSalesPage({ params }: PageProps) {
   const { code } = await params;
   const rawCode = (code || '').toLowerCase().trim();

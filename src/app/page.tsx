@@ -14,7 +14,64 @@ import { getSubdomainType } from '@/utils/subdomain';
 import { LandingPage } from '@/components/public/LandingPage';
 import styles from './page.module.css';
 
+import type { Metadata } from 'next';
+
 export const revalidate = 0;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = await headers();
+  const host = headersList.get('x-forwarded-host') || headersList.get('host') || '';
+  const subdomain = getSubdomainType(host);
+
+  if (subdomain === 'public') {
+    return {
+      metadataBase: new URL('https://bryza.com.br'),
+      title: 'Bryza | O perfume que anuncia a presença.',
+      description: 'Produtos de alta performance para sua casa. Compre direto da fábrica, pague na entrega e ganhe indicando a Bryza.',
+      alternates: {
+        canonical: 'https://bryza.com.br/',
+      },
+      icons: {
+        icon: '/fiveicon.svg',
+        shortcut: '/fiveicon.svg',
+        apple: '/fiveicon.svg',
+      },
+      openGraph: {
+        title: 'Bryza | O perfume que anuncia a presença.',
+        description: 'Produtos de alta performance para sua casa. Compre direto da fábrica, pague na entrega e ganhe indicando a Bryza.',
+        url: 'https://bryza.com.br/',
+        siteName: 'Bryza',
+        locale: 'pt_BR',
+        type: 'website',
+        images: [
+          {
+            url: 'https://bryza.com.br/images/og-bryza.jpg',
+            width: 1200,
+            height: 630,
+            alt: 'Bryza | O perfume que anuncia a presença.',
+          },
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: 'Bryza | O perfume que anuncia a presença.',
+        description: 'Produtos de alta performance para sua casa. Compre direto da fábrica, pague na entrega e ganhe indicando a Bryza.',
+        images: ['https://bryza.com.br/images/og-bryza.jpg'],
+      },
+    };
+  }
+
+  // Default admin system metadata
+  return {
+    title: 'BRYZA SYSTEM - Gestão Operacional',
+    description: 'Sistema de gestão do Programa de Embaixadores Bryza.',
+    icons: {
+      icon: '/fiveicon.svg',
+      shortcut: '/fiveicon.svg',
+      apple: '/fiveicon.svg',
+    },
+  };
+}
 
 interface PageProps {
   searchParams: Promise<{ data?: string; periodo?: string; from?: string; to?: string; period?: string }>;
