@@ -345,7 +345,7 @@ export const LandingPage: React.FC = () => {
               marginBottom: '20px',
               textShadow: '0 3px 12px rgba(0, 0, 0, 0.6)'
             }}>
-              Produtos que cuidam da sua casa e deixam sua presença.
+              O perfume que anuncia a presença. A qualidade que faz você permanecer.
             </h1>
 
             <p style={{
