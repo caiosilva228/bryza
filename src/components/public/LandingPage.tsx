@@ -407,8 +407,8 @@ export const LandingPage: React.FC = () => {
           maxWidth: '1240px',
           margin: '0 auto',
           display: 'grid',
-          gridTemplateColumns: '1.2fr 0.8fr 1fr',
-          gap: '28px',
+          gridTemplateColumns: '1.3fr 1fr',
+          gap: '40px',
           alignItems: 'center'
         }} className="embaixador-grid">
           {/* Left Text */}
@@ -498,20 +498,6 @@ export const LandingPage: React.FC = () => {
                 <span>Sem necessidade de estoque</span>
               </div>
             </div>
-          </div>
-
-          {/* Middle Photo */}
-          <div style={{ textAlign: 'center' }}>
-            <img
-              src="/ambassador-photo.webp"
-              alt="Embaixadora Bryza com celular"
-              style={{
-                maxWidth: '100%',
-                maxHeight: '260px',
-                borderRadius: '16px',
-                objectFit: 'cover'
-              }}
-            />
           </div>
 
           {/* Right White Card */}
