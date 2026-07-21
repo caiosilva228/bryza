@@ -43,22 +43,30 @@ export async function login(formData: FormData) {
     redirect('/login?error=RateLimit');
   }
 
-  // 2. Resolução do Username para e-mail sintético
+  // 2. Resolução do Username para e-mail sintético (Código Bryza, CPF, Telefone ou E-mail)
   let resolvedEmail = normalizedUsername;
-  if (/^[0-9]{11}$/.test(normalizedUsername)) {
-    const { data: phoneEmail, error: phoneResolutionError } = await adminClient.rpc(
-      'fn_resolve_login_phone',
-      { p_phone: normalizedUsername },
-    );
+  const digitsOnly = normalizedUsername.replace(/\D/g, '');
 
-    if (phoneResolutionError) {
-      console.error('Erro ao resolver telefone de login:', phoneResolutionError.code);
+  if (digitsOnly.length === 11) {
+    // 2a. Tentar resolver por Telefone
+    const { data: phoneEmail } = await adminClient.rpc('fn_resolve_login_phone', {
+      p_phone: digitsOnly,
+    });
+
+    if (typeof phoneEmail === 'string' && phoneEmail) {
+      resolvedEmail = phoneEmail;
+    } else {
+      // 2b. Tentar resolver por CPF
+      const { data: cpfEmail } = await adminClient.rpc('fn_resolve_login_cpf', {
+        p_cpf: digitsOnly,
+      });
+
+      if (typeof cpfEmail === 'string' && cpfEmail) {
+        resolvedEmail = cpfEmail;
+      } else {
+        resolvedEmail = getSyntheticEmail(`identificador-invalido-${digitsOnly}`);
+      }
     }
-
-    // Mantém a mesma resposta genérica para telefone inexistente ou ambíguo.
-    resolvedEmail = typeof phoneEmail === 'string' && phoneEmail
-      ? phoneEmail
-      : getSyntheticEmail(`telefone-invalido-${normalizedUsername}`);
   } else if (/^bryza\d+$/.test(normalizedUsername)) {
     resolvedEmail = getSyntheticEmail(normalizedUsername);
   }
