@@ -1228,7 +1228,8 @@ export const LandingPage: React.FC = () => {
             flex-direction: column !important;
             text-align: center !important;
           }
-        }`,}StartLine:1128,TargetContent:
+        }
+      `}</style>
     </div>
   );
 };
