@@ -395,7 +395,10 @@ export const LandingPage: React.FC = () => {
       {/* Banner Embaixadores (Azul Marinho #002b5c) */}
       <section id="embaixador" style={{
         backgroundColor: '#002b5c',
-        backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(0, 68, 148, 0.4) 0%, rgba(0, 30, 65, 0.95) 100%)',
+        backgroundImage: "linear-gradient(90deg, rgba(0, 43, 92, 0.85) 0%, rgba(0, 43, 92, 0.6) 50%, rgba(0, 43, 92, 0.3) 100%), url('/bg-embaixadores-site.webp')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center center',
+        backgroundRepeat: 'no-repeat',
         color: '#ffffff',
         padding: '60px 40px',
         position: 'relative'
