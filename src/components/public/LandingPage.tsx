@@ -109,20 +109,21 @@ export const LandingPage: React.FC = () => {
         </nav>
 
         {/* Action Buttons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }} className="nav-actions">
           <a
             href={evUrl}
             style={{
               textDecoration: 'none',
               color: '#002b5c',
               border: '1.5px solid #002b5c',
-              borderRadius: '10px',
-              padding: '9px 18px',
+              borderRadius: '8px',
+              padding: '8px 14px',
               fontWeight: 600,
-              fontSize: '14px',
+              fontSize: '13px',
               transition: 'all 0.2s ease',
               backgroundColor: 'transparent'
             }}
+            className="btn-embaixador-nav"
           >
             Espaço do Embaixador
           </a>
@@ -132,19 +133,20 @@ export const LandingPage: React.FC = () => {
               textDecoration: 'none',
               color: '#ffffff',
               backgroundColor: '#A6CE39',
-              borderRadius: '10px',
-              padding: '10px 22px',
+              borderRadius: '8px',
+              padding: '8px 16px',
               fontWeight: 700,
-              fontSize: '14px',
+              fontSize: '13px',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '8px',
+              gap: '6px',
               boxShadow: '0 4px 14px rgba(166, 206, 57, 0.35)',
               transition: 'transform 0.2s, background-color 0.2s'
             }}
+            className="btn-loja-nav"
           >
             <span>Conheça a Loja</span>
-            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>shopping_cart</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>shopping_cart</span>
           </a>
         </div>
       </header>
@@ -691,7 +693,7 @@ export const LandingPage: React.FC = () => {
             boxShadow: '0 20px 45px rgba(0, 43, 92, 0.18)',
             position: 'relative',
             overflow: 'hidden'
-          }}>
+          }} className="quem-somos-card">
             <div style={{
               position: 'absolute',
               top: '-30px',
@@ -1125,14 +1127,38 @@ export const LandingPage: React.FC = () => {
         }
         @media (max-width: 992px) {
           .navbar-container {
-            padding: 14px 20px !important;
+            padding: 12px 16px !important;
           }
           .nav-links {
             display: none !important;
           }
+          .nav-actions {
+            gap: 8px !important;
+          }
+          .btn-embaixador-nav {
+            font-size: 12px !important;
+            padding: 6px 10px !important;
+          }
+          .btn-loja-nav {
+            font-size: 12px !important;
+            padding: 6px 12px !important;
+          }
+          #hero {
+            padding: 40px 20px 50px !important;
+            background-position: right 30% center !important;
+          }
           .hero-grid {
             grid-template-columns: 1fr !important;
-            gap: 32px !important;
+            gap: 24px !important;
+          }
+          .hero-grid h1 {
+            font-size: 30px !important;
+            line-height: 1.2 !important;
+            margin-bottom: 14px !important;
+          }
+          .hero-grid p {
+            font-size: 15px !important;
+            margin-bottom: 24px !important;
           }
           .benefits-grid {
             grid-template-columns: 1fr !important;
@@ -1150,12 +1176,51 @@ export const LandingPage: React.FC = () => {
             grid-template-columns: 1fr !important;
             gap: 32px !important;
           }
+          .quem-somos-card {
+            padding: 24px 20px !important;
+            border-radius: 16px !important;
+            margin-bottom: 32px !important;
+          }
+          .quem-somos-card p {
+            font-size: 15px !important;
+          }
           .footer-grid {
             grid-template-columns: 1fr 1fr !important;
             gap: 24px !important;
           }
         }
         @media (max-width: 600px) {
+          .navbar-container {
+            padding: 10px 12px !important;
+          }
+          .navbar-container img {
+            height: 38px !important;
+          }
+          .btn-embaixador-nav {
+            font-size: 11px !important;
+            padding: 5px 8px !important;
+            white-space: nowrap !important;
+          }
+          .btn-loja-nav {
+            font-size: 11px !important;
+            padding: 5px 10px !important;
+            white-space: nowrap !important;
+          }
+          .btn-loja-nav span.material-symbols-outlined {
+            display: none !important;
+          }
+          #hero {
+            padding: 32px 16px 40px !important;
+          }
+          .hero-grid h1 {
+            font-size: 26px !important;
+          }
+          #quem-somos {
+            padding: 50px 16px !important;
+          }
+          #quem-somos h2 {
+            font-size: 28px !important;
+          }
           .footer-grid {
             grid-template-columns: 1fr !important;
           }
@@ -1163,8 +1228,7 @@ export const LandingPage: React.FC = () => {
             flex-direction: column !important;
             text-align: center !important;
           }
-        }
-      `}</style>
+        }`,}StartLine:1128,TargetContent:
     </div>
   );
 };
