@@ -6,6 +6,7 @@ import { getSubdomainUrl } from '@/utils/subdomain';
 export const LandingPage: React.FC = () => {
   const evUrl = getSubdomainUrl('ev', '/login');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
@@ -80,16 +81,40 @@ export const LandingPage: React.FC = () => {
         zIndex: 100,
         boxShadow: '0 2px 10px rgba(0, 0, 0, 0.03)'
       }} className="navbar-container">
-        {/* Logo Bryza */}
-        <a href="#hero" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-          <img
-            src="/Logo%20Bryza.svg"
-            alt="Bryza Logo"
-            style={{ height: '48px', width: 'auto' }}
-          />
-        </a>
+        {/* Left Mobile Hamburger Button & Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '6px',
+              display: 'none',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#002b5c',
+              borderRadius: '8px'
+            }}
+            className="mobile-hamburger-btn"
+            aria-label="Abrir Menu"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '28px' }}>
+              {mobileMenuOpen ? 'close' : 'menu'}
+            </span>
+          </button>
 
-        {/* Menu Navigation Links */}
+          {/* Logo Bryza */}
+          <a href="#hero" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            <img
+              src="/Logo%20Bryza.svg"
+              alt="Bryza Logo"
+              style={{ height: '48px', width: 'auto' }}
+            />
+          </a>
+        </div>
+
+        {/* Menu Navigation Links (Desktop) */}
         <nav style={{ display: 'flex', alignItems: 'center', gap: '32px' }} className="nav-links">
           <a href="#hero" style={{ textDecoration: 'none', color: '#0f172a', fontWeight: 600, fontSize: '14.5px', transition: 'color 0.2s' }}>
             Início
@@ -108,7 +133,7 @@ export const LandingPage: React.FC = () => {
           </a>
         </nav>
 
-        {/* Action Buttons */}
+        {/* Action Buttons (Desktop) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }} className="nav-actions">
           <a
             href={evUrl}
@@ -150,6 +175,114 @@ export const LandingPage: React.FC = () => {
           </a>
         </div>
       </header>
+
+      {/* Mobile Drawer Menu (Overlay) */}
+      {mobileMenuOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '60px',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 30, 65, 0.96)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            zIndex: 99,
+            padding: '28px 24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px',
+            overflowY: 'auto'
+          }}
+          className="mobile-drawer-overlay"
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.15)', paddingBottom: '24px' }}>
+            <a
+              href="#hero"
+              onClick={() => setMobileMenuOpen(false)}
+              style={{ color: '#ffffff', textDecoration: 'none', fontSize: '17px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}
+            >
+              <span className="material-symbols-outlined" style={{ color: '#A6CE39', fontSize: '20px' }}>home</span>
+              Início
+            </a>
+            <a
+              href="#beneficios"
+              onClick={() => setMobileMenuOpen(false)}
+              style={{ color: '#ffffff', textDecoration: 'none', fontSize: '17px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}
+            >
+              <span className="material-symbols-outlined" style={{ color: '#A6CE39', fontSize: '20px' }}>sparkles</span>
+              Benefícios
+            </a>
+            <a
+              href="#embaixador"
+              onClick={() => setMobileMenuOpen(false)}
+              style={{ color: '#ffffff', textDecoration: 'none', fontSize: '17px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}
+            >
+              <span className="material-symbols-outlined" style={{ color: '#A6CE39', fontSize: '20px' }}>groups</span>
+              Seja Embaixador
+            </a>
+            <a
+              href="#faq"
+              onClick={() => setMobileMenuOpen(false)}
+              style={{ color: '#ffffff', textDecoration: 'none', fontSize: '17px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}
+            >
+              <span className="material-symbols-outlined" style={{ color: '#A6CE39', fontSize: '20px' }}>help</span>
+              FAQ
+            </a>
+            <a
+              href="#quem-somos"
+              onClick={() => setMobileMenuOpen(false)}
+              style={{ color: '#ffffff', textDecoration: 'none', fontSize: '17px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}
+            >
+              <span className="material-symbols-outlined" style={{ color: '#A6CE39', fontSize: '20px' }}>info</span>
+              Quem Somos
+            </a>
+          </div>
+
+          {/* Action Buttons in Mobile Menu */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '8px' }}>
+            <a
+              href={evUrl}
+              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                textDecoration: 'none',
+                color: '#ffffff',
+                border: '1.5px solid rgba(255,255,255,0.4)',
+                borderRadius: '12px',
+                padding: '12px 20px',
+                fontWeight: 600,
+                fontSize: '15px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(255,255,255,0.08)'
+              }}
+            >
+              Espaço do Embaixador
+            </a>
+            <a
+              href="#hero"
+              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                textDecoration: 'none',
+                color: '#ffffff',
+                backgroundColor: '#A6CE39',
+                borderRadius: '12px',
+                padding: '13px 20px',
+                fontWeight: 700,
+                fontSize: '15px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 6px 20px rgba(166, 206, 57, 0.4)'
+              }}
+            >
+              <span>Conheça a Loja</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>shopping_cart</span>
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Animated Red Alert Banner */}
       <div style={{
@@ -280,7 +413,7 @@ export const LandingPage: React.FC = () => {
           </div>
 
           {/* Right Spacer for Background Image */}
-          <div style={{ minHeight: '360px' }} />
+          <div style={{ minHeight: '360px' }} className="hero-spacer" />
         </div>
       </section>
 
@@ -1129,36 +1262,38 @@ export const LandingPage: React.FC = () => {
           .navbar-container {
             padding: 12px 16px !important;
           }
+          .mobile-hamburger-btn {
+            display: flex !important;
+          }
           .nav-links {
             display: none !important;
           }
           .nav-actions {
-            gap: 8px !important;
-          }
-          .btn-embaixador-nav {
-            font-size: 12px !important;
-            padding: 6px 10px !important;
-          }
-          .btn-loja-nav {
-            font-size: 12px !important;
-            padding: 6px 12px !important;
+            display: none !important;
           }
           #hero {
-            padding: 40px 20px 50px !important;
-            background-position: right 30% center !important;
+            padding: 32px 18px 36px !important;
+            backgroundImage: linear-gradient(180deg, rgba(5, 15, 32, 0.94) 0%, rgba(5, 15, 32, 0.88) 60%, rgba(5, 15, 32, 0.96) 100%), url('/hero-site-bryza.webp') !important;
+            background-size: cover !important;
+            background-position: center top !important;
           }
           .hero-grid {
             grid-template-columns: 1fr !important;
-            gap: 24px !important;
+            gap: 16px !important;
+          }
+          .hero-spacer {
+            display: none !important;
+            min-height: 0 !important;
+            height: 0 !important;
           }
           .hero-grid h1 {
-            font-size: 30px !important;
-            line-height: 1.2 !important;
-            margin-bottom: 14px !important;
+            font-size: 28px !important;
+            line-height: 1.22 !important;
+            margin-bottom: 12px !important;
           }
           .hero-grid p {
-            font-size: 15px !important;
-            margin-bottom: 24px !important;
+            font-size: 14.5px !important;
+            margin-bottom: 20px !important;
           }
           .benefits-grid {
             grid-template-columns: 1fr !important;
@@ -1191,35 +1326,23 @@ export const LandingPage: React.FC = () => {
         }
         @media (max-width: 600px) {
           .navbar-container {
-            padding: 10px 12px !important;
+            padding: 10px 14px !important;
           }
           .navbar-container img {
             height: 38px !important;
           }
-          .btn-embaixador-nav {
-            font-size: 11px !important;
-            padding: 5px 8px !important;
-            white-space: nowrap !important;
-          }
-          .btn-loja-nav {
-            font-size: 11px !important;
-            padding: 5px 10px !important;
-            white-space: nowrap !important;
-          }
-          .btn-loja-nav span.material-symbols-outlined {
-            display: none !important;
-          }
           #hero {
-            padding: 32px 16px 40px !important;
+            padding: 28px 14px 32px !important;
+            backgroundImage: linear-gradient(180deg, rgba(5, 15, 32, 0.95) 0%, rgba(5, 15, 32, 0.90) 70%, rgba(5, 15, 32, 0.97) 100%), url('/hero-site-bryza.webp') !important;
           }
           .hero-grid h1 {
-            font-size: 26px !important;
+            font-size: 24px !important;
           }
           #quem-somos {
-            padding: 50px 16px !important;
+            padding: 40px 14px !important;
           }
           #quem-somos h2 {
-            font-size: 28px !important;
+            font-size: 26px !important;
           }
           .footer-grid {
             grid-template-columns: 1fr !important;
