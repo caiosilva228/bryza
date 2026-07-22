@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { login } from '@/app/login/actions';
+import { LoginSubmitButton } from './LoginSubmitButton';
 
 interface EmbaixadorGlassLoginProps {
   errorMessage?: string;
@@ -525,42 +526,7 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
               </a>
             </div>
 
-            <button
-              type="submit"
-              className="submit-btn"
-              style={{
-                width: '100%',
-                height: '60px',
-                backgroundColor: '#A6CE39',
-                border: 'none',
-                borderRadius: '16px',
-                color: '#ffffff',
-                fontSize: '16px',
-                fontWeight: 700,
-                letterSpacing: '0.02em',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                marginTop: '10px',
-                boxShadow: '0 8px 28px rgba(166, 206, 57, 0.38)',
-                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#b7dc42';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 12px 36px rgba(166, 206, 57, 0.55)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#A6CE39';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 8px 28px rgba(166, 206, 57, 0.38)';
-              }}
-            >
-              <span>Entrar</span>
-              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>east</span>
-            </button>
+            <LoginSubmitButton label="Entrar" />
 
             {/* Footer Security Note */}
             <div className="security-note" style={{

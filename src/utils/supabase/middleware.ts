@@ -37,7 +37,7 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   const isApiRoute = pathname.startsWith('/api/');
-  const isAuthRoute = pathname.startsWith('/login');
+  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/embaixador/login');
   const isPrimeiroAcesso = pathname.startsWith('/primeiro-acesso');
   const isPublicIndication = pathname.startsWith('/r/');
   const isPublicSalesPage = /^\/bryza[0-9]+$/.test(pathname.toLowerCase());
@@ -50,14 +50,34 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
+  // Sem um cookie de sessão não há usuário autenticado para redirecionar.
+  // Evita uma chamada remota antes de renderizar a primeira tela de login.
+  const hasAuthCookie = request.cookies.getAll().some(({ name }) =>
+    name.startsWith('sb-') && name.includes('auth-token')
+  );
+
+  if (!hasAuthCookie) {
+    if (isApiRoute) {
+      if (pathname.startsWith('/api/auth/')) {
+        return supabaseResponse;
+      }
+      return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
+    }
+
+    if (isAuthRoute || (subdomain === 'public' && pathname === '/')) {
+      return supabaseResponse;
+    }
+
+    const loginTarget = getSubdomainUrl(subdomain === 'ev' ? 'ev' : 'admin', '/login', host);
+    return NextResponse.redirect(new URL(loginTarget, request.url));
+  }
+
   // 1. Atualizar token de autenticação
-  const {
-    data: { user },
-    error: getUserError
-  } = await supabase.auth.getUser();
+  const { data: claimsData, error: getClaimsError } = await supabase.auth.getClaims();
+  const userId = claimsData?.claims?.sub;
 
   // 2. Se houver erro de autenticação ou se NÃO estiver autenticado
-  if (getUserError || !user) {
+  if (getClaimsError || !userId) {
     // Apagar cookies inválidos se o token estiver corrompido
     const allCookies = request.cookies.getAll();
     allCookies.forEach(({ name }) => {
@@ -96,7 +116,7 @@ export async function updateSession(request: NextRequest) {
   const { data: profile, error: profileError } = await adminClient
     .from('profiles')
     .select('role, ativo, must_change_password')
-    .eq('id', user.id)
+    .eq('id', userId)
     .single();
 
   if (profileError || !profile) {
@@ -124,7 +144,7 @@ export async function updateSession(request: NextRequest) {
     const { data: amb, error: ambError } = await adminClient
       .from('ambassadors')
       .select('status')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single();
 
     if (ambError || !amb || amb.status !== 'ativo') {
