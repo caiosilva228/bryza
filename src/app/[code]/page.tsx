@@ -22,8 +22,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     metadataBase: new URL('https://bryza.com.br'),
-    title: 'Bryza | O perfume que anuncia a presença.',
-    description: 'Produtos de alta performance para sua casa. Compre direto da fábrica, pague na entrega e ganhe indicando a Bryza.',
+    title: 'Kit Bryza Casa Perfumada | 10L + 2 Panos Premium Grátis',
+    description: 'Leve 10 litros de Sabão Líquido e Amaciante Bryza por R$ 79,80, ganhe 2 Panos Premium e pague somente na entrega.',
     alternates: {
       canonical: `https://bryza.com.br/${rawCode}`,
     },
@@ -33,26 +33,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       apple: '/fiveicon.svg',
     },
     openGraph: {
-      title: 'Bryza | O perfume que anuncia a presença.',
-      description: 'Produtos de alta performance para sua casa. Compre direto da fábrica, pague na entrega e ganhe indicando a Bryza.',
+      title: 'Kit Bryza Casa Perfumada | 10L + 2 Panos Premium Grátis',
+      description: '10 litros por apenas R$ 7,99 o litro. Frete grátis nas regiões atendidas e pagamento somente na entrega.',
       url: `https://bryza.com.br/${rawCode}`,
       siteName: 'Bryza',
       locale: 'pt_BR',
       type: 'website',
       images: [
         {
-          url: 'https://bryza.com.br/images/og-bryza.jpg',
+          url: 'https://bryza.com.br/og-kit-bryza.png',
           width: 1200,
           height: 630,
-          alt: 'Bryza | O perfume que anuncia a presença.',
+          alt: 'Kit Bryza Casa Perfumada com 10 litros e 2 Panos Premium grátis',
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'Bryza | O perfume que anuncia a presença.',
-      description: 'Produtos de alta performance para sua casa. Compre direto da fábrica, pague na entrega e ganhe indicando a Bryza.',
-      images: ['https://bryza.com.br/images/og-bryza.jpg'],
+      title: 'Kit Bryza Casa Perfumada | 10L + 2 Panos Premium Grátis',
+      description: '10 litros por R$ 79,80. Frete grátis nas regiões atendidas e pagamento somente na entrega.',
+      images: ['https://bryza.com.br/og-kit-bryza.png'],
     },
   };
 }

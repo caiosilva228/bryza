@@ -1,10 +1,13 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { Check, ChevronRight, Clock3, Gift, LockKeyhole, MapPin, PackageCheck, ShieldCheck, Sparkles, Star, Truck } from 'lucide-react';
 import {
   createPublicSchedulingAction,
   type PublicSchedulingResult,
 } from '@/app/actions/create-public-order';
+import styles from './KitBryzaSalesPage.module.css';
 
 interface AmbassadorPublicInfo {
   display_name: string;
@@ -122,6 +125,26 @@ function formatSchedulingDate(value: string): string {
   }).format(date);
 }
 
+function ProductCard({ tone, icon, badge, title, description, items, featured = false }: {
+  tone: 'blue' | 'purple' | 'gold';
+  icon: React.ReactNode;
+  badge: string;
+  title: string;
+  description: string;
+  items: string[];
+  featured?: boolean;
+}) {
+  return (
+    <article className={`${styles.productCard} ${featured ? styles.featuredCard : ''}`}>
+      <div className={`${styles.productIcon} ${styles[tone]}`}>{icon}</div>
+      <div className={styles.cardBadge}>{badge}</div>
+      <h3>{title}</h3>
+      <p>{description}</p>
+      <ul>{items.map((item) => <li key={item}><Check size={16} /> {item}</li>)}</ul>
+    </article>
+  );
+}
+
 export function KitBryzaSalesPage({ ambassador, products }: KitBryzaSalesPageProps) {
   const product = products[0];
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -201,77 +224,108 @@ export function KitBryzaSalesPage({ ambassador, products }: KitBryzaSalesPagePro
   };
 
   const whatsappMessage = encodeURIComponent(
-    `Olá! Vim pela indicação de ${ambassador.display_name} (código ${ambassador.referral_code}) e gostaria de saber mais sobre a Bryza.`
+    `Olá! Vim pela indicação de ${ambassador.display_name} (código ${ambassador.referral_code}) e gostaria de saber mais sobre o Kit Bryza Casa Perfumada.`
   );
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#090d16', color: '#f8fafc', fontFamily: 'Arial, sans-serif' }}>
-      <header style={{ backgroundColor: '#1e293b', borderBottom: '1px solid #334155', padding: '12px clamp(16px, 4vw, 32px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-          <div aria-hidden="true" style={{ flex: '0 0 auto', width: '42px', height: '42px', borderRadius: '50%', backgroundColor: '#2563eb', display: 'grid', placeItems: 'center', fontWeight: 800 }}>
-            {ambassador.display_name.charAt(0).toUpperCase()}
-          </div>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Indicação oficial</div>
-            <div style={{ fontWeight: 700, color: '#38bdf8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {ambassador.display_name}
-            </div>
-          </div>
+    <div className={styles.page}>
+      <div className={styles.topBar}><Sparkles size={15} /> Oferta especial da rota Bryza • brindes sujeitos à disponibilidade</div>
+      <header className={styles.header}>
+        <Image src="/Logo Bryza.svg" alt="Bryza" width={132} height={48} priority />
+        <div className={styles.referral}>
+          <span className={styles.avatar}>{ambassador.display_name.charAt(0).toUpperCase()}</span>
+          <div><small>Indicação oficial de</small><strong>{ambassador.display_name}</strong></div>
+          <ShieldCheck size={20} aria-label="Indicação verificada" />
         </div>
-        <span style={{ flex: '0 0 auto', fontSize: '0.72rem', backgroundColor: '#0369a1', padding: '5px 10px', borderRadius: '999px', fontWeight: 800 }}>
-          {ambassador.referral_code.toUpperCase()}
-        </span>
       </header>
 
-      <main style={{ maxWidth: '680px', margin: '0 auto', padding: 'clamp(24px, 6vw, 48px) 16px' }}>
-        <section aria-labelledby="offer-title" style={{ background: 'linear-gradient(145deg, #1e293b, #111827)', borderRadius: '20px', border: '1px solid #334155', padding: 'clamp(22px, 6vw, 38px)', textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.28)' }}>
-          {product ? (
-            <>
-              <div style={{ display: 'inline-block', marginBottom: '14px', padding: '5px 11px', borderRadius: '999px', backgroundColor: '#0c4a6e', color: '#bae6fd', fontSize: '0.75rem', fontWeight: 800 }}>
-                OFERTA BRYZA
+      <main>
+        {product ? <>
+          <section className={styles.hero} aria-labelledby="offer-title">
+            <div className={styles.heroCopy}>
+              <div className={styles.eyebrow}><Gift size={16} /> Kit Casa Perfumada + 2 brindes</div>
+              <h1 id="offer-title">10 litros para uma casa <em>limpa e perfumada</em></h1>
+              <p className={styles.heroLead}>Sabão líquido 5L + amaciante microencapsulado 5L e você ainda leva <strong>2 Panos Premium Bryza grátis.</strong></p>
+              <div className={styles.mobileProduct}>
+                <Image src="/hero-products.webp" alt="Sabão líquido e amaciante concentrado Bryza de 5 litros" width={336} height={255} priority />
+                <span><Gift size={15} /> 2 panos grátis</span>
               </div>
-              <h1 id="offer-title" style={{ fontSize: 'clamp(1.75rem, 7vw, 2.7rem)', lineHeight: 1.08, margin: '0 0 14px', color: '#fff' }}>
-                {product.nome_produto}
-              </h1>
-              <p style={{ color: '#cbd5e1', lineHeight: 1.6, margin: '0 auto 24px', maxWidth: '520px' }}>
-                Escolha o melhor dia para receber. Seus dados serão cadastrados com segurança e a equipe Bryza confirmará a entrega.
-              </p>
-              <div style={{ fontSize: 'clamp(2rem, 8vw, 3rem)', fontWeight: 900, color: '#34d399', marginBottom: '4px' }}>
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(product.preco_venda))}
+              <div className={styles.priceBlock}>
+                <div className={styles.priceIntro}>Kit completo: de <s>R$ 105,78</s> por <b>R$ 79,80</b></div>
+                <div className={styles.priceRow}>
+                  <strong><small>R$</small> 7,99</strong>
+                  <span>por litro<b>10 litros no kit</b></span>
+                </div>
               </div>
-              <div style={{ color: '#94a3b8', fontSize: '0.86rem', marginBottom: '26px' }}>Pagamento combinado para a entrega</div>
-
-              <button
-                type="button"
-                onClick={openSchedulingModal}
-                style={{ width: '100%', minHeight: '54px', border: 0, borderRadius: '13px', padding: '14px 20px', backgroundColor: '#2563eb', color: '#fff', fontSize: '1.05rem', fontWeight: 850, cursor: 'pointer', boxShadow: '0 10px 24px rgba(37,99,235,.35)' }}
-              >
-                Agendar entrega
-              </button>
-            </>
-          ) : (
-            <div role="status" style={{ padding: '24px 0' }}>
-              <h1 id="offer-title" style={{ fontSize: '1.7rem', margin: '0 0 12px' }}>Oferta temporariamente indisponível</h1>
-              <p style={{ color: '#cbd5e1', lineHeight: 1.6, margin: 0 }}>
-                Não encontramos um produto ativo para esta página. Fale com a equipe Bryza para receber ajuda.
-              </p>
+              <button type="button" onClick={openSchedulingModal} className={styles.primaryCta}>Agendar meu pedido agora <ChevronRight size={21} /></button>
+              <div className={styles.noRisk}><LockKeyhole size={15} /> Nenhum pagamento antecipado. Você só paga na entrega.</div>
+              <div className={styles.heroTrust}>
+                <span><Truck size={18} /> Frete grátis*</span><span><ShieldCheck size={18} /> Compra segura</span><span><PackageCheck size={18} /> Pague ao receber</span>
+              </div>
             </div>
-          )}
-        </section>
+            <div className={styles.heroVisual}>
+              <Image src="/hero-site-bryza-clean.jpg" alt="Kit Bryza em uma lavanderia clara" fill sizes="(max-width: 900px) 100vw, 50vw" priority />
+              <div className={styles.giftCard}><div className={styles.plaid} /><div><span>Você ganha</span><strong>2 Panos Premium</strong><small>45 × 70 cm • alta absorção</small></div></div>
+              <div className={styles.savingsSeal}><small>economize</small><strong>R$ 25,98</strong><span>nos brindes</span></div>
+            </div>
+          </section>
 
-        <a
-          href={`https://wa.me/?text=${whatsappMessage}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: '50px', marginTop: '16px', borderRadius: '12px', backgroundColor: '#15803d', color: '#fff', fontWeight: 750, textDecoration: 'none' }}
-        >
-          Tirar dúvidas pelo WhatsApp
-        </a>
+          <section className={styles.proofBar} aria-label="Vantagens da oferta">
+            <div><strong>10L</strong><span>de produtos Bryza</span></div><div><strong>2 grátis</strong><span>Panos Premium</span></div><div><strong>R$ 7,99</strong><span>por litro</span></div><div><strong>R$ 0</strong><span>de entrada</span></div>
+          </section>
+
+          <section className={styles.section}>
+            <div className={styles.sectionHeading}><span>O kit completo</span><h2>Tudo o que sua lavanderia precisa</h2><p>Mais produto, mais rendimento e aquele perfume de roupa bem cuidada por muito mais tempo.</p></div>
+            <div className={styles.productGrid}>
+              <ProductCard tone="blue" icon={<Sparkles />} badge="5 litros" title="Sabão Líquido Concentrado" description="Limpeza eficiente para roupas brancas e coloridas, com fórmula concentrada e alto rendimento." items={["Aproximadamente 30 a 50 lavagens", "Perfume suave e limpeza eficiente", "Embalagem econômica"]} />
+              <ProductCard tone="purple" icon={<Sparkles />} badge="5 litros" title="Amaciante Microencapsulado" description="Mais maciez e perfume prolongado, liberado aos poucos conforme o tecido se movimenta." items={["Essência microencapsulada", "Maciez prolongada", "Ideal para cama, banho e dia a dia"]} />
+              <ProductCard tone="gold" icon={<Gift />} badge="Grátis" title="2 Panos Premium Xadrez" description="Grandes, resistentes e feitos para absorver mais nas limpezas da cozinha, banheiro e áreas externas." items={["Tamanho grande: 45 × 70 cm", "Laváveis e reutilizáveis", "R$ 25,98 em brindes"]} featured />
+            </div>
+          </section>
+
+          <section className={styles.valueSection}>
+            <div className={styles.valueCopy}>
+              <span>Conta que fecha</span><h2>Você leva mais e paga menos</h2>
+              <p>Comprar embalagens pequenas várias vezes no mês pesa no bolso. Com o Kit Bryza, você garante 10 litros de uma vez e recebe os acessórios para completar a limpeza.</p>
+              <div className={styles.rating}><span>{[1,2,3,4,5].map(item => <Star key={item} size={18} fill="currentColor" />)}</span> Uma oferta pensada para a economia da família</div>
+            </div>
+            <div className={styles.receipt}>
+              <h3>Resumo da sua oferta</h3>
+              <div><span>Sabão Líquido Bryza 5L</span><strong>R$ 39,90</strong></div><div><span>Amaciante Bryza 5L</span><strong>R$ 39,90</strong></div><div><span>2 Panos Premium</span><s>R$ 25,98</s></div><div><span>Entrega nas regiões atendidas</span><b>Grátis</b></div>
+              <div className={styles.receiptTotal}><span>Você paga hoje</span><strong>R$ 79,80</strong></div>
+              <button type="button" onClick={openSchedulingModal} className={styles.primaryCta}>Quero garantir meu kit <ChevronRight size={21} /></button>
+              <small><LockKeyhole size={14} /> Pagamento somente quando receber</small>
+            </div>
+          </section>
+
+          <section className={styles.section}>
+            <div className={styles.sectionHeading}><span>É simples e seguro</span><h2>Agende em menos de 2 minutos</h2></div>
+            <div className={styles.steps}>
+              <article><b>1</b><Clock3 /><h3>Agende o pedido</h3><p>Preencha seus dados e escolha o melhor período para receber.</p></article>
+              <article><b>2</b><MapPin /><h3>Confirme a região</h3><p>A equipe Bryza confirma a disponibilidade da rota no seu endereço.</p></article>
+              <article><b>3</b><Truck /><h3>Receba em casa</h3><p>Seu kit chega completo e você paga somente na entrega.</p></article>
+            </div>
+          </section>
+
+          <section className={styles.faqSection}>
+            <div className={styles.sectionHeading}><span>Dúvidas frequentes</span><h2>Antes de garantir o seu</h2></div>
+            <div className={styles.faqList}>
+              <details><summary>Quantos litros vêm no kit?</summary><p>São 10 litros: 5L de Sabão Líquido Concentrado e 5L de Amaciante Microencapsulado Bryza.</p></details>
+              <details><summary>Os dois panos são realmente grátis?</summary><p>Sim. Você recebe dois Panos Premium Xadrez sem custo adicional, enquanto houver unidades reservadas para a campanha.</p></details>
+              <details><summary>Preciso pagar antecipadamente?</summary><p>Não. Você paga o pedido somente quando receber em casa.</p></details>
+              <details><summary>A entrega é grátis?</summary><p>Sim, nas regiões participantes atendidas pelas rotas Bryza. A equipe confirma a cobertura após o agendamento.</p></details>
+            </div>
+          </section>
+
+          <section className={styles.finalCta}>
+            <div><span><Gift size={17} /> Últimas unidades de brindes por rota</span><h2>Garanta 10 litros + 2 Panos Premium por R$ 79,80</h2><p>Frete grátis nas regiões atendidas e pagamento somente na entrega.</p></div>
+            <button type="button" onClick={openSchedulingModal} className={styles.lightCta}>Agendar meu pedido <ChevronRight size={21} /></button>
+          </section>
+        </> : <section className={styles.unavailable} role="status"><PackageCheck size={42} /><h1 id="offer-title">Oferta temporariamente indisponível</h1><p>Não encontramos o kit ativo para esta página. Fale com a equipe Bryza para receber ajuda.</p><a href={`https://wa.me/?text=${whatsappMessage}`} target="_blank" rel="noopener noreferrer">Falar com a Bryza</a></section>}
       </main>
 
-      <footer style={{ textAlign: 'center', padding: '24px 16px', fontSize: '0.78rem', color: '#64748b', borderTop: '1px solid #1e293b' }}>
-        © 2026 Bryza Sistem — compra vinculada à indicação {ambassador.referral_code.toUpperCase()}
-      </footer>
+      <footer className={styles.footer}><Image src="/Logo Bryza.svg" alt="Bryza" width={108} height={40} /><p>O perfume que anuncia a presença.</p><small>© 2026 Bryza • Compra vinculada à indicação {ambassador.referral_code.toUpperCase()}</small></footer>
+      {product && <div className={styles.mobileSticky}><div><span>Kit completo</span><strong>R$ 79,80</strong></div><button type="button" onClick={openSchedulingModal}>Agendar agora <ChevronRight size={18} /></button></div>}
 
       {isModalOpen && product && (
         <div
