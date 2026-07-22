@@ -3,7 +3,8 @@ import { notFound, redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 import { verifyAndParseReferralCookie, COOKIE_NAME } from '@/lib/referral/cookie';
-import { KitBryzaSalesPage } from '@/components/public/KitBryzaSalesPage';
+import { KitBryzaSalesPagePremium } from '@/components/public/KitBryzaSalesPagePremium';
+import { faqs } from '@/components/public/kit-bryza-content';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -22,8 +23,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     metadataBase: new URL('https://bryza.com.br'),
-    title: 'Kit Bryza Casa Perfumada | 10L + 2 Panos Premium Grátis',
-    description: 'Leve 10 litros de Sabão Líquido e Amaciante Bryza por R$ 79,80, ganhe 2 Panos Premium e pague somente na entrega.',
+    title: 'Kit Bryza 10 Litros + 2 Panos Premium | Entrega Grátis',
+    description: 'Leve Sabão Líquido Bryza 5L, Amaciante Microencapsulado 5L e ganhe 2 Panos Premium Xadrez. Kit por R$79,80, com frete grátis e pagamento na entrega.',
     alternates: {
       canonical: `https://bryza.com.br/${rawCode}`,
     },
@@ -33,8 +34,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       apple: '/fiveicon.svg',
     },
     openGraph: {
-      title: 'Kit Bryza Casa Perfumada | 10L + 2 Panos Premium Grátis',
-      description: '10 litros por apenas R$ 7,99 o litro. Frete grátis nas regiões atendidas e pagamento somente na entrega.',
+      title: 'Kit Bryza 10 Litros + 2 Panos Premium | Entrega Grátis',
+      description: 'Kit completo por R$79,80, com frete grátis nas regiões atendidas e pagamento somente na entrega.',
       url: `https://bryza.com.br/${rawCode}`,
       siteName: 'Bryza',
       locale: 'pt_BR',
@@ -50,8 +51,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'Kit Bryza Casa Perfumada | 10L + 2 Panos Premium Grátis',
-      description: '10 litros por R$ 79,80. Frete grátis nas regiões atendidas e pagamento somente na entrega.',
+      title: 'Kit Bryza 10 Litros + 2 Panos Premium | Entrega Grátis',
+      description: 'Kit completo por R$79,80, com frete grátis nas regiões atendidas e pagamento somente na entrega.',
       images: ['https://bryza.com.br/og-kit-bryza.png'],
     },
   };
@@ -100,10 +101,38 @@ export default async function PublicAmbassadorSalesPage({ params }: PageProps) {
     console.error('Erro ao carregar produto da oferta pública:', productsError.message);
   }
 
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Product',
+        name: 'Kit Bryza Casa Perfumada — 10 Litros + 2 Panos Premium',
+        image: 'https://bryza.com.br/hero-products.webp',
+        description: 'Sabão Líquido Concentrado Bryza 5L, Amaciante Microencapsulado Bryza 5L e 2 Panos Premium Xadrez.',
+        brand: { '@type': 'Brand', name: 'Bryza' },
+        offers: {
+          '@type': 'Offer',
+          priceCurrency: 'BRL',
+          price: '79.80',
+          availability: products?.length ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+          url: `https://bryza.com.br/${rawCode}`,
+        },
+      },
+      {
+        '@type': 'FAQPage',
+        mainEntity: faqs.map((faq) => ({
+          '@type': 'Question',
+          name: faq.question,
+          acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+        })),
+      },
+    ],
+  };
+
   return (
-    <KitBryzaSalesPage
-      ambassador={ambassador}
-      products={products || []}
-    />
+    <>
+      <KitBryzaSalesPagePremium ambassador={ambassador} products={products || []} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }} />
+    </>
   );
 }
