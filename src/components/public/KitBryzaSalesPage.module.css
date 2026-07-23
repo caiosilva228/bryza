@@ -123,26 +123,41 @@
 .hero {
   position: relative;
   width: 100%;
-  background: #ffffff;
-  border-bottom: 1px solid var(--neutral-200);
+  min-height: 650px;
+  min-height: calc(100vh - 90px);
+  min-height: calc(100dvh - 90px);
+  display: flex;
+  align-items: center;
+  background-color: #050f20;
+  background-image:
+    linear-gradient(
+      90deg,
+      rgba(5, 15, 32, 0.92) 0%,
+      rgba(5, 15, 32, 0.78) 42%,
+      rgba(5, 15, 32, 0.35) 68%,
+      rgba(5, 15, 32, 0.05) 100%
+    ),
+    url('/hero-pv-link-embaixador.jpg');
+  background-size: cover;
+  background-position: center right;
+  background-repeat: no-repeat;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
 }
+
 .heroInner {
-  max-width: 1280px;
+  width: min(1280px, calc(100% - 48px));
   margin: 0 auto;
-  min-height: 660px;
-  display: grid;
-  grid-template-columns: 46% 54%;
-  align-items: center;
+  padding: 40px 0;
   position: relative;
+  z-index: 2;
 }
+
 .heroCopy {
-  padding: 36px 36px 40px 24px;
-  position: relative;
-  z-index: 3;
+  max-width: 560px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  color: #ffffff;
 }
 
 .heroTags {
@@ -151,25 +166,27 @@
   gap: 8px;
   margin-bottom: 14px;
 }
+
 .tagKit {
   padding: 4px 10px;
   border-radius: 6px;
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
   font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+
 .tagGift {
   padding: 4px 10px;
   border-radius: 6px;
-  background: #f4fce3;
-  color: #4d7c0f;
-  border: 1px solid #d9f99d;
+  background: #a6ce39;
+  color: #051329;
   font-size: 9.5px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -177,65 +194,78 @@
 .hero h1 {
   max-width: 540px;
   margin: 0 0 14px;
-  color: #051329;
-  font-size: clamp(30px, 2.7vw, 40px);
+  color: #ffffff;
+  font-size: clamp(30px, 2.8vw, 42px);
   font-weight: 800;
   letter-spacing: -0.025em;
-  line-height: 1.15;
+  line-height: 1.14;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
 }
+
 .hero h1 em {
-  color: #0b5ea8;
+  color: #a6ce39;
   font-style: normal;
   font-weight: 800;
 }
+
 .heroSubheadline {
   max-width: 520px;
   margin: 0 0 20px;
-  color: #475569;
+  color: rgba(241, 245, 249, 0.92);
   font-size: 14.5px;
   line-height: 1.55;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .offerBox {
   max-width: 540px;
   margin-top: 4px;
-  padding: 18px 20px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  padding: 18px 22px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(0, 35, 77, 0.06);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: column;
   gap: 14px;
+  color: #051329;
 }
 
 .offerPriceMain {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
+
 .priceHeader {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 11px;
+  font-size: 11.5px;
   color: #64748b;
 }
+
 .priceStrikethrough {
   color: #94a3b8;
   font-size: 13px;
 }
+
 .priceHighlight {
   display: flex;
   align-items: baseline;
+  flex-wrap: wrap;
   gap: 8px;
   margin: 2px 0;
 }
+
 .priceHighlight small {
   font-size: 14px;
   font-weight: 600;
   color: #051329;
 }
+
 .priceHighlight strong {
   font-size: 36px;
   font-weight: 800;
@@ -243,25 +273,28 @@
   letter-spacing: -0.03em;
   line-height: 1;
 }
+
 .literPriceNote {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
   color: #0b5ea8;
 }
 
 .giftValueHighlight {
-  padding-top: 10px;
-  border-top: 1px solid #f1f5f9;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
   gap: 2px;
   color: #334155;
   font-size: 11.5px;
 }
+
 .giftValueHighlight strong {
   color: #4d7c0f;
   font-weight: 700;
 }
+
 .giftValueHighlight small {
   color: #64748b;
   font-size: 10.5px;
@@ -273,10 +306,11 @@
   gap: 6px;
   margin-top: 2px;
 }
+
 .offerAction .cta {
   width: 100%;
-  min-height: 56px;
-  height: 56px;
+  min-height: 54px;
+  height: 54px;
   padding: 12px 24px;
   background: #8bb329;
   border: 0;
@@ -291,11 +325,13 @@
   gap: 10px;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
-  box-shadow: 0 4px 14px rgba(139, 179, 41, 0.3);
+  box-shadow: 0 4px 14px rgba(139, 179, 41, 0.35);
 }
+
 .offerAction .cta:hover {
   background: #7ca520;
 }
+
 .payOnDeliveryNote {
   display: flex;
   align-items: center;
@@ -311,21 +347,24 @@
   justify-content: space-between;
   gap: 8px;
   padding-top: 12px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid #e2e8f0;
   font-size: 10.5px;
   font-weight: 600;
   color: #334155;
 }
+
 .heroTrustLine span {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   white-space: nowrap;
 }
+
 .heroTrustLine svg {
   color: #0b5ea8;
   flex-shrink: 0;
 }
+
 .heroTrustLine i {
   color: #cbd5e1;
   font-style: normal;
@@ -333,56 +372,38 @@
 }
 
 .scarcityNote {
-  max-width: 520px;
+  max-width: 540px;
   margin-top: 14px;
   font-size: 10.5px;
-  color: #94a3b8;
+  color: rgba(255, 255, 255, 0.65);
   line-height: 1.4;
   font-style: italic;
-}
-
-.heroProduct {
-  height: 100%;
-  min-height: 660px;
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-}
-.heroImageWrapper {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.heroTransitionOverlay {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.98) 44%, rgba(255,255,255,0.60) 60%, rgba(255,255,255,0) 72%);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 .clothBadge {
   position: absolute;
-  right: 28px;
-  bottom: 28px;
+  right: 32px;
+  bottom: 32px;
   z-index: 5;
   padding: 8px 14px;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(8px);
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
   text-align: center;
 }
+
 .clothBadge strong {
   font-size: 11px;
   font-weight: 700;
   color: #051329;
   text-transform: uppercase;
 }
+
 .clothBadge span {
   font-size: 9.5px;
   color: #64748b;
@@ -542,9 +563,8 @@
 .successState > button { min-height: 48px; padding: 12px 28px; color: #fff; background: var(--bryza-navy-950); border: 0; border-radius: 8px; font-weight: 700; cursor: pointer; }
 
 @media (max-width: 1024px) {
-  .header { width: calc(100% - 48px); }
-  .heroInner { grid-template-columns: minmax(380px, 1fr) 1fr; }
-  .heroCopy { padding: 20px 24px; }
+  .header { width: 100%; }
+  .heroCopy { max-width: 520px; }
   .benefitGrid { grid-template-columns: repeat(2, 1fr); }
   .giftSection { gap: 48px; }
   .valueSection { grid-template-columns: 1fr 420px; gap: 54px; }
@@ -571,43 +591,36 @@
   .ambassadorMeta strong { font-size: 9px; max-width: 80px; }
   .ambassadorIcon { width: 12px; height: 12px; }
 
-  .hero { background: #ffffff; }
-  .heroInner { display: flex; flex-direction: column; min-height: auto; }
-  .heroCopy { padding: 18px 16px 24px; }
-  .heroProduct { display: none !important; }
-
-  .mobileHeroProduct {
-    display: block !important;
-    width: 100%;
-    height: 210px;
-    margin: 12px 0 16px;
-    border-radius: 12px;
-    overflow: hidden;
-    position: relative;
-    border: 1px solid #e2e8f0;
+  .hero {
+    min-height: auto;
+    background-color: #050f20;
+    background-image:
+      linear-gradient(
+        180deg,
+        rgba(5, 15, 32, 0.90) 0%,
+        rgba(5, 15, 32, 0.75) 55%,
+        rgba(5, 15, 32, 0.35) 100%
+      ),
+      url('/hero-pv-link-embaixador.jpg');
+    background-size: cover;
+    background-position: 85% center;
   }
-  .mobileHeroProduct > img { object-fit: cover; object-position: center; }
-  .mobileHeroProduct .clothBadge { right: 10px; bottom: 10px; padding: 5px 9px; }
-  .mobileHeroProduct .clothBadge strong { font-size: 9px; }
-  .mobileHeroProduct .clothBadge span { font-size: 8px; }
+  .heroInner { width: 100%; padding: 20px 16px 28px; }
+  .heroCopy { max-width: 100%; }
 
-  .heroTags { margin-bottom: 8px; }
+  .heroTags { margin-bottom: 10px; }
   .tagKit, .tagGift { padding: 3px 8px; font-size: 8.5px; }
 
   .hero h1 {
     font-size: clamp(23px, 6.4vw, 28px);
     line-height: 1.18;
     margin: 6px 0 10px;
-    color: #051329;
-    text-shadow: none;
-    display: -webkit-box;
-    -webkit-line-clamp: 4;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    color: #ffffff;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
   }
-  .heroSubheadline { font-size: 13px; line-height: 1.48; margin-bottom: 14px; color: #475569; }
+  .heroSubheadline { font-size: 13px; line-height: 1.48; margin-bottom: 14px; color: rgba(241, 245, 249, 0.92); text-shadow: 0 1px 6px rgba(0,0,0,0.5); }
 
-  .offerBox { padding: 14px; gap: 10px; border-radius: 12px; }
+  .offerBox { padding: 14px; gap: 10px; border-radius: 12px; max-width: 100%; }
   .priceHighlight strong { font-size: 30px; }
   .giftValueHighlight { font-size: 10.5px; }
   .offerAction .cta { min-height: 50px; height: 50px; font-size: 12px; }
@@ -621,7 +634,8 @@
     padding-top: 10px;
   }
   .heroTrustLine i { display: none; }
-  .scarcityNote { font-size: 9.5px; margin-top: 10px; }
+  .scarcityNote { font-size: 9.5px; margin-top: 10px; color: rgba(255, 255, 255, 0.65); }
+  .clothBadge { right: 12px; bottom: 12px; padding: 5px 9px; }
 
   .benefitsSection, .kitSection, .stepsSection, .faqSection { width: calc(100% - 32px); padding: 56px 0; }
   .sectionIntro { margin-bottom: 24px; }

@@ -114,31 +114,23 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
 
               <h1>10 litros para roupas <em>limpas, macias e perfumadas.</em></h1>
 
-              <div className={styles.mobileHeroProduct}>
-                <Image src="/hero-pv-link-embaixador.jpg" alt="Kit Bryza com Sabão Líquido, Amaciante de 5L e Panos Premium" fill priority style={{ objectFit: 'cover' }} />
-                <div className={styles.clothBadge}>
-                  <strong>2 Panos Premium</strong>
-                  <span>45 × 70 cm</span>
-                </div>
-              </div>
-
               <p className={styles.heroSubheadline}>
                 {ambassador.display_name
-                  ? `Sabão Líquido Concentrado 5L + Amaciante Microencapsulado 5L. E, pela indicação de ${ambassador.display_name}, você ainda recebe 2 Panos Premium Xadrez de Alta Absorção — 45 × 70 cm.`
+                  ? `Sabão Líquido Concentrado 5L + Amaciante Microencapsulado 5L. Pela indicação de ${ambassador.display_name}, você ainda recebe 2 Panos Premium Xadrez de Alta Absorção — 45 × 70 cm.`
                   : 'Sabão Líquido Concentrado 5L + Amaciante Microencapsulado 5L e mais 2 Panos Premium Xadrez de Alta Absorção — 45 × 70 cm de presente.'}
               </p>
 
               <div className={styles.offerBox}>
                 <div className={styles.offerPriceMain}>
                   <div className={styles.priceHeader}>
-                    <span>Valor total do kit + brindes</span>
+                    <span>Valor total do kit + brindes:</span>
                     <s className={styles.priceStrikethrough}>R$105,78</s>
                   </div>
                   <div className={styles.priceHighlight}>
                     <small>Por apenas</small>
                     <strong>R$79,80</strong>
+                    <span className={styles.literPriceNote}>(Menos de R$7,99 por litro)</span>
                   </div>
-                  <div className={styles.literPriceNote}>Menos de R$7,99 por litro</div>
                 </div>
 
                 <div className={styles.giftValueHighlight}>
@@ -168,17 +160,11 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
                 Os brindes estão disponíveis conforme a quantidade destinada a cada campanha e rota de entrega.
               </p>
             </div>
+          </div>
 
-            <div className={styles.heroProduct}>
-              <div className={styles.heroImageWrapper}>
-                <Image src="/hero-pv-link-embaixador.jpg" alt="Kit Bryza com Sabão Líquido, Amaciante de 5L e Panos Premium" fill sizes="(max-width: 1024px) 100vw, 54vw" priority style={{ objectFit: 'cover', objectPosition: 'center' }} />
-                <div className={styles.heroTransitionOverlay} />
-                <div className={styles.clothBadge}>
-                  <strong>2 Panos Premium</strong>
-                  <span>45 × 70 cm</span>
-                </div>
-              </div>
-            </div>
+          <div className={styles.clothBadge}>
+            <strong>2 Panos Premium</strong>
+            <span>45 × 70 cm</span>
           </div>
         </section>
 
