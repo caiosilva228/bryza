@@ -14,6 +14,7 @@ import {
   MapPinCheck,
   MessageCircle,
   PackageCheck,
+  BadgePercent,
   ShieldCheck,
   Sparkles,
   Truck,
@@ -317,14 +318,144 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
           </div>
         </section>
 
+        {/* Secao 4: Valorizacao dos Panos de Alta Absorcao */}
+        <section id="brinde" className={styles.giftValuationSection} aria-label="Valorização dos Panos de Alta Absorção">
+          <div className={styles.giftValuationContainer}>
+            <figure className={styles.giftValuationFigure}>
+              <div className={styles.giftValuationImageCard}>
+                <Image
+                  src="https://kkjrunhubqixftemndrm.supabase.co/storage/v1/object/public/product-images/prod_1784732736673_77ujv.svg"
+                  alt="Dois Panos Xadrez de Alta Absorção Bryza"
+                  width={420}
+                  height={320}
+                  unoptimized
+                  style={{ objectFit: 'contain', width: 'auto', height: '100%', maxHeight: '340px' }}
+                />
+              </div>
+              <figcaption className={styles.giftValuationCaption}>
+                <strong>2 Panos Xadrez de Alta Absorção</strong>
+                <span>45 × 70 cm</span>
+              </figcaption>
+            </figure>
+
+            <div className={styles.giftValuationContent}>
+              <span className={styles.giftValuationEyebrow}>UM BRINDE QUE TEM VALOR REAL</span>
+              <h2 className={styles.giftValuationTitle}>
+                Você não recebe apenas dois panos. Você ganha R$25,98 em utilidade para a sua casa.
+              </h2>
+              <p className={styles.giftValuationLead}>
+                Os 2 Panos Xadrez de Alta Absorção são grandes, resistentes e úteis para a rotina de limpeza. No mercado, produtos desse padrão custam em média R$12,99 cada.
+              </p>
+
+              <ul className={styles.giftAttributesList}>
+                <li>
+                  <Check size={18} className={styles.giftCheckIcon} />
+                  <span>Tamanho grande: 45 × 70 cm</span>
+                </li>
+                <li>
+                  <Check size={18} className={styles.giftCheckIcon} />
+                  <span>Alta capacidade de absorção</span>
+                </li>
+                <li>
+                  <Check size={18} className={styles.giftCheckIcon} />
+                  <span>Tecido resistente para o uso diário</span>
+                </li>
+                <li>
+                  <Check size={18} className={styles.giftCheckIcon} />
+                  <span>Laváveis e reutilizáveis</span>
+                </li>
+              </ul>
+
+              <div className={styles.giftValueCard}>
+                <div className={styles.giftValueRow}>
+                  <span>1 Pano Xadrez de Alta Absorção</span>
+                  <strong>R$12,99</strong>
+                </div>
+                <div className={styles.giftValueRow}>
+                  <span>2 Panos Xadrez de Alta Absorção</span>
+                  <strong>R$25,98</strong>
+                </div>
+                <div className={`${styles.giftValueRow} ${styles.giftValueHighlight}`}>
+                  <span>No Kit Bryza</span>
+                  <strong className={styles.giftBadgeFree}>GRÁTIS</strong>
+                </div>
+              </div>
+
+              <p className={styles.giftValuationClosing}>
+                Você economiza <strong>mais de R$20</strong> e ainda recebe dois itens realmente úteis para a limpeza da casa.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Secao 5: Por que essa oferta vale a pena */}
+        <section id="motivos" className={styles.reasonsSection} aria-label="Por que essa oferta vale a pena">
+          <header className={styles.reasonsHeader}>
+            <span className={styles.reasonsEyebrow}>UMA ESCOLHA INTELIGENTE</span>
+            <h2 className={styles.reasonsTitle}>Mais produto, mais economia e muito mais comodidade.</h2>
+            <p className={styles.reasonsLead}>
+              O Kit Bryza foi pensado para entregar quantidade, praticidade e segurança em uma única compra.
+            </p>
+          </header>
+
+          <div role="list" className={styles.reasonsGrid}>
+            <article role="listitem" className={styles.reasonCard}>
+              <div className={styles.reasonIconBox} aria-hidden="true">
+                <PackageCheck size={26} className={styles.reasonIcon} />
+              </div>
+              <div className={styles.reasonContent}>
+                <span className={styles.reasonCategory}>MAIS PRODUTO</span>
+                <h3>10 litros no total</h3>
+                <p>
+                  Você recebe um galão de 5 litros de Sabão Líquido Concentrado e um galão de 5 litros de Amaciante Microencapsulado.
+                </p>
+              </div>
+            </article>
+
+            <article role="listitem" className={styles.reasonCard}>
+              <div className={styles.reasonIconBox} aria-hidden="true">
+                <BadgePercent size={26} className={styles.reasonIcon} />
+              </div>
+              <div className={styles.reasonContent}>
+                <span className={styles.reasonCategory}>MAIS ECONOMIA</span>
+                <h3>Menos de R$7,99 por litro</h3>
+                <p>
+                  Você garante dois produtos de 5 litros e ainda recebe dois Panos Xadrez de Alta Absorção de presente.
+                </p>
+              </div>
+            </article>
+
+            <article role="listitem" className={styles.reasonCard}>
+              <div className={styles.reasonIconBox} aria-hidden="true">
+                <Truck size={26} className={styles.reasonIcon} />
+              </div>
+              <div className={styles.reasonContent}>
+                <span className={styles.reasonCategory}>MAIS PRATICIDADE</span>
+                <h3>Entrega na sua casa</h3>
+                <p>
+                  Você agenda o pedido pelo celular e a equipe Bryza confirma a disponibilidade da rota pelo WhatsApp.
+                </p>
+              </div>
+            </article>
+
+            <article role="listitem" className={styles.reasonCard}>
+              <div className={styles.reasonIconBox} aria-hidden="true">
+                <ShieldCheck size={26} className={styles.reasonIcon} />
+              </div>
+              <div className={styles.reasonContent}>
+                <span className={styles.reasonCategory}>MENOS RISCO</span>
+                <h3>Pagamento somente na entrega</h3>
+                <p>
+                  Você não precisa realizar nenhum pagamento antecipado. O pagamento acontece quando o pedido é entregue.
+                </p>
+              </div>
+            </article>
+          </div>
+        </section>
+
         <section className={styles.benefitsSection}>
           <div className={styles.sectionIntro}><span>Qualidade que você sente</span><h2>Mais rendimento, mais perfume e cuidado real.</h2><p>Fórmulas desenvolvidas para entregar limpeza, maciez e perfume para a rotina da sua família.</p></div>
           <div className={styles.benefitGrid}>{benefits.map((benefit) => { const Icon = benefitIcons[benefit.icon]; return <article key={benefit.title}><Icon /><h3>{benefit.title}</h3><p>{benefit.text}</p></article>; })}</div>
-        </section>
-
-        <section className={styles.giftSection}>
-          <div className={styles.giftVisual}><PlaidCloths large /><span>45 × 70 cm cada</span></div>
-          <div className={styles.giftCopy}><span>Um brinde que tem valor de verdade</span><h2>Não são apenas dois panos. São R$ 25,98 em acessórios premium para sua casa.</h2><p>Nos supermercados tradicionais, panos desse padrão custam em média R$ 12,99 cada. No Kit Bryza, você recebe as duas unidades gratuitamente.</p><div className={styles.giftMath}><div><span>1 pano premium</span><strong>R$ 12,99</strong></div><div><span>2 panos premium</span><strong>R$ 25,98</strong></div><div><span>No Kit Bryza</span><strong>Grátis</strong></div></div><p className={styles.giftNote}>A estampa xadrez ajuda a disfarçar melhor as marcas do uso diário.</p></div>
         </section>
 
         <section id="oferta" className={styles.valueSection}>

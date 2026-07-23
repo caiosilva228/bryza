@@ -742,17 +742,305 @@
   margin: 0;
 }
 
-.giftSection { padding: 104px max(32px, calc((100vw - 1200px) / 2)); display: grid; grid-template-columns: .85fr 1.15fr; align-items: center; gap: 86px; background: var(--neutral-50); }
-.giftVisual { min-height: 420px; display: grid; place-items: center; position: relative; background: #fff; border: 1px solid var(--neutral-200); border-radius: 20px; }
-.giftVisual .plaidCloths { transform: scale(1.15) rotate(-3deg); }
-.giftVisual > span { position: absolute; left: 24px; bottom: 20px; padding: 7px 10px; color: var(--bryza-navy-900); background: var(--neutral-50); border-radius: 6px; font-size: 11px; font-weight: 700; }
-.giftMath { margin: 28px 0 18px; display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--neutral-200); border-radius: 12px; }
-.giftMath div { padding: 17px; display: flex; flex-direction: column; gap: 5px; }
-.giftMath div + div { border-left: 1px solid var(--neutral-200); }
-.giftMath span { color: var(--neutral-600); font-size: 10px; }
-.giftMath strong { color: var(--bryza-navy-950); font-size: 17px; }
-.giftMath div:last-child strong { color: var(--bryza-green-700); text-transform: uppercase; }
-.giftNote { padding-left: 14px; color: var(--neutral-600) !important; border-left: 3px solid var(--bryza-green-500); font-size: 12px !important; }
+/* Secao 4: Valorizacao dos Panos de Alta Absorcao */
+.giftValuationSection {
+  background: #f8fafc;
+  padding: 96px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.giftValuationContainer {
+  width: min(1180px, calc(100% - 64px));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 52px;
+  align-items: center;
+}
+
+.giftValuationFigure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.giftValuationImageCard {
+  width: 100%;
+  min-height: 440px;
+  background: #ffffff;
+  border: 1px solid #e2e7ef;
+  border-radius: 20px;
+  box-shadow: 0 18px 48px rgba(16, 24, 70, 0.08);
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .giftValuationImageCard:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 22px 56px rgba(16, 24, 70, 0.12);
+  }
+}
+
+.giftValuationCaption {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #475569;
+}
+
+.giftValuationCaption strong {
+  font-weight: 700;
+  color: #051329;
+}
+
+.giftValuationCaption span {
+  padding: 2px 8px;
+  background: #e2e8f0;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.giftValuationContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.giftValuationEyebrow {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #5a8216;
+  margin-bottom: 8px;
+}
+
+.giftValuationTitle {
+  font-size: clamp(36px, 3.8vw, 44px);
+  font-weight: 700;
+  line-height: 1.08;
+  color: #051329;
+  margin: 0 0 16px;
+}
+
+.giftValuationLead {
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: #667085;
+  margin: 0 0 24px;
+}
+
+.giftAttributesList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.giftAttributesList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 15.5px;
+  line-height: 1.4;
+  color: #435066;
+}
+
+.giftCheckIcon {
+  color: #5a8216;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.giftValueCard {
+  background: #ffffff;
+  border: 1px solid #e2e7ef;
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .giftValueCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(5, 19, 41, 0.07);
+  }
+}
+
+.giftValueRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 15px;
+  color: #475569;
+}
+
+.giftValueRow + .giftValueRow {
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.giftValueRow strong {
+  font-size: 16px;
+  font-weight: 700;
+  color: #051329;
+}
+
+.giftValueHighlight span {
+  font-weight: 700;
+  color: #051329;
+}
+
+.giftBadgeFree {
+  display: inline-flex;
+  padding: 4px 12px;
+  background: #f4fce8;
+  border: 1px solid rgba(101, 156, 49, 0.35);
+  border-radius: 999px;
+  color: #4d7c0f !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em;
+}
+
+.giftValuationClosing {
+  margin-top: 20px;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: #435066;
+}
+
+.giftValuationClosing strong {
+  color: #051329;
+  font-weight: 700;
+}
+
+/* Secao 5: Por que essa oferta vale a pena */
+.reasonsSection {
+  background: #ffffff;
+  padding: 88px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.reasonsHeader {
+  max-width: 720px;
+  margin: 0 auto 48px;
+  text-align: center;
+}
+
+.reasonsEyebrow {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #5a8216;
+  margin-bottom: 8px;
+}
+
+.reasonsTitle {
+  font-size: clamp(36px, 3.8vw, 44px);
+  font-weight: 700;
+  line-height: 1.1;
+  color: #051329;
+  margin: 0 0 12px;
+}
+
+.reasonsLead {
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: #667085;
+  margin: 0;
+}
+
+.reasonsGrid {
+  width: min(1180px, calc(100% - 64px));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.reasonCard {
+  background: #ffffff;
+  border: 1px solid #e2e7ef;
+  border-top: 3px solid #5a8216;
+  border-radius: 14px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .reasonCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(5, 19, 41, 0.06);
+  }
+}
+
+.reasonIconBox {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #f4fce8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.reasonIcon {
+  color: #5a8216;
+}
+
+.reasonContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.reasonCategory {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5a8216;
+  margin-bottom: 6px;
+}
+
+.reasonCard h3 {
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #051329;
+  margin: 0 0 8px;
+}
+
+.reasonCard p {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #667085;
+  margin: 0;
+}
 
 .valueSection { padding: 112px max(32px, calc((100vw - 1100px) / 2)); display: grid; grid-template-columns: 1fr 450px; align-items: center; gap: 100px; }
 .receipt { padding: 30px; background: #fff; border: 1px solid var(--neutral-200); border-radius: 14px; box-shadow: 0 12px 32px rgba(16,24,70,.09); }
@@ -855,6 +1143,7 @@
   .header { width: 100%; }
   .heroCopy { max-width: 520px; }
   .benefitGrid { grid-template-columns: repeat(2, 1fr); }
+  .reasonsGrid { grid-template-columns: repeat(2, 1fr); }
   .giftSection { gap: 48px; }
   .valueSection { grid-template-columns: 1fr 420px; gap: 54px; }
   .securitySection { grid-template-columns: 1fr; }
@@ -1259,6 +1548,111 @@
 
   .kitClosing p {
     font-size: 15px !important;
+  }
+
+  /* Secao 4: Valorizacao dos Panos (Mobile) */
+  .giftValuationSection {
+    padding: 64px 20px 72px !important;
+  }
+
+  .giftValuationContainer {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+  }
+
+  .giftValuationContent {
+    display: contents !important;
+  }
+
+  .giftValuationEyebrow { order: 1 !important; }
+  .giftValuationTitle {
+    order: 2 !important;
+    font-size: clamp(28px, 7.5vw, 34px) !important;
+    line-height: 1.12 !important;
+    margin-bottom: 12px !important;
+  }
+  .giftValuationLead {
+    order: 3 !important;
+    font-size: 15.5px !important;
+    line-height: 1.55 !important;
+    margin-bottom: 24px !important;
+  }
+  .giftValuationFigure {
+    order: 4 !important;
+    width: 100% !important;
+    margin: 0 0 24px !important;
+  }
+  .giftValuationImageCard {
+    min-height: 260px !important;
+    padding: 20px !important;
+    border-radius: 16px !important;
+  }
+  .giftAttributesList {
+    order: 5 !important;
+    margin-bottom: 24px !important;
+    gap: 12px !important;
+  }
+  .giftAttributesList li {
+    font-size: 14.5px !important;
+  }
+  .giftValueCard {
+    order: 6 !important;
+    padding: 16px 18px !important;
+    border-radius: 14px !important;
+    margin-bottom: 18px !important;
+  }
+  .giftValueRow {
+    font-size: 14px !important;
+  }
+  .giftValuationClosing {
+    order: 7 !important;
+    margin-top: 0 !important;
+    font-size: 15px !important;
+  }
+
+  /* Secao 5: Por que essa oferta vale a pena (Mobile) */
+  .reasonsSection {
+    padding: 56px 20px 72px !important;
+  }
+
+  .reasonsHeader {
+    margin-bottom: 32px !important;
+    text-align: left !important;
+  }
+
+  .reasonsTitle {
+    font-size: clamp(28px, 7.5vw, 34px) !important;
+    line-height: 1.12 !important;
+    margin: 8px 0 10px !important;
+  }
+
+  .reasonsLead {
+    font-size: 15.5px !important;
+    line-height: 1.55 !important;
+  }
+
+  .reasonsGrid {
+    width: 100% !important;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .reasonCard {
+    display: grid !important;
+    grid-template-columns: 44px 1fr !important;
+    gap: 14px !important;
+    padding: 18px !important;
+    border-radius: 14px !important;
+  }
+
+  .reasonCard h3 {
+    font-size: 19px !important;
+  }
+
+  .reasonCard p {
+    font-size: 14px !important;
   }
   .giftMath { grid-template-columns: 1fr; }
   .giftMath div { flex-direction: row; justify-content: space-between; }
