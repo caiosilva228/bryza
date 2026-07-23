@@ -87,6 +87,27 @@ function ProductVisual({ kind }: { kind: (typeof kitItems)[number]['kind'] }) {
   );
 }
 
+function AmbassadorAvatar({ photoPath, name, size = 56 }: { photoPath?: string | null; name: string; size?: number }) {
+  const [hasError, setHasError] = useState(false);
+  const initial = name && name.trim().length > 0 ? name.trim().charAt(0).toUpperCase() : 'B';
+
+  if (photoPath && !hasError) {
+    return (
+      <Image
+        src={photoPath}
+        alt={name || 'Embaixador Bryza'}
+        width={size}
+        height={size}
+        onError={() => setHasError(true)}
+        unoptimized
+        className={styles.referralAvatarImg}
+      />
+    );
+  }
+
+  return <span>{initial}</span>;
+}
+
 export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBryzaLandingProps) {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [showSticky, setShowSticky] = useState(false);
@@ -112,7 +133,9 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
           <Image src="/Logo Bryza.svg" alt="Bryza" width={135} height={44} priority />
         </a>
         <div className={styles.ambassadorBadge}>
-          <span className={styles.ambassadorAvatar}>{ambassador.display_name.charAt(0).toUpperCase()}</span>
+          <span className={styles.ambassadorAvatar}>
+            <AmbassadorAvatar photoPath={ambassador.photo_path} name={ambassador.display_name} size={24} />
+          </span>
           <div className={styles.ambassadorMeta}>
             <small>Indicado por</small>
             <strong>{ambassador.display_name}</strong>
@@ -211,17 +234,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
         <section id="indicacao" className={styles.referralSection}>
           <div className={styles.referralContainer}>
             <div className={styles.referralAvatar} aria-hidden="true">
-              {ambassador.photo_path ? (
-                <Image
-                  src={ambassador.photo_path}
-                  alt={ambassadorName || 'Embaixador Bryza'}
-                  width={56}
-                  height={56}
-                  className={styles.referralAvatarImg}
-                />
-              ) : (
-                <span>{hasAmbassadorName ? ambassadorName.charAt(0).toUpperCase() : 'B'}</span>
-              )}
+              <AmbassadorAvatar photoPath={ambassador.photo_path} name={ambassadorName} size={56} />
             </div>
 
             <div className={styles.referralContent}>

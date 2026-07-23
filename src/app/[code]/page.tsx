@@ -88,6 +88,24 @@ export default async function PublicAmbassadorSalesPage({ params }: PageProps) {
     notFound();
   }
 
+  // Resolver photo_path para URL pública quando for um caminho do storage Supabase
+  let resolvedPhotoPath: string | null = null;
+  if (ambassador.photo_path) {
+    if (ambassador.photo_path.startsWith('http://') || ambassador.photo_path.startsWith('https://')) {
+      resolvedPhotoPath = ambassador.photo_path;
+    } else {
+      const { data: publicData } = supabaseAdmin.storage
+        .from('ambassador-photos')
+        .getPublicUrl(ambassador.photo_path);
+      resolvedPhotoPath = publicData?.publicUrl || null;
+    }
+  }
+
+  const publicAmbassador = {
+    ...ambassador,
+    photo_path: resolvedPhotoPath,
+  };
+
   // 4. Buscar produto real da oferta. Nunca apresentar um ID fictício ao checkout.
   const { data: products, error: productsError } = await supabaseAdmin
     .from('produtos')
@@ -131,7 +149,7 @@ export default async function PublicAmbassadorSalesPage({ params }: PageProps) {
 
   return (
     <>
-      <KitBryzaSalesPagePremium ambassador={ambassador} products={products || []} />
+      <KitBryzaSalesPagePremium ambassador={publicAmbassador} products={products || []} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }} />
     </>
   );
