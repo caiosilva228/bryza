@@ -7,6 +7,7 @@ import {
   Check,
   CheckCircle2,
   ChevronDown,
+  ClipboardList,
   Flower2,
   Gift,
   Leaf,
@@ -699,14 +700,113 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
           </div>
         </section>
 
+        {/* Secao 8: Como funciona o pedido */}
+        <section id="como-funciona" className={styles.stepsSection} aria-label="Como funciona o pedido">
+          <header className={styles.sectionIntro}>
+            <span className={styles.sectionEyebrow}>PEDIR É MUITO SIMPLES</span>
+            <h2>Agende agora e pague somente quando receber.</h2>
+            <p>
+              Você informa seus dados, a Bryza confirma a disponibilidade da rota e o pagamento é realizado somente na entrega.
+            </p>
+          </header>
+
+          <ol role="list" className={styles.stepsGrid}>
+            <li role="listitem" className={styles.stepItem}>
+              <article className={styles.stepCard}>
+                <div className={styles.stepHeader}>
+                  <span className={styles.stepNumberBadge}>01</span>
+                  <div className={styles.stepIconBox} aria-hidden="true">
+                    <ClipboardList size={24} className={styles.stepIcon} />
+                  </div>
+                </div>
+                <span className={styles.stepCategory}>AGENDAMENTO</span>
+                <h3>Agende seu pedido</h3>
+                <p className={styles.stepDescription}>
+                  Informe seu nome, WhatsApp e endereço para solicitar o Kit Bryza.
+                </p>
+                <small className={styles.stepAuxiliary}>
+                  O agendamento leva poucos minutos e não exige pagamento antecipado.
+                </small>
+              </article>
+            </li>
+
+            <li role="listitem" className={styles.stepItem}>
+              <article className={styles.stepCard}>
+                <div className={styles.stepHeader}>
+                  <span className={styles.stepNumberBadge}>02</span>
+                  <div className={styles.stepIconBox} aria-hidden="true">
+                    <MapPinCheck size={24} className={styles.stepIcon} />
+                  </div>
+                </div>
+                <span className={styles.stepCategory}>CONFIRMAÇÃO</span>
+                <h3>A Bryza confirma sua rota</h3>
+                <p className={styles.stepDescription}>
+                  Nossa equipe verifica a disponibilidade de entrega na sua região e confirma os detalhes pelo WhatsApp.
+                </p>
+                <small className={styles.stepAuxiliary}>
+                  O pedido só será considerado confirmado após o contato da equipe Bryza.
+                </small>
+              </article>
+            </li>
+
+            <li role="listitem" className={styles.stepItem}>
+              <article className={styles.stepCard}>
+                <div className={styles.stepHeader}>
+                  <span className={styles.stepNumberBadge}>03</span>
+                  <div className={styles.stepIconBox} aria-hidden="true">
+                    <Truck size={24} className={styles.stepIcon} />
+                  </div>
+                </div>
+                <span className={styles.stepCategory}>ENTREGA</span>
+                <h3>Receba e pague</h3>
+                <p className={styles.stepDescription}>
+                  Seu Kit Bryza é entregue no endereço confirmado e você realiza o pagamento somente quando receber.
+                </p>
+                <small className={styles.stepAuxiliary}>
+                  Sem pagamento antecipado e sem cobrança antes da entrega.
+                </small>
+              </article>
+            </li>
+          </ol>
+
+          <div className={styles.stepsSecurityBox}>
+            <div className={styles.stepsSecurityTextGroup}>
+              <ShieldCheck size={28} className={styles.stepsSecurityIcon} aria-hidden="true" />
+              <div>
+                <strong>Você não precisa pagar nada para solicitar o agendamento.</strong>
+                <p>A equipe Bryza confirmará sua rota e os detalhes da entrega pelo WhatsApp.</p>
+              </div>
+            </div>
+            <ul className={styles.stepsSecurityBadges}>
+              <li>
+                <Check size={16} className={styles.stepCheckIcon} aria-hidden="true" />
+                <span>Nenhum pagamento antecipado</span>
+              </li>
+              <li>
+                <Check size={16} className={styles.stepCheckIcon} aria-hidden="true" />
+                <span>Confirmação pelo WhatsApp</span>
+              </li>
+              <li>
+                <Check size={16} className={styles.stepCheckIcon} aria-hidden="true" />
+                <span>Pagamento somente na entrega</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className={styles.stepsCtaBlock}>
+            <button type="button" className={styles.stepsCtaBtn} onClick={onOrder}>
+              <span>AGENDAR MEU KIT BRYZA</span>
+              <ArrowRight size={18} aria-hidden="true" />
+            </button>
+            <p className={styles.stepsCtaNote}>
+              Preencha seus dados agora. A equipe confirmará a disponibilidade da sua rota pelo WhatsApp.
+            </p>
+          </div>
+        </section>
+
         <section className={styles.benefitsSection}>
           <div className={styles.sectionIntro}><span>Qualidade que você sente</span><h2>Mais rendimento, mais perfume e cuidado real.</h2><p>Fórmulas desenvolvidas para entregar limpeza, maciez e perfume para a rotina da sua família.</p></div>
           <div className={styles.benefitGrid}>{benefits.map((benefit) => { const Icon = benefitIcons[benefit.icon]; return <article key={benefit.title}><Icon /><h3>{benefit.title}</h3><p>{benefit.text}</p></article>; })}</div>
-        </section>
-
-        <section id="como-funciona" className={styles.stepsSection}>
-          <div className={styles.sectionIntro}><span>Simples, rápido e seguro</span><h2>Agende em menos de 2 minutos.</h2></div>
-          <div className={styles.steps}>{steps.map((step, index) => <article key={step.title}><strong>{index + 1}</strong><div><h3>{step.title}</h3><p>{step.text}</p></div></article>)}</div>
         </section>
 
         <section className={styles.securitySection}><div><span><ShieldCheck /></span><h2>Peça com tranquilidade.</h2></div><ul><li><Check />Nenhum pagamento antecipado</li><li><MessageCircle />Confirmação pelo WhatsApp</li><li><MapPinCheck />Entrega conforme disponibilidade da rota</li><li><PackageCheck />Atendimento da equipe Bryza</li><li><Check />Sem assinatura ou cobrança recorrente</li></ul></section>

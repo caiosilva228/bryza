@@ -1630,6 +1630,231 @@
   line-height: 1.4;
 }
 
+/* Secao 8: Como funciona o pedido */
+.stepsSection {
+  background: #f8fafc;
+  padding: 96px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.stepsGrid {
+  list-style: none;
+  padding: 0;
+  width: min(1180px, calc(100% - 64px));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+  align-items: stretch;
+  position: relative;
+}
+
+.stepsGrid::before {
+  content: '';
+  position: absolute;
+  top: 45px;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(90, 130, 22, 0.15) 0%, rgba(90, 130, 22, 0.4) 50%, rgba(90, 130, 22, 0.15) 100%);
+  z-index: 1;
+}
+
+.stepItem {
+  display: flex;
+  position: relative;
+  z-index: 2;
+}
+
+.stepCard {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #e2e7ef;
+  border-radius: 18px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stepCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(5, 19, 41, 0.07);
+  }
+}
+
+.stepHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.stepNumberBadge {
+  font-size: 46px;
+  font-weight: 800;
+  color: #051329;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.stepIconBox {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #f4fce8;
+  border: 1px solid rgba(101, 156, 49, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepIcon {
+  color: #5a8216;
+}
+
+.stepCategory {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #5a8216;
+  margin-bottom: 6px;
+}
+
+.stepCard h3 {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #051329;
+  margin: 0 0 10px;
+}
+
+.stepDescription {
+  font-size: 15px;
+  line-height: 1.55;
+  color: #667085;
+  margin: 0 0 12px;
+  flex: 1;
+}
+
+.stepAuxiliary {
+  font-size: 13px;
+  line-height: 1.45;
+  color: #8a94a6;
+}
+
+.stepsSecurityBox {
+  width: min(1180px, calc(100% - 64px));
+  margin: 40px auto 0;
+  background: #eef6e6;
+  border: 1px solid rgba(101, 156, 49, 0.3);
+  border-radius: 16px;
+  padding: 22px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.stepsSecurityTextGroup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stepsSecurityIcon {
+  color: #5a8216;
+  flex-shrink: 0;
+}
+
+.stepsSecurityTextGroup strong {
+  display: block;
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #051329;
+  margin-bottom: 2px;
+}
+
+.stepsSecurityTextGroup p {
+  font-size: 13.5px;
+  color: #475569;
+  margin: 0;
+}
+
+.stepsSecurityBadges {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+.stepsSecurityBadges li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.stepCheckIcon {
+  color: #5a8216;
+}
+
+.stepsCtaBlock {
+  width: min(1180px, calc(100% - 64px));
+  margin: 36px auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.stepsCtaBtn {
+  min-width: 280px;
+  min-height: 56px;
+  padding: 0 32px;
+  background: #8bb329;
+  color: #051329;
+  border: 0;
+  border-radius: 8px;
+  font-size: 15.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(139, 179, 41, 0.3);
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stepsCtaBtn:hover {
+    background: #7ca322;
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(139, 179, 41, 0.38);
+  }
+}
+
+.stepsCtaBtn:active {
+  transform: scale(0.99);
+}
+
+.stepsCtaNote {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #64748b;
+  max-width: 560px;
+}
+
 .valueSection { padding: 112px max(32px, calc((100vw - 1100px) / 2)); display: grid; grid-template-columns: 1fr 450px; align-items: center; gap: 100px; }
 .receipt { padding: 30px; background: #fff; border: 1px solid var(--neutral-200); border-radius: 14px; box-shadow: 0 12px 32px rgba(16,24,70,.09); }
 .receipt h3 { margin: 0 0 12px; padding-bottom: 17px; color: var(--bryza-navy-950); border-bottom: 1px solid var(--neutral-200); font-size: 16px; }
@@ -2327,6 +2552,76 @@
   }
 
   .comparisonCtaBtn {
+    min-height: 54px !important;
+    font-size: 15px !important;
+  }
+
+  /* Secao 8: Como funciona o pedido (Mobile) */
+  .stepsSection {
+    padding: 64px 20px 72px !important;
+  }
+
+  .stepsGrid {
+    width: 100% !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .stepsGrid::before {
+    display: none !important;
+  }
+
+  .stepCard {
+    display: grid !important;
+    grid-template-columns: 48px 1fr !important;
+    gap: 14px !important;
+    padding: 20px !important;
+    border-radius: 14px !important;
+  }
+
+  .stepHeader {
+    margin-bottom: 0 !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .stepNumberBadge {
+    font-size: 36px !important;
+  }
+
+  .stepCard h3 {
+    font-size: 19px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .stepDescription {
+    font-size: 14px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .stepsSecurityBox {
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 20px !important;
+    gap: 16px !important;
+    margin-top: 28px !important;
+  }
+
+  .stepsSecurityBadges {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+
+  .stepsCtaBlock {
+    width: 100% !important;
+    margin-top: 28px !important;
+  }
+
+  .stepsCtaBtn {
+    width: 100% !important;
     min-height: 54px !important;
     font-size: 15px !important;
   }
