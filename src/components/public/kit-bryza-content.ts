@@ -46,12 +46,46 @@ export const steps = [
 ] as const;
 
 export const faqs = [
-  { question: 'Quantos litros vêm no kit?', answer: 'São 10 litros no total: 5 litros de Sabão Líquido Concentrado Bryza e 5 litros de Amaciante Concentrado Microencapsulado Bryza.' },
-  { question: 'Os dois panos são realmente grátis?', answer: 'Sim. Comprando o kit completo, você recebe dois Panos Xadrez de Alta Absorção Bryza sem custo adicional, enquanto houver unidades destinadas à campanha.' },
-  { question: 'Qual é o tamanho dos panos?', answer: 'Cada unidade mede 45 × 70 cm.' },
-  { question: 'Preciso pagar antecipadamente?', answer: 'Não. O pagamento é realizado somente quando o pedido for entregue.' },
-  { question: 'A entrega é grátis?', answer: 'Sim, para as regiões atendidas pelas rotas participantes da Bryza.' },
-  { question: 'Posso escolher o horário da entrega?', answer: 'Você pode indicar o melhor período, e a equipe confirmará a disponibilidade da rota.' },
+  {
+    id: 'litros',
+    question: 'Quantos litros vêm no Kit Bryza?',
+    answer: 'São 10 litros no total: um galão de 5 litros de Sabão Líquido Concentrado Bryza e um galão de 5 litros de Amaciante Concentrado Microencapsulado Bryza.',
+  },
+  {
+    id: 'panos-gratis',
+    question: 'Os dois panos são realmente grátis?',
+    answer: 'Sim. Na compra do kit completo, você recebe 2 Panos Xadrez de Alta Absorção sem custo adicional, enquanto houver unidades destinadas à campanha e à rota de entrega.',
+  },
+  {
+    id: 'tamanho-panos',
+    question: 'Qual é o tamanho dos panos?',
+    answer: 'Cada pano mede 45 × 70 cm. São panos grandes, laváveis, reutilizáveis e adequados para diferentes tarefas de limpeza da casa.',
+  },
+  {
+    id: 'pagamento-antecipado',
+    question: 'Preciso pagar antecipadamente?',
+    answer: 'Não. Você não precisa realizar nenhum pagamento para solicitar o agendamento. O pagamento acontece somente quando o Kit Bryza for entregue.',
+  },
+  {
+    id: 'entrega-gratis',
+    question: 'A entrega é gratuita?',
+    answer: 'Sim. O frete é grátis nas regiões atendidas pelas rotas participantes da Bryza. Após o agendamento, nossa equipe verificará sua região e confirmará os detalhes pelo WhatsApp.',
+  },
+  {
+    id: 'prazo-entrega',
+    question: 'Quando receberei meu pedido?',
+    answer: 'O prazo depende da disponibilidade da rota para sua região. Depois que você enviar seus dados, a equipe Bryza entrará em contato pelo WhatsApp para confirmar o dia ou período previsto para a entrega.',
+  },
+  {
+    id: 'formas-pagamento',
+    question: 'Quais formas de pagamento são aceitas?',
+    answer: 'O pagamento é realizado somente na entrega. Você pode pagar por Pix, dinheiro ou cartão, conforme disponibilidade informada pela equipe.',
+  },
+  {
+    id: 'indicacao-preco',
+    question: 'A indicação altera o preço do kit?',
+    answer: 'Não. A indicação não acrescenta nenhum custo ao seu pedido. Ela apenas identifica o Embaixador Bryza que compartilhou a oferta com você. O valor do kit permanece R$79,80. O atendimento, a confirmação e a entrega continuam sendo realizados diretamente pela equipe Bryza.',
+  },
 ] as const;
 
 export interface ProofItem {

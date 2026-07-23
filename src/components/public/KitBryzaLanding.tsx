@@ -117,10 +117,35 @@ function AmbassadorAvatar({ photoPath, name, size = 56 }: { photoPath?: string |
 }
 
 export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBryzaLandingProps) {
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [openFaqs, setOpenFaqs] = useState<number[]>([0]);
   const [showSticky, setShowSticky] = useState(false);
   const [activeMedia, setActiveMedia] = useState<{ url: string; title: string; type: 'video' | 'image'; alt: string } | null>(null);
   const heroRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setOpenFaqs([]);
+    }
+  }, []);
+
+  const toggleFaq = (index: number, faqId: string, question: string) => {
+    setOpenFaqs((prev) => {
+      const isCurrentlyOpen = prev.includes(index);
+      if (isCurrentlyOpen) {
+        return prev.filter((i) => i !== index);
+      } else {
+        if (typeof window !== 'undefined' && (window as unknown as { dataLayer?: Record<string, unknown>[] }).dataLayer) {
+          (window as unknown as { dataLayer: Record<string, unknown>[] }).dataLayer.push({
+            event: 'faq_opened',
+            faq_id: faqId,
+            faq_question: question,
+            referral_code: ambassador?.referral_code,
+          });
+        }
+        return [...prev, index];
+      }
+    });
+  };
 
   const publishedDemos = realDemonstrations.filter((d) => d.isPublished);
   const featuredDemo = publishedDemos.find((d) => d.isFeatured) || publishedDemos[0];
@@ -892,9 +917,62 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
           </div>
         </section>
 
-        <section id="duvidas" className={styles.faqSection}>
-          <div className={styles.sectionIntro}><span>Dúvidas frequentes</span><h2>Antes de garantir o seu kit</h2></div>
-          <div className={styles.faqList}>{faqs.map((faq, index) => { const isOpen = openFaq === index; return <div key={faq.question} className={styles.faqItem}><button type="button" aria-expanded={isOpen} aria-controls={`faq-${index}`} onClick={() => setOpenFaq(isOpen ? null : index)}><span>{faq.question}</span><ChevronDown className={isOpen ? styles.chevronOpen : ''} /></button><div id={`faq-${index}`} role="region" hidden={!isOpen}><p>{faq.answer}</p></div></div>; })}</div>
+        {/* Secao 10: Perguntas frequentes */}
+        <section id="duvidas" className={styles.faqSection} aria-label="Perguntas frequentes">
+          <header className={styles.sectionIntro}>
+            <span className={styles.sectionEyebrow}>AINDA FICOU COM ALGUMA DÚVIDA?</span>
+            <h2>Tudo o que você precisa saber antes de pedir.</h2>
+            <p>
+              Confira as respostas para as dúvidas mais comuns sobre o Kit Bryza, os brindes, a entrega e o pagamento.
+            </p>
+          </header>
+
+          <div className={styles.faqContainer}>
+            {faqs.map((faq, index) => {
+              const isOpen = openFaqs.includes(index);
+              const isLast = index === faqs.length - 1;
+
+              return (
+                <article key={faq.id || index} className={`${styles.faqArticle} ${isLast ? styles.faqArticleLast : ''}`}>
+                  <h3>
+                    <button
+                      type="button"
+                      aria-expanded={isOpen}
+                      aria-controls={`faq-answer-${index}`}
+                      id={`faq-question-${index}`}
+                      className={styles.faqTriggerBtn}
+                      onClick={() => toggleFaq(index, faq.id, faq.question)}
+                    >
+                      <span className={styles.faqQuestionText}>{faq.question}</span>
+                      <ChevronDown
+                        size={20}
+                        className={`${styles.faqChevronIcon} ${isOpen ? styles.faqChevronOpen : ''}`}
+                        aria-hidden="true"
+                      />
+                    </button>
+                  </h3>
+                  <div
+                    id={`faq-answer-${index}`}
+                    role="region"
+                    aria-labelledby={`faq-question-${index}`}
+                    hidden={!isOpen}
+                    className={styles.faqAnswerWrapper}
+                  >
+                    <div className={styles.faqAnswerInner}>
+                      {index === 3 ? (
+                        <p>
+                          Não. Você não precisa realizar nenhum pagamento para solicitar o agendamento. O pagamento acontece{' '}
+                          <strong className={styles.faqHighlightText}>somente quando o Kit Bryza for entregue</strong>.
+                        </p>
+                      ) : (
+                        <p>{faq.answer}</p>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         </section>
 
         <section className={styles.finalCta}>
