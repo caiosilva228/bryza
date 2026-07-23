@@ -55,6 +55,20 @@ function OrderButton({ onClick, inverse = false, children = 'Agendar meu pedido 
   );
 }
 
+function WhatsAppIcon({ size = 22 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.758.459 3.474 1.33 4.982l-1.413 5.161 5.284-1.385a9.948 9.948 0 0 0 4.787 1.226h.004c5.505 0 9.988-4.478 9.989-9.984 0-2.669-1.038-5.176-2.925-7.062A9.925 9.925 0 0 0 12.012 2Zm0 1.666c4.587 0 8.322 3.734 8.323 8.318 0 2.227-.866 4.319-2.441 5.892a8.27 8.27 0 0 1-5.882 2.436h-.003a8.29 8.29 0 0 1-4.225-1.155l-.303-.18-3.136.822.836-3.056-.197-.314a8.292 8.292 0 0 1-1.296-4.444c.001-4.584 3.737-8.319 8.327-8.319Zm-3.6 3.6c-.206 0-.539.077-.822.385s-1.077 1.052-1.077 2.565 1.103 2.975 1.257 3.181c.154.205 2.132 3.324 5.235 4.607 2.585 1.069 3.111.856 3.676.804.564-.051 1.821-.744 2.077-1.462.257-.718.257-1.334.18-1.462-.077-.128-.282-.205-.59-.359s-1.821-.898-2.103-1.001c-.282-.103-.487-.154-.693.154s-.8 1.001-.979 1.206c-.18.205-.359.231-.667.077-.308-.154-1.301-.48-2.478-1.53-1.177-1.05-1.972-2.348-2.203-2.743-.231-.395-.025-.609.129-.762.138-.138.308-.359.462-.539.154-.18.205-.308.308-.513.103-.205.051-.385-.026-.539-.077-.154-.693-1.667-.949-2.283-.249-.601-.502-.519-.693-.529Z" />
+    </svg>
+  );
+}
+
 function PlaidCloths({ large = false }: { large?: boolean }) {
   return (
     <div className={`${styles.plaidCloths} ${large ? styles.plaidClothsLarge : ''}`} role="img" aria-label="Dois Panos Premium Xadrez Bryza dobrados">
@@ -155,6 +169,17 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
   const hasAmbassadorName = Boolean(ambassador?.display_name && ambassador.display_name.trim().length > 0);
   const ambassadorName = hasAmbassadorName ? ambassador.display_name.trim() : '';
   const customMessage = ambassador?.custom_message?.trim() || null;
+  const whatsappReferralCode = ambassador?.referral_code?.trim().toUpperCase() || 'NÃO INFORMADO';
+  const whatsappAmbassadorName = ambassadorName || 'Embaixador Bryza';
+  const whatsappMessage = [
+    'Olá! Vim pelo link de indicação da Bryza.',
+    '',
+    `Embaixador(a): ${whatsappAmbassadorName}`,
+    `Código de indicação: ${whatsappReferralCode}`,
+    '',
+    'Gostaria de falar com a equipe sobre o Kit Bryza.',
+  ].join('\n');
+  const whatsappHref = `https://wa.me/556132462117?text=${encodeURIComponent(whatsappMessage)}`;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1138,23 +1163,30 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
               <ul role="list" className={styles.footerNavList}>
                 <li>
                   <a
-                    href={`https://wa.me/5561999999999?text=${encodeURIComponent('Olá, estou na página do Kit Bryza e preciso de ajuda com meu pedido.')}`}
+                    href={whatsappHref}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.footerWhatsappLink}
+                    aria-label={`Falar com a equipe Bryza pelo WhatsApp no número (61) 3246-2117. Indicação de ${whatsappAmbassadorName}, código ${whatsappReferralCode}.`}
                     onClick={() => {
                       if (typeof window !== 'undefined' && (window as unknown as { dataLayer?: Record<string, unknown>[] }).dataLayer) {
                         (window as unknown as { dataLayer: Record<string, unknown>[] }).dataLayer.push({
                           event: 'footer_link_clicked',
                           link_type: 'whatsapp',
-                          destination: 'https://wa.me/...',
+                          destination: 'https://wa.me/556132462117',
                           referral_code: ambassador?.referral_code,
                         });
                       }
                     }}
                   >
-                    <MessageCircle size={16} aria-hidden="true" />
-                    <span>Falar com a equipe Bryza</span>
+                    <span className={styles.footerWhatsappIcon}>
+                      <WhatsAppIcon />
+                    </span>
+                    <span className={styles.footerWhatsappCopy}>
+                      <strong>Falar com a equipe Bryza</strong>
+                      <small>WhatsApp (61) 3246-2117</small>
+                    </span>
+                    <ArrowRight size={18} className={styles.footerWhatsappArrow} aria-hidden="true" />
                   </a>
                 </li>
                 <li className={styles.footerMetaItem}>
