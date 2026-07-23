@@ -149,22 +149,6 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
   return (
     <div className={styles.page}>
       <a className={styles.skipLink} href="#inicio">Ir direto para a oferta</a>
-      <header className={styles.header}>
-        <a href="#inicio" className={styles.brand} aria-label="Bryza — início">
-          <Image src="/Logo Bryza.svg" alt="Bryza" width={135} height={44} priority />
-        </a>
-        <div className={styles.ambassadorBadge}>
-          <span className={styles.ambassadorAvatar}>
-            <AmbassadorAvatar photoPath={ambassador.photo_path} name={ambassador.display_name} size={24} />
-          </span>
-          <div className={styles.ambassadorMeta}>
-            <small>Indicado por</small>
-            <strong>{ambassador.display_name}</strong>
-          </div>
-          <ShieldCheck size={14} className={styles.ambassadorIcon} />
-        </div>
-      </header>
-
       <div className={styles.announcement}>
         <span className={styles.desktopAnnouncement}>Frete grátis nas regiões atendidas • Pagamento somente na entrega</span>
         <span className={styles.mobileAnnouncement}>Frete grátis • Pague na entrega</span>

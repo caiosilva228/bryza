@@ -36,7 +36,7 @@
 
 .announcement {
   position: sticky;
-  top: 60px;
+  top: 0;
   z-index: 99;
   min-height: 30px;
   padding: 6px 16px;
@@ -1740,7 +1740,7 @@
 
 @media (max-width: 767px) {
   .announcement {
-    top: 58px !important;
+    top: 0 !important;
     min-height: 30px !important;
     height: 30px !important;
     padding: 4px 12px !important;
