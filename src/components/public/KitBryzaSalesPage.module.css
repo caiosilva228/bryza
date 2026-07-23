@@ -282,6 +282,7 @@
   font-weight: 650;
   color: #AEDB45;
   margin-top: 7px;
+  flex-basis: 100%;
 }
 
 .heroGiftHighlight {
@@ -2548,31 +2549,58 @@
     height: 58px !important;
     min-height: 58px !important;
     padding-inline: 16px !important;
+    background: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
   }
   .brand img {
-    width: 100px !important;
+    width: 96px !important;
     height: auto !important;
+    filter: none !important;
   }
 
   .ambassadorBadge {
-    max-width: 45% !important;
-    max-height: 38px !important;
-    padding: 4px 8px !important;
-    gap: 6px !important;
+    max-width: 150px !important;
+    max-height: 36px !important;
+    padding: 4px 10px !important;
+    gap: 8px !important;
+    background: rgba(16, 24, 70, 0.05) !important;
+    border: 1px solid rgba(16, 24, 70, 0.1) !important;
+    border-radius: 99px !important;
+    display: flex !important;
+    align-items: center !important;
   }
   .ambassadorAvatar {
     width: 22px !important;
     height: 22px !important;
     font-size: 9.5px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+  }
+  .ambassadorMeta {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    line-height: 1.1 !important;
   }
   .ambassadorMeta small {
-    font-size: 8px !important;
-    color: rgba(255, 255, 255, 0.7) !important;
+    font-size: 10px !important;
+    color: #667085 !important;
+    font-weight: 500 !important;
   }
   .ambassadorMeta strong {
-    font-size: 9.5px !important;
-    color: #ffffff !important;
+    font-size: 12px !important;
+    color: #101846 !important;
     max-width: 90px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-weight: 700 !important;
   }
   .ambassadorIcon {
     width: 12px !important;
@@ -2584,163 +2612,206 @@
   .hero {
     min-height: auto !important;
     background-image: none !important;
-    background-color: #ffffff !important;
+    background-color: #F7F9FC !important;
     border-bottom: 1px solid #e2e8f0 !important;
   }
 
   .heroInner {
     width: 100% !important;
-    max-width: 100% !important;
-    padding: 24px 20px 28px !important;
+    max-width: 480px !important;
+    margin: 0 auto !important;
+    padding: 20px !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
   }
 
   .heroCopy {
     max-width: 100% !important;
-    color: #051329 !important;
+    color: #101846 !important;
     display: flex !important;
     flex-direction: column !important;
   }
 
   .heroTags {
+    display: flex !important;
+    flex-wrap: wrap !important;
     gap: 8px !important;
-    margin-bottom: 12px !important;
+    align-items: center !important;
+    margin-bottom: 18px !important;
   }
 
   .tagKit, .tagGift {
-    height: auto !important;
-    padding: 6px 12px !important;
-    font-size: 11px !important;
+    min-height: 26px !important;
+    padding: 6px 10px !important;
+    font-size: 10px !important;
+    line-height: 1.1 !important;
     font-weight: 700 !important;
+    letter-spacing: 0.04em !important;
     border-radius: 999px !important;
     text-transform: uppercase !important;
   }
 
   .tagKit {
-    color: #475569 !important;
-    background: rgba(15, 23, 42, 0.06) !important;
-    border: 1px solid rgba(15, 23, 42, 0.15) !important;
+    background: #ffffff !important;
+    color: #101846 !important;
+    border: 1px solid #D8DEE8 !important;
   }
 
   .tagGift {
-    color: #051329 !important;
     background: #a6ce39 !important;
-    border: 1px solid rgba(166, 206, 57, 0.3) !important;
+    color: #0D1A32 !important;
+    border: 0 !important;
   }
 
   .hero h1 {
-    font-size: clamp(36px, 8.5vw, 42px) !important;
-    line-height: 1.04 !important;
+    font-size: clamp(34px, 9.5vw, 42px) !important;
     font-weight: 800 !important;
-    letter-spacing: -0.03em !important;
-    margin: 12px 0 14px !important;
-    color: #051329 !important;
+    line-height: 1.03 !important;
+    letter-spacing: -0.035em !important;
+    color: #101846 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    text-wrap: balance !important;
     text-shadow: none !important;
-    display: -webkit-box !important;
-    -webkit-line-clamp: 4 !important;
-    -webkit-box-orient: vertical !important;
-    overflow: hidden !important;
+    display: block !important;
   }
 
-  .hero h1 em {
-    color: #5a8216 !important;
+  .highlightText {
+    color: #8EBF27 !important;
+    font-weight: 800 !important;
     font-style: normal !important;
   }
 
   .mobileSubheadline {
-    font-size: 16.5px !important;
+    font-size: 16px !important;
     line-height: 1.5 !important;
-    color: #435066 !important;
-    margin: 0 0 20px !important;
+    color: #4D5A70 !important;
+    margin-top: 16px !important;
+    margin-bottom: 22px !important;
+    opacity: 1 !important;
+    max-width: 100% !important;
   }
 
   .mobileProductBlock {
     display: block !important;
     width: 100% !important;
-    margin-bottom: 24px !important;
+    margin-bottom: 22px !important;
   }
 
   .mobileProductImageWrapper {
     width: 100% !important;
-    aspect-ratio: 4 / 3 !important;
-    min-height: 230px !important;
+    aspect-ratio: 16 / 11 !important;
+    min-height: 220px !important;
     max-height: 290px !important;
-    position: relative !important;
-    border-radius: 14px !important;
+    border-radius: 16px !important;
     overflow: hidden !important;
-    background: #f8fafc !important;
+    background: #F2F5F8 !important;
     border: 1px solid #e2e8f0 !important;
+  }
+
+  .mobileProductImageWrapper img {
+    object-position: 68% center !important;
   }
 
   .mobileProductCaption {
     font-size: 13px !important;
     font-weight: 650 !important;
-    color: #64748b !important;
-    text-align: center !important;
-    margin-top: 8px !important;
+    color: #435066 !important;
+    text-align: left !important;
+    margin-top: 10px !important;
   }
 
   .heroOfferArea {
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
     margin-top: 0 !important;
-    padding-top: 20px !important;
-    border-top: 1px solid #e2e8f0 !important;
+    border-top: 1px solid #DDE3EC !important;
     max-width: 100% !important;
-    color: #051329 !important;
+    color: #101846 !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   .heroPriceRow {
+    display: flex !important;
     justify-content: space-between !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin-top: 20px !important;
   }
 
   .heroPriceLabel {
-    color: #64748b !important;
     font-size: 13px !important;
+    color: #667085 !important;
   }
 
   .heroPriceStrikethrough {
-    color: #94a3b8 !important;
     font-size: 14px !important;
+    color: #8A94A6 !important;
+    text-decoration: line-through !important;
   }
 
   .heroPriceMain {
-    flex-direction: column !important;
-    gap: 2px !important;
-    margin-top: 4px !important;
+    margin-top: 10px !important;
+    display: flex !important;
+    align-items: baseline !important;
+    flex-wrap: wrap !important;
+    column-gap: 8px !important;
+    flex-direction: row !important;
   }
 
   .heroPriceToday {
-    color: #64748b !important;
-    font-size: 13px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    color: #101846 !important;
+    text-transform: none !important;
   }
 
   .heroPriceValue {
-    font-size: clamp(46px, 11vw, 52px) !important;
-    color: #051329 !important;
+    font-size: clamp(42px, 12vw, 52px) !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    letter-spacing: -0.035em !important;
+    color: #101846 !important;
   }
 
   .heroLiterPrice {
-    color: #0b5ea8 !important;
+    display: inline-block !important;
+    margin-top: 0 !important;
+    margin-left: 4px !important;
     font-size: 14px !important;
-    margin-top: 4px !important;
+    font-weight: 700 !important;
+    color: #1763C5 !important;
+    flex-basis: auto !important;
+    white-space: nowrap !important;
+    align-self: baseline !important;
   }
 
   .heroGiftHighlight {
-    margin-top: 16px !important;
-    padding-top: 16px !important;
-    border-top: 1px solid #e2e8f0 !important;
+    margin-top: 20px !important;
+    padding-top: 18px !important;
+    border-top: 1px solid #DDE3EC !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    line-height: 1.4 !important;
   }
 
   .heroGiftHighlight span {
-    font-size: 14.5px !important;
-    color: #334155 !important;
+    font-size: 16px !important;
+    color: #101846 !important;
   }
 
   .heroGiftGreenText {
-    color: #4d7c0f !important;
+    color: #659C31 !important;
+    font-weight: 800 !important;
   }
 
   .heroGiftAuxText {
     font-size: 13px !important;
-    color: #64748b !important;
+    line-height: 1.5 !important;
+    color: #667085 !important;
+    margin-top: 6px !important;
   }
 
   .heroCtaBlock {
@@ -2749,40 +2820,82 @@
   }
 
   .heroCtaBtn {
+    width: 100% !important;
     min-height: 56px !important;
-    font-size: 15.5px !important;
-    background: #a6ce39 !important;
-    box-shadow: 0 8px 20px rgba(166, 206, 57, 0.25) !important;
+    margin-top: 20px !important;
+    background: #9ACA2B !important;
+    color: #0D1A32 !important;
+    border: none !important;
+    border-radius: 10px !important;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 14px !important;
+    box-shadow: 0 10px 24px rgba(101, 156, 49, 0.20) !important;
+    transition: background-color 0.25s ease !important;
+  }
+
+  .heroCtaBtn:hover {
+    background-color: #8bb329 !important;
   }
 
   .heroSecurityNote {
-    color: #64748b !important;
+    margin-top: 10px !important;
+    text-align: center !important;
     font-size: 13px !important;
+    line-height: 1.4 !important;
+    color: #667085 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+  }
+
+  .heroSecurityNote svg {
+    color: #667085 !important;
   }
 
   .heroTrustLine {
     display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 12px !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px 16px !important;
     margin-top: 20px !important;
     padding-top: 18px !important;
-    border-top: 1px solid #e2e8f0 !important;
+    border-top: 1px solid #DDE3EC !important;
   }
 
   .heroTrustItem {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
     font-size: 13px !important;
-    color: #475569 !important;
+    font-weight: 600 !important;
+    color: #344054 !important;
   }
 
   .heroTrustItem svg {
-    color: #5a8216 !important;
+    color: #1763C5 !important;
+    width: 18px !important;
+    height: 18px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .heroTrustItem:nth-child(3) {
+    grid-column: 1 / -1 !important;
   }
 
   .heroScarcity {
+    margin-top: 18px !important;
+    padding-bottom: 8px !important;
     font-size: 13px !important;
-    color: #64748b !important;
-    margin-top: 16px !important;
+    line-height: 1.5 !important;
+    color: #667085 !important;
+    font-style: normal !important;
     text-align: left !important;
+    max-width: 100% !important;
   }
 
   .clothBadge { display: none !important; }
@@ -3382,15 +3495,35 @@
   .finalProducts > img { width: 240px; }
   .footer { padding-bottom: 90px; }
   .footer nav { gap: 12px; }
-  .mobileSticky { position: fixed; z-index: 950; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); padding: 9px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; background: rgba(255,255,255,.97); border: 1px solid var(--neutral-200); border-radius: 10px; box-shadow: 0 12px 32px rgba(16,24,70,.18); opacity: 0; pointer-events: none; transform: translateY(18px); transition: opacity .3s ease, transform .3s ease; }
-  .mobileStickyVisible { opacity: 1; pointer-events: auto; transform: translateY(0); }
-  .mobileSticky > div { display: flex; flex-direction: column; }
-  .mobileStickyMeta { display: flex; align-items: center; gap: 6px; }
-  .mobileStickyStruckPrice { font-size: 11px !important; color: #94a3b8 !important; text-decoration: line-through !important; font-weight: 600 !important; }
-  .mobileSticky span { color: var(--neutral-600); font-size: 9px; }
-  .mobileSticky strong { color: var(--bryza-navy-950); font-family: "DM Serif Display", Georgia, serif; font-size: 21px; font-weight: 400; }
-  .mobileSticky button { min-height: 42px; padding: 8px 14px; display: flex; align-items: center; gap: 5px; color: #fff; background: var(--bryza-green-600); border: 0; border-radius: 8px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; }
-  .mobileSticky svg { width: 16px; }
+  .mobileSticky {
+    position: fixed !important;
+    z-index: 950 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    padding: 10px 16px !important;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    background: #FFFFFF !important;
+    border-top: 1px solid #DDE3EC !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    border-bottom: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: 0 -8px 24px rgba(16, 24, 70, 0.1) !important;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(100%);
+    transition: opacity .3s ease, transform .3s ease;
+  }
+  .mobileStickyVisible { opacity: 1 !important; pointer-events: auto !important; transform: translateY(0) !important; }
+  .mobileSticky > div { display: flex !important; flex-direction: column !important; align-items: flex-start !important; gap: 2px !important; }
+  .mobileSticky span { color: #667085 !important; font-size: 11px !important; text-transform: none !important; }
+  .mobileSticky strong { color: #101846 !important; font-family: Inter, sans-serif !important; font-size: 22px !important; font-weight: 800 !important; }
+  .mobileSticky button { min-height: 48px !important; padding: 8px 24px !important; color: #0D1A32 !important; background: #9ACA2B !important; border: 0 !important; border-radius: 8px !important; font-size: 14px !important; font-weight: 800 !important; text-transform: uppercase !important; }
   .modalOverlay { padding: 0; place-items: end center; }
   .orderModal { max-height: 96dvh; border-radius: 16px 16px 0 0; }
   .modalHeader { padding: 18px 20px; }
@@ -3523,6 +3656,7 @@
   color: #fff;
   background: linear-gradient(135deg, #b8dc55 0%, #a6ce39 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: none;
 }

@@ -182,6 +182,30 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
         <span className={styles.mobileAnnouncement}>Frete grátis • Pague na entrega</span>
       </div>
 
+      <header className={styles.header}>
+        <a href="#inicio" className={styles.brand} aria-label="Bryza — início">
+          <Image
+            src="/Logo Bryza.svg"
+            alt="Bryza Logo"
+            width={104}
+            height={34}
+            priority
+          />
+        </a>
+        
+        {ambassador && (
+          <div className={styles.ambassadorBadge}>
+            <div className={styles.ambassadorAvatar}>
+              <AmbassadorAvatar photoPath={ambassador.photo_path} name={ambassadorName} size={26} />
+            </div>
+            <div className={styles.ambassadorMeta}>
+              <small>Indicado por</small>
+              <strong>{ambassadorName}</strong>
+            </div>
+          </div>
+        )}
+      </header>
+
       <main>
         <section id="inicio" ref={heroRef} className={styles.hero}>
           <div className={styles.heroInner}>
@@ -201,32 +225,28 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
 
               <div className={styles.mobileSubheadlineGroup}>
                 <p className={styles.mobileSubheadline}>
-                  Sabão Concentrado 5L + Amaciante Microencapsulado 5L. Pela indicação de {ambassador.display_name || 'um Embaixador'}, você ainda recebe 2 Panos Xadrez de Alta Absorção — 45 × 70 cm.
+                  Sabão Concentrado 5L + Amaciante Microencapsulado 5L e 2 Panos Xadrez de Alta Absorção — 45 × 70 cm.
                 </p>
               </div>
 
               <div className={styles.mobileProductBlock}>
                 <div className={styles.mobileProductImageWrapper}>
-                  <Image src="/hero-pv-link-embaixador.jpg" alt="Kit Bryza com Sabão Líquido, Amaciante de 5L e 2 Panos Xadrez de Alta Absorção" fill priority sizes="100vw" style={{ objectFit: 'cover', objectPosition: '70% center' }} />
-                </div>
-                <div className={styles.mobileProductCaption}>
-                  Você recebe 2 Panos Xadrez de Alta Absorção — 45 × 70 cm.
+                  <Image src="/hero-pv-mobile_11zon.webp" alt="Kit Bryza com Sabão Líquido, Amaciante de 5L e 2 Panos Xadrez de Alta Absorção" fill priority sizes="100vw" style={{ objectFit: 'cover', objectPosition: 'center center' }} />
                 </div>
               </div>
 
               <div className={styles.heroOfferArea}>
                 <div className={styles.heroPriceRow}>
-                  <span className={styles.heroPriceLabel}>Valor total do kit + brindes</span>
+                  <span className={styles.heroPriceLabel}>Valor do kit + brindes</span>
                   <s className={styles.heroPriceStrikethrough}>R$105,78</s>
                 </div>
                 
                 <div className={styles.heroPriceMain}>
                   <span className={styles.heroPriceToday}>Hoje por</span>
                   <strong className={styles.heroPriceValue}>R$79,80</strong>
-                </div>
-                
-                <div className={styles.heroLiterPrice}>
-                  Menos de R$7,99 por litro
+                  <span className={styles.heroLiterPrice}>
+                    Menos de R$7,99 por litro
+                  </span>
                 </div>
 
                 <div className={styles.heroGiftHighlight}>
@@ -247,15 +267,15 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
 
                 <div className={styles.heroTrustLine}>
                   <div className={styles.heroTrustItem}>
-                    <Truck size={14} aria-hidden="true" />
+                    <Truck size={18} aria-hidden="true" />
                     <span>Frete grátis</span>
                   </div>
                   <div className={styles.heroTrustItem}>
-                    <WalletCards size={14} aria-hidden="true" />
+                    <WalletCards size={18} aria-hidden="true" />
                     <span>Pagamento na entrega</span>
                   </div>
                   <div className={styles.heroTrustItem}>
-                    <MessageCircle size={14} aria-hidden="true" />
+                    <MessageCircle size={18} aria-hidden="true" />
                     <span>Confirmação pelo WhatsApp</span>
                   </div>
                 </div>
@@ -1217,14 +1237,11 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
       {productAvailable && (
         <div className={`${styles.mobileSticky} ${showSticky ? styles.mobileStickyVisible : ''}`}>
           <div>
-            <div className={styles.mobileStickyMeta}>
-              <span>Kit completo</span>
-              <s className={styles.mobileStickyStruckPrice}>R$ 105,78</s>
-            </div>
+            <span>Kit completo</span>
             <strong>R$ 79,80</strong>
           </div>
           <button type="button" onClick={onOrder}>
-            Agendar <ArrowRight />
+            AGENDAR
           </button>
         </div>
       )}
