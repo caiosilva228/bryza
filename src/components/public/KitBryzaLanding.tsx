@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
   Check,
+  CheckCircle2,
   ChevronDown,
   Flower2,
   Gift,
@@ -20,14 +21,10 @@ import {
 } from 'lucide-react';
 import { benefits, faqs, kitItems, steps } from './kit-bryza-content';
 import styles from './KitBryzaSalesPage.module.css';
-
-interface AmbassadorInfo {
-  display_name: string;
-  referral_code: string;
-}
+import type { AmbassadorPublicInfo } from './kit-bryza-types';
 
 interface KitBryzaLandingProps {
-  ambassador: AmbassadorInfo;
+  ambassador: AmbassadorPublicInfo;
   productAvailable: boolean;
   onOrder: () => void;
 }
@@ -94,6 +91,10 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [showSticky, setShowSticky] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
+
+  const hasAmbassadorName = Boolean(ambassador?.display_name && ambassador.display_name.trim().length > 0);
+  const ambassadorName = hasAmbassadorName ? ambassador.display_name.trim() : '';
+  const customMessage = ambassador?.custom_message?.trim() || null;
 
   useEffect(() => {
     const hero = heroRef.current;
@@ -203,6 +204,59 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
           <div className={styles.clothBadge}>
             <strong>2 Panos Premium</strong>
             <span>45 × 70 cm</span>
+          </div>
+        </section>
+
+        {/* Secao 2: Confirmacao da indicacao */}
+        <section id="indicacao" className={styles.referralSection}>
+          <div className={styles.referralContainer}>
+            <div className={styles.referralAvatar} aria-hidden="true">
+              {ambassador.photo_path ? (
+                <Image
+                  src={ambassador.photo_path}
+                  alt={ambassadorName || 'Embaixador Bryza'}
+                  width={56}
+                  height={56}
+                  className={styles.referralAvatarImg}
+                />
+              ) : (
+                <span>{hasAmbassadorName ? ambassadorName.charAt(0).toUpperCase() : 'B'}</span>
+              )}
+            </div>
+
+            <div className={styles.referralContent}>
+              <span className={styles.referralEyebrow}>INDICAÇÃO BRYZA</span>
+              <h2 className={styles.referralTitle}>
+                {hasAmbassadorName
+                  ? `${ambassadorName} compartilhou esta oferta com você.`
+                  : 'Esta oferta foi compartilhada por um Embaixador Bryza.'}
+              </h2>
+
+              {customMessage && customMessage.length > 0 && (
+                <blockquote className={styles.referralQuote}>
+                  “{customMessage}”
+                </blockquote>
+              )}
+
+              <p className={styles.referralText}>
+                {hasAmbassadorName
+                  ? 'Você está acessando o link correto da indicação. A confirmação do pedido, o atendimento e a entrega serão realizados diretamente pela equipe Bryza.'
+                  : 'Você está acessando uma oferta oficial. A confirmação do pedido, o atendimento e a entrega serão realizados diretamente pela equipe Bryza.'}
+              </p>
+
+              <div className={styles.referralTrustLine}>
+                <CheckCircle2 size={16} className={styles.trustCheckIcon} />
+                <span>Indicação identificada • Atendimento oficial Bryza</span>
+              </div>
+            </div>
+
+            <div className={styles.officialBadge}>
+              <ShieldCheck size={22} className={styles.officialBadgeIcon} />
+              <div>
+                <strong>Atendimento Oficial</strong>
+                <small>Equipe Bryza</small>
+              </div>
+            </div>
           </div>
         </section>
 
