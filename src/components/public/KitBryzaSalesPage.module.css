@@ -443,12 +443,8 @@
 .kitGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
 .kitGrid article { min-width: 0; overflow: hidden; background: #fff; border: 1px solid var(--neutral-200); border-radius: 14px; }
 .kitGrid .giftCard { border-color: rgba(101,156,49,.45); }
-.productCrop { height: 230px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #f9fbff, #eef4fb); }
-.productCrop img { width: 300px; height: auto; max-width: none; transform: scale(1.12); }
-.cropLeft { justify-content: flex-start; }
-.cropLeft img { margin-left: 18px; transform-origin: left center; }
-.cropRight { justify-content: flex-end; }
-.cropRight img { margin-right: 18px; transform-origin: right center; }
+.productCrop { height: 230px; padding: 20px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #f9fbff, #eef4fb); }
+.productCrop img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; transform: none; }
 .kitGrid article > .plaidCloths { margin: 54px auto 61px; transform: scale(1.18); }
 .itemCopy { padding: 27px; }
 .itemCopy > b { display: inline-flex; padding: 5px 9px; color: var(--bryza-blue-700); background: #f2f6fc; border: 1px solid #d9e3f2; border-radius: 6px; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }

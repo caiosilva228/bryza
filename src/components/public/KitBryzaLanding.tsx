@@ -59,11 +59,33 @@ function PlaidCloths({ large = false }: { large?: boolean }) {
   );
 }
 
+const PRODUCT_SYSTEM_IMAGES: Record<string, { src: string; alt: string }> = {
+  soap: {
+    src: 'https://kkjrunhubqixftemndrm.supabase.co/storage/v1/object/public/product-images/prod_1784558898128_ep4ij.svg',
+    alt: 'Lava Roupas Concentrado Bryza — 5L',
+  },
+  softener: {
+    src: 'https://kkjrunhubqixftemndrm.supabase.co/storage/v1/object/public/product-images/prod_1784558941028_r03eb.svg',
+    alt: 'Amaciante Microencapsulado Bryza — 5L',
+  },
+  cloths: {
+    src: 'https://kkjrunhubqixftemndrm.supabase.co/storage/v1/object/public/product-images/prod_1784732736673_77ujv.svg',
+    alt: '2 Panos Premium Xadrez Bryza — 45 × 70 cm',
+  },
+};
+
 function ProductVisual({ kind }: { kind: (typeof kitItems)[number]['kind'] }) {
-  if (kind === 'cloths') return <PlaidCloths />;
+  const prod = PRODUCT_SYSTEM_IMAGES[kind] || PRODUCT_SYSTEM_IMAGES.soap;
   return (
-    <div className={`${styles.productCrop} ${kind === 'soap' ? styles.cropLeft : styles.cropRight}`}>
-      <Image src="/hero-products.webp" alt={kind === 'soap' ? 'Galão de Sabão Líquido Bryza 5L' : 'Galão de Amaciante Bryza 5L'} width={336} height={255} />
+    <div className={styles.productCrop}>
+      <Image
+        src={prod.src}
+        alt={prod.alt}
+        width={280}
+        height={220}
+        unoptimized
+        style={{ objectFit: 'contain', width: 'auto', height: '100%', maxHeight: '200px' }}
+      />
     </div>
   );
 }
