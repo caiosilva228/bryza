@@ -55,7 +55,7 @@
 .announcementTrack {
   display: flex;
   width: max-content;
-  animation: marqueeTrack 22s linear infinite;
+  animation: marqueeTrack 45s linear infinite;
   will-change: transform;
 }
 @keyframes marqueeTrack {
@@ -312,6 +312,7 @@
 
 @media (max-width: 768px) {
   .announcement { top: 60px; min-height: 28px; font-size: 10px; }
+  .announcementTrack { animation-duration: 55s; }
   .header { width: calc(100% - 32px); min-height: 60px; padding-inline: 0; }
   .brand img { width: 105px; height: auto; }
   .header nav { display: none; }
