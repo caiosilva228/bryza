@@ -84,13 +84,6 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
   return (
     <div className={styles.page}>
       <a className={styles.skipLink} href="#inicio">Ir direto para a oferta</a>
-      <div className={styles.announcement}>
-        <span><Truck size={14} /> Oferta especial da rota Bryza</span><i />
-        <span><Gift size={14} /> 2 brindes exclusivos</span><i />
-        <span>Frete grátis*</span><i />
-        <span>Pagamento somente na entrega</span>
-      </div>
-
       <header className={styles.header}>
         <a href="#inicio" className={styles.brand} aria-label="Bryza — início"><Image src="/Logo Bryza.svg" alt="Bryza" width={142} height={48} priority /></a>
         <div className={styles.headerActions}>
@@ -98,6 +91,23 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
           <button type="button" className={styles.headerCta} onClick={onOrder}>Agendar agora<ArrowRight size={16} /></button>
         </div>
       </header>
+
+      <div className={styles.announcement}>
+        <div className={styles.announcementTrack}>
+          <div className={styles.announcementGroup}>
+            <span><Truck size={14} /> Oferta especial da rota Bryza</span><i />
+            <span><Gift size={14} /> 2 brindes exclusivos</span><i />
+            <span>Frete grátis*</span><i />
+            <span>Pagamento somente na entrega</span><i />
+          </div>
+          <div className={styles.announcementGroup} aria-hidden="true">
+            <span><Truck size={14} /> Oferta especial da rota Bryza</span><i />
+            <span><Gift size={14} /> 2 brindes exclusivos</span><i />
+            <span>Frete grátis*</span><i />
+            <span>Pagamento somente na entrega</span><i />
+          </div>
+        </div>
+      </div>
 
       <main>
         <section id="inicio" ref={heroRef} className={styles.hero}>
