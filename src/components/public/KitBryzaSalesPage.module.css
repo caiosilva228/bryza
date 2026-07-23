@@ -72,13 +72,22 @@
 .announcementGroup i { width: 4px; height: 4px; background: #a6ce39; border-radius: 50%; flex-shrink: 0; }
 
 .header {
-  width: min(1200px, calc(100% - 64px));
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
   min-height: 64px;
   margin: 0 auto;
+  padding-inline: max(32px, calc((100vw - 1200px) / 2));
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 }
 .brand { width: fit-content; display: inline-flex; }
 .brand img { object-fit: contain; }

@@ -105,6 +105,18 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
             <span>Frete grátis*</span><i />
             <span>Pagamento somente na entrega</span><i />
           </div>
+          <div className={styles.announcementGroup} aria-hidden="true">
+            <span><Truck size={14} /> Oferta especial da rota Bryza</span><i />
+            <span><Gift size={14} /> 2 brindes exclusivos</span><i />
+            <span>Frete grátis*</span><i />
+            <span>Pagamento somente na entrega</span><i />
+          </div>
+          <div className={styles.announcementGroup} aria-hidden="true">
+            <span><Truck size={14} /> Oferta especial da rota Bryza</span><i />
+            <span><Gift size={14} /> 2 brindes exclusivos</span><i />
+            <span>Frete grátis*</span><i />
+            <span>Pagamento somente na entrega</span><i />
+          </div>
         </div>
       </div>
 
