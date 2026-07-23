@@ -101,6 +101,7 @@ function AmbassadorAvatar({ photoPath, name, size = 56 }: { photoPath?: string |
         onError={() => setHasError(true)}
         unoptimized
         className={styles.referralAvatarImg}
+        style={{ borderRadius: '50%', objectFit: 'cover' }}
       />
     );
   }

@@ -87,14 +87,22 @@
 .ambassadorAvatar {
   width: 26px;
   height: 26px;
-  border-radius: 50%;
+  border-radius: 50% !important;
   background: #002b5c;
   color: #ffffff;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 11px;
   font-weight: 700;
   flex-shrink: 0;
+  overflow: hidden !important;
+}
+.ambassadorAvatar img {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
 }
 .ambassadorMeta {
   display: flex;
