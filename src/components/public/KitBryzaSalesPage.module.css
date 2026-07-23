@@ -35,6 +35,9 @@
 .page button, .page input, .page select { font: inherit; }
 
 .announcement {
+  position: sticky;
+  top: 60px;
+  z-index: 99;
   min-height: 28px;
   padding: 4px 24px;
   display: flex;
@@ -42,7 +45,8 @@
   justify-content: center;
   gap: 17px;
   color: #f5f8ff;
-  background: var(--bryza-navy-950);
+  background: linear-gradient(90deg, #051329 0%, #00234d 50%, #051329 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 11px;
   font-weight: 600;
 }
@@ -72,9 +76,9 @@
 .headerCta:active { transform: scale(.99); }
 .headerCta:focus-visible { outline: 3px solid #2186d5; outline-offset: 3px; }
 
-.hero { position: relative; border-top: 1px solid var(--neutral-200); background: #fbfaf7; }
+.hero { position: relative; border-top: 1px solid var(--neutral-200); background: #061121; }
 .heroInner { min-height: calc(100vh - 92px); min-height: calc(100dvh - 92px); display: grid; grid-template-columns: minmax(480px, .96fr) minmax(420px, 1.04fr); align-items: center; }
-.heroCopy { padding: 24px max(32px, calc((100vw - 1200px) / 2)) 28px; position: relative; z-index: 3; background: linear-gradient(90deg, #fff 0%, rgba(255,255,255,.97) 76%, rgba(255,255,255,.2) 100%); }
+.heroCopy { padding: 24px max(32px, calc((100vw - 1200px) / 2)) 28px; position: relative; z-index: 3; background: linear-gradient(90deg, rgba(5, 15, 32, 0.76) 0%, rgba(5, 15, 32, 0.52) 65%, rgba(5, 15, 32, 0.08) 100%); }
 .heroTags { display: flex; align-items: center; gap: 8px; }
 .heroTags span, .heroTags b { min-height: 22px; padding: 3px 10px; border: 1px solid var(--neutral-300); border-radius: 99px; color: var(--bryza-navy-950); font-size: 9px; font-weight: 700; letter-spacing: .11em; line-height: 1; text-transform: uppercase; }
 .heroTags b { color: #fff; background: var(--bryza-green-700); border-color: var(--bryza-green-700); }
@@ -109,7 +113,7 @@
 
 .heroProduct { height: 100%; min-height: 480px; position: relative; overflow: hidden; }
 .heroProduct > img { object-fit: cover; object-position: 88% center; z-index: 1; }
-.heroProduct::before { content: ""; position: absolute; z-index: 2; inset: 0; pointer-events: none; background: linear-gradient(90deg, #061121 0%, rgba(6, 17, 33, 0.35) 25%, transparent 55%); }
+.heroProduct::before { content: ""; position: absolute; z-index: 2; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(5, 15, 32, 0.45) 0%, rgba(5, 15, 32, 0.15) 30%, transparent 60%); }
 .plaidCloths { display: none; }
 .clothSeal { width: 104px; height: 104px; position: absolute; z-index: 3; right: 5%; bottom: 6%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; background: var(--bryza-green-600); border: 3px solid #fff; border-radius: 50%; box-shadow: 0 12px 28px rgba(16,24,70,.16); text-align: center; text-transform: uppercase; }
 .clothSeal strong { font-family: "DM Serif Display", Georgia, serif; font-size: 18px; font-weight: 400; }
@@ -465,7 +469,7 @@
 
 .heroCopy {
   color: #fff;
-  background: linear-gradient(90deg, rgba(5, 15, 32, 0.99) 0%, rgba(5, 15, 32, 0.95) 75%, rgba(5, 15, 32, 0.6) 100%);
+  background: linear-gradient(90deg, rgba(5, 15, 32, 0.76) 0%, rgba(5, 15, 32, 0.52) 65%, rgba(5, 15, 32, 0.08) 100%);
 }
 
 .hero h1,
@@ -516,7 +520,7 @@
 }
 
 .heroProduct::before {
-  background: linear-gradient(90deg, #061121 0%, rgba(6, 17, 33, 0.4) 25%, transparent 50%);
+  background: linear-gradient(90deg, rgba(5, 15, 32, 0.45) 0%, rgba(5, 15, 32, 0.15) 30%, transparent 60%);
 }
 
 .offerBox {
