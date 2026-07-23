@@ -88,7 +88,6 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
         <a href="#inicio" className={styles.brand} aria-label="Bryza — início"><Image src="/Logo Bryza.svg" alt="Bryza" width={142} height={48} priority /></a>
         <div className={styles.headerActions}>
           <div className={styles.ambassador}><span>{ambassador.display_name.charAt(0).toUpperCase()}</span><div><small>Indicação de</small><strong>{ambassador.display_name}</strong></div><ShieldCheck size={17} aria-label="Indicação oficial" /></div>
-          <button type="button" className={styles.headerCta} onClick={onOrder}>Agendar agora<ArrowRight size={16} /></button>
         </div>
       </header>
 
