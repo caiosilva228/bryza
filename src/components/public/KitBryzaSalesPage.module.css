@@ -581,21 +581,166 @@
 .benefitGrid h3 { margin: 22px 0 8px; color: var(--bryza-navy-950); font-family: "DM Serif Display", Georgia, serif; font-size: 22px; font-weight: 400; line-height: 1.12; }
 .benefitGrid p { margin: 0; color: var(--neutral-600); font-size: 13px; line-height: 1.55; }
 
-.kitSection { padding-top: 28px; }
-.kitGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
-.kitGrid article { min-width: 0; overflow: hidden; background: #fff; border: 1px solid var(--neutral-200); border-radius: 14px; }
-.kitGrid .giftCard { border-color: rgba(101,156,49,.45); }
-.productCrop { height: 230px; padding: 20px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #f9fbff, #eef4fb); }
-.productCrop img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; transform: none; }
-.kitGrid article > .plaidCloths { margin: 54px auto 61px; transform: scale(1.18); }
-.itemCopy { padding: 27px; }
-.itemCopy > b { display: inline-flex; padding: 5px 9px; color: var(--bryza-blue-700); background: #f2f6fc; border: 1px solid #d9e3f2; border-radius: 6px; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
-.giftCard .itemCopy > b { color: var(--bryza-green-700); background: var(--bryza-green-100); border-color: rgba(101,156,49,.3); }
-.itemCopy h3 { margin: 14px 0 9px; color: var(--bryza-navy-950); font-family: "DM Serif Display", Georgia, serif; font-size: 23px; font-weight: 400; line-height: 1.16; }
-.itemCopy > p { min-height: 70px; margin: 0; color: var(--neutral-600); font-size: 13px; line-height: 1.6; }
-.itemCopy ul { margin: 19px 0 0; padding: 18px 0 0; display: grid; gap: 9px; border-top: 1px solid var(--neutral-200); list-style: none; }
-.itemCopy li { display: flex; align-items: flex-start; gap: 7px; color: var(--neutral-700); font-size: 12px; line-height: 1.35; }
-.itemCopy li svg { width: 15px; height: 15px; flex: 0 0 auto; color: var(--bryza-green-600); }
+.kitSection {
+  width: min(1180px, calc(100% - 64px));
+  margin: 0 auto;
+  padding: 96px 0;
+}
+
+.sectionEyebrow {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #5a8216;
+  margin-bottom: 8px;
+}
+
+.kitGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  align-items: stretch;
+}
+
+.productCard,
+.giftCard {
+  background: #ffffff;
+  border: 1px solid #e2e7ef;
+  border-radius: 16px;
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .productCard:hover,
+  .giftCard:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(5, 19, 41, 0.08);
+  }
+}
+
+.giftCard {
+  border: 1px solid rgba(101, 156, 49, 0.35);
+  background: #fbfdf8;
+}
+
+.productCrop {
+  height: 290px;
+  padding: 20px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  flex-shrink: 0;
+}
+
+.productCrop img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  transform: none;
+}
+
+.itemCopy {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.itemLabel {
+  display: inline-flex;
+  width: fit-content;
+  padding: 6px 12px;
+  color: #0b5ea8;
+  background: #f0f6fc;
+  border: 1px solid #d0e2f4;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.giftLabel {
+  color: #4d7c0f;
+  background: #f4fce8;
+  border-color: rgba(101, 156, 49, 0.35);
+}
+
+.itemCopy h3 {
+  margin: 14px 0 10px;
+  color: #051329;
+  font-size: clamp(21px, 2vw, 24px);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.itemCopy > p {
+  margin: 0 0 20px;
+  color: #667085;
+  font-size: 15px;
+  line-height: 1.55;
+  min-height: 46px;
+}
+
+.itemFeatureList {
+  margin: auto 0 0;
+  padding: 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid #e2e7ef;
+  list-style: none;
+}
+
+.itemFeatureList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #435066;
+  font-size: 14.5px;
+  line-height: 1.4;
+}
+
+.checkIcon {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  flex-shrink: 0;
+  color: #5a8216;
+  margin-top: 2px;
+}
+
+.kitClosing {
+  margin-top: 56px;
+  text-align: center;
+}
+
+.kitClosing h3 {
+  font-size: clamp(26px, 2.5vw, 32px);
+  font-weight: 700;
+  color: #051329;
+  line-height: 1.2;
+  margin: 0 0 8px;
+}
+
+.kitClosing p {
+  font-size: clamp(15px, 1.5vw, 17px);
+  line-height: 1.55;
+  color: #475569;
+  margin: 0;
+}
 
 .giftSection { padding: 104px max(32px, calc((100vw - 1200px) / 2)); display: grid; grid-template-columns: .85fr 1.15fr; align-items: center; gap: 86px; background: var(--neutral-50); }
 .giftVisual { min-height: 420px; display: grid; place-items: center; position: relative; background: #fff; border: 1px solid var(--neutral-200); border-radius: 20px; }
@@ -1034,6 +1179,86 @@
 
   .officialBadge {
     display: none !important;
+  }
+
+  /* Secao 3: O que vem no Kit Bryza (Mobile) */
+  .kitSection {
+    width: 100% !important;
+    padding: 64px 20px 72px !important;
+  }
+
+  .kitSection .sectionIntro {
+    margin-bottom: 32px !important;
+    text-align: left !important;
+  }
+
+  .kitSection .sectionIntro h2 {
+    font-size: clamp(30px, 8vw, 34px) !important;
+    line-height: 1.15 !important;
+    margin: 8px 0 10px !important;
+  }
+
+  .kitSection .sectionIntro p {
+    font-size: 15.5px !important;
+    line-height: 1.55 !important;
+    max-width: 100% !important;
+  }
+
+  .kitGrid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+
+  .productCard,
+  .giftCard {
+    padding: 20px !important;
+    border-radius: 14px !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .productCrop {
+    height: 240px !important;
+    padding: 16px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .itemCopy h3 {
+    font-size: 22px !important;
+    line-height: 1.25 !important;
+    margin: 12px 0 8px !important;
+  }
+
+  .itemCopy > p {
+    font-size: 14.5px !important;
+    line-height: 1.5 !important;
+    min-height: 0 !important;
+    margin-bottom: 16px !important;
+  }
+
+  .itemFeatureList {
+    padding-top: 16px !important;
+    gap: 9px !important;
+  }
+
+  .itemFeatureList li {
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+  }
+
+  .kitClosing {
+    margin-top: 40px !important;
+    text-align: center !important;
+  }
+
+  .kitClosing h3 {
+    font-size: 24px !important;
+    line-height: 1.25 !important;
+    margin-bottom: 6px !important;
+  }
+
+  .kitClosing p {
+    font-size: 15px !important;
   }
   .giftMath { grid-template-columns: 1fr; }
   .giftMath div { flex-direction: row; justify-content: space-between; }

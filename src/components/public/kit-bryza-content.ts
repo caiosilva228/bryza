@@ -8,24 +8,34 @@ export const benefits = [
 export const kitItems = [
   {
     kind: 'soap',
-    label: '5 litros',
+    label: '5 LITROS',
     title: 'Sabão Líquido Concentrado Bryza — 5L',
-    description: 'Limpeza eficiente para roupas brancas e coloridas, com perfume agradável e embalagem econômica.',
-    features: ['Limpeza eficiente', 'Roupas brancas e coloridas', 'Perfume agradável', 'Embalagem econômica'],
+    description: 'Limpeza eficiente e rendimento para cuidar das roupas da sua família.',
+    features: ['Alto rendimento', 'Limpeza eficiente', 'Perfume suave e agradável'],
+    alt: 'Galão de 5 litros do Sabão Líquido Concentrado Bryza',
   },
   {
     kind: 'softener',
-    label: '5 litros',
-    title: 'Amaciante Microencapsulado Bryza — 5L',
-    description: 'Maciez e perfume liberado aos poucos conforme o tecido se movimenta.',
-    features: ['Essência microencapsulada', 'Maciez prolongada', 'Perfume com o movimento', 'Para cama, banho e dia a dia'],
+    label: '5 LITROS',
+    title: 'Amaciante Concentrado Microencapsulado Bryza — 5L',
+    description: 'Mais maciez e perfume para roupas, toalhas e roupas de cama.',
+    features: ['Essência microencapsulada', 'Maciez prolongada', 'Perfume liberado com o movimento'],
+    alt: 'Galão de 5 litros do Amaciante Concentrado Microencapsulado Bryza',
   },
   {
     kind: 'cloths',
-    label: 'Grátis',
-    title: '2 Panos Premium Xadrez Bryza — 45 × 70 cm',
-    description: 'Grandes, resistentes e desenvolvidos para absorver mais nas tarefas de limpeza da casa.',
-    features: ['Tamanho grande', 'Alta absorção', 'Tecido resistente', 'Lavável e reutilizável', 'Ideal para limpezas pesadas', 'Xadrez que disfarça marcas de uso'],
+    label: '2 UNIDADES DE BRINDE',
+    title: '2 Panos Xadrez de Alta Absorção — 45 × 70 cm',
+    description: 'Panos grandes, resistentes e desenvolvidos para facilitar as limpezas do dia a dia.',
+    features: [
+      'Alta capacidade de absorção',
+      'Tamanho grande: 45 × 70 cm',
+      'Tecido resistente para o uso diário',
+      'Laváveis e reutilizáveis',
+      'Ideais para diferentes ambientes da casa',
+      'Estampa xadrez que disfarça melhor as marcas do uso diário',
+    ],
+    alt: 'Dois Panos Xadrez de Alta Absorção Bryza',
   },
 ] as const;
 
@@ -37,7 +47,7 @@ export const steps = [
 
 export const faqs = [
   { question: 'Quantos litros vêm no kit?', answer: 'São 10 litros no total: 5 litros de Sabão Líquido Concentrado Bryza e 5 litros de Amaciante Concentrado Microencapsulado Bryza.' },
-  { question: 'Os dois panos são realmente grátis?', answer: 'Sim. Comprando o kit completo, você recebe dois Panos Premium Xadrez Bryza sem custo adicional, enquanto houver unidades destinadas à campanha.' },
+  { question: 'Os dois panos são realmente grátis?', answer: 'Sim. Comprando o kit completo, você recebe dois Panos Xadrez de Alta Absorção Bryza sem custo adicional, enquanto houver unidades destinadas à campanha.' },
   { question: 'Qual é o tamanho dos panos?', answer: 'Cada unidade mede 45 × 70 cm.' },
   { question: 'Preciso pagar antecipadamente?', answer: 'Não. O pagamento é realizado somente quando o pedido for entregue.' },
   { question: 'A entrega é grátis?', answer: 'Sim, para as regiões atendidas pelas rotas participantes da Bryza.' },

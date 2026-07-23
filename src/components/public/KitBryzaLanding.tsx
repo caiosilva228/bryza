@@ -59,29 +59,29 @@ function PlaidCloths({ large = false }: { large?: boolean }) {
 const PRODUCT_SYSTEM_IMAGES: Record<string, { src: string; alt: string }> = {
   soap: {
     src: 'https://kkjrunhubqixftemndrm.supabase.co/storage/v1/object/public/product-images/prod_1784558898128_ep4ij.svg',
-    alt: 'Lava Roupas Concentrado Bryza — 5L',
+    alt: 'Galão de 5 litros do Sabão Líquido Concentrado Bryza',
   },
   softener: {
     src: 'https://kkjrunhubqixftemndrm.supabase.co/storage/v1/object/public/product-images/prod_1784558941028_r03eb.svg',
-    alt: 'Amaciante Microencapsulado Bryza — 5L',
+    alt: 'Galão de 5 litros do Amaciante Concentrado Microencapsulado Bryza',
   },
   cloths: {
     src: 'https://kkjrunhubqixftemndrm.supabase.co/storage/v1/object/public/product-images/prod_1784732736673_77ujv.svg',
-    alt: '2 Panos Premium Xadrez Bryza — 45 × 70 cm',
+    alt: 'Dois Panos Xadrez de Alta Absorção Bryza',
   },
 };
 
-function ProductVisual({ kind }: { kind: (typeof kitItems)[number]['kind'] }) {
+function ProductVisual({ kind, customAlt }: { kind: (typeof kitItems)[number]['kind']; customAlt?: string }) {
   const prod = PRODUCT_SYSTEM_IMAGES[kind] || PRODUCT_SYSTEM_IMAGES.soap;
   return (
     <div className={styles.productCrop}>
       <Image
         src={prod.src}
-        alt={prod.alt}
+        alt={customAlt || prod.alt}
         width={280}
         height={220}
         unoptimized
-        style={{ objectFit: 'contain', width: 'auto', height: '100%', maxHeight: '200px' }}
+        style={{ objectFit: 'contain', width: 'auto', height: '100%', maxHeight: '220px' }}
       />
     </div>
   );
@@ -274,14 +274,52 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
           </div>
         </section>
 
+        {/* Secao 3: O que vem no Kit Bryza */}
+        <section id="kit" className={styles.kitSection} aria-label="O que vem no Kit Bryza">
+          <header className={styles.sectionIntro}>
+            <span className={styles.sectionEyebrow}>O KIT COMPLETO</span>
+            <h2>Tudo o que você recebe no Kit Bryza</h2>
+            <p>
+              Dois galões de 5 litros para cuidar das suas roupas e 2 Panos Xadrez de Alta Absorção para facilitar a limpeza da casa.
+            </p>
+          </header>
+
+          <div role="list" className={styles.kitGrid}>
+            {kitItems.map((item) => (
+              <article
+                key={item.title}
+                role="listitem"
+                className={item.kind === 'cloths' ? styles.giftCard : styles.productCard}
+              >
+                <ProductVisual kind={item.kind} customAlt={item.alt} />
+                <div className={styles.itemCopy}>
+                  <b className={`${styles.itemLabel} ${item.kind === 'cloths' ? styles.giftLabel : ''}`}>
+                    {item.label}
+                  </b>
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
+                  <ul className={styles.itemFeatureList}>
+                    {item.features.map((feature) => (
+                      <li key={feature}>
+                        <Check size={16} className={styles.checkIcon} />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className={styles.kitClosing}>
+            <h3>10 litros de produtos + 2 Panos Xadrez de Alta Absorção</h3>
+            <p>Um kit completo para cuidar das roupas e facilitar a limpeza da casa.</p>
+          </div>
+        </section>
+
         <section className={styles.benefitsSection}>
           <div className={styles.sectionIntro}><span>Qualidade que você sente</span><h2>Mais rendimento, mais perfume e cuidado real.</h2><p>Fórmulas desenvolvidas para entregar limpeza, maciez e perfume para a rotina da sua família.</p></div>
           <div className={styles.benefitGrid}>{benefits.map((benefit) => { const Icon = benefitIcons[benefit.icon]; return <article key={benefit.title}><Icon /><h3>{benefit.title}</h3><p>{benefit.text}</p></article>; })}</div>
-        </section>
-
-        <section id="kit" className={styles.kitSection}>
-          <div className={styles.sectionIntro}><span>O que vem no kit</span><h2>Tudo o que sua lavanderia precisa.</h2></div>
-          <div className={styles.kitGrid}>{kitItems.map((item) => <article key={item.title} className={item.kind === 'cloths' ? styles.giftCard : ''}><ProductVisual kind={item.kind} /><div className={styles.itemCopy}><b>{item.label}</b><h3>{item.title}</h3><p>{item.description}</p><ul>{item.features.map(feature => <li key={feature}><Check />{feature}</li>)}</ul></div></article>)}</div>
         </section>
 
         <section className={styles.giftSection}>
