@@ -60,7 +60,19 @@ export async function login(formData: FormData) {
       }
     }
   } else if (/^bryza\d+$/.test(normalizedUsername)) {
-    resolvedEmail = getSyntheticEmail(normalizedUsername);
+    // Resolver pelo perfil evita quebrar contas legadas cujo e-mail interno
+    // tenha ficado divergente do código Bryza exibido.
+    const { data: usernameProfile, error: usernameProfileError } = await adminClient
+      .from('profiles')
+      .select('email')
+      .ilike('username', normalizedUsername)
+      .maybeSingle();
+
+    if (usernameProfileError) {
+      console.error('Erro ao resolver Código Bryza:', usernameProfileError);
+    }
+
+    resolvedEmail = usernameProfile?.email || getSyntheticEmail(`identificador-invalido-${normalizedUsername}`);
   }
 
   const { data: isBlocked, error: rateCheckError } = await rateCheckPromise;

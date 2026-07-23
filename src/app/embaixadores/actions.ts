@@ -5,6 +5,7 @@ import { createAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { generateIpHash } from '@/lib/referral/ip-hash';
+import { getSyntheticEmail } from '@/utils/env';
 
 // Helpers de Mascaramento
 function maskCPF(cpf: string): string {
@@ -230,13 +231,14 @@ export async function redefinirAcesso(ambassadorId: string) {
   if (!/^\d{10,11}$/.test(cleanPhone)) {
     throw new Error('Cadastre um telefone válido com DDD antes de redefinir o acesso.');
   }
+  const syntheticEmail = getSyntheticEmail(amb.username);
 
   const reqHeaders = await headers();
   const ipHash = getIpHash(reqHeaders);
 
   const { data: currentProfile, error: currentProfileError } = await adminClient
     .from('profiles')
-    .select('must_change_password, ativo')
+    .select('must_change_password, ativo, username, email, telefone')
     .eq('id', amb.user_id)
     .single();
 
@@ -244,17 +246,25 @@ export async function redefinirAcesso(ambassadorId: string) {
     throw new Error('Perfil do embaixador não encontrado para redefinir o acesso.');
   }
 
-  // 1. Restaurar o estado de primeiro acesso antes de alterar a credencial.
+  // 1. Sincronizar o perfil usado pelos resolvedores de login.
   const { error: profileError } = await adminClient
     .from('profiles')
-    .update({ must_change_password: true, ativo: true })
+    .update({
+      username: amb.username,
+      email: syntheticEmail,
+      telefone: cleanPhone,
+      must_change_password: true,
+      ativo: true
+    })
     .eq('id', amb.user_id);
 
   if (profileError) throw new Error('Falha ao restaurar status de primeiro acesso no perfil');
 
-  // 2. A senha temporária é sempre o telefone cadastrado, somente números.
+  // 2. Sincronizar o identificador Auth e usar o telefone como senha temporária.
   const { error: authError } = await adminClient.auth.admin.updateUserById(amb.user_id, {
-    password: cleanPhone
+    email: syntheticEmail,
+    password: cleanPhone,
+    email_confirm: true
   });
 
   if (authError) {
@@ -262,6 +272,9 @@ export async function redefinirAcesso(ambassadorId: string) {
     await adminClient
       .from('profiles')
       .update({
+        username: currentProfile.username,
+        email: currentProfile.email,
+        telefone: currentProfile.telefone,
         must_change_password: currentProfile.must_change_password,
         ativo: currentProfile.ativo
       })
@@ -350,6 +363,11 @@ export async function editarEmbaixador(ambassadorId: string, data: any) {
     longitude
   } = data;
 
+  const cleanPhone = typeof phone === 'string' ? phone.replace(/\D/g, '') : '';
+  if (!/^\d{10,11}$/.test(cleanPhone)) {
+    throw new Error('Informe um telefone válido com DDD.');
+  }
+
   const { data: oldAmb } = await adminClient
     .from('ambassadors')
     .select('user_id, username')
@@ -397,10 +415,14 @@ export async function editarEmbaixador(ambassadorId: string, data: any) {
 
   // Sincronizar nome no perfil auth/profile se alterado
   if (oldAmb?.user_id) {
-    await adminClient
+    const { error: profileSyncError } = await adminClient
       .from('profiles')
-      .update({ nome: full_name })
+      .update({ nome: full_name, telefone: cleanPhone })
       .eq('id', oldAmb.user_id);
+
+    if (profileSyncError) {
+      throw new Error('Cadastro atualizado, mas falhou ao sincronizar o telefone de acesso.');
+    }
   }
 
   const reqHeaders = await headers();
