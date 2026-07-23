@@ -1203,7 +1203,20 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
       </footer>
 
       {!productAvailable && <div className={styles.unavailable}><PackageCheck /><div><strong>Oferta temporariamente indisponível</strong><span>Fale com a equipe Bryza para receber ajuda.</span></div></div>}
-      {productAvailable && <div className={`${styles.mobileSticky} ${showSticky ? styles.mobileStickyVisible : ''}`}><div><span>Kit completo</span><strong>R$ 79,80</strong></div><button type="button" onClick={onOrder}>Agendar <ArrowRight /></button></div>}
+      {productAvailable && (
+        <div className={`${styles.mobileSticky} ${showSticky ? styles.mobileStickyVisible : ''}`}>
+          <div>
+            <div className={styles.mobileStickyMeta}>
+              <span>Kit completo</span>
+              <s className={styles.mobileStickyStruckPrice}>R$ 105,78</s>
+            </div>
+            <strong>R$ 79,80</strong>
+          </div>
+          <button type="button" onClick={onOrder}>
+            Agendar <ArrowRight />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
