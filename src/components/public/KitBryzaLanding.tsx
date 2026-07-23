@@ -625,14 +625,99 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
           </section>
         ) : null}
 
+        {/* Secao 7: Comparacao de valor */}
+        <section id="oferta" className={styles.comparisonSection} aria-label="Comparação de valor e Oferta Especial">
+          <div className={styles.comparisonContainer}>
+            <div className={styles.comparisonCopyBlock}>
+              <span className={styles.comparisonEyebrow}>VEJA QUANTO VOCÊ RECEBE</span>
+              <h2>Um kit completo com R$105,78 em valor.</h2>
+              <p className={styles.comparisonLead}>
+                Veja quanto custaria levar cada item separadamente e compare com o valor especial do Kit Bryza.
+              </p>
+              <p className={styles.comparisonBody}>
+                Ao adquirir o Kit Bryza, você garante 10 litros de produtos concentrados de altíssima qualidade pelo preço justo de fábrica e recebe de presente 2 Panos Xadrez de Alta Absorção para completar o cuidado da sua casa, sem custo de entrega.
+              </p>
+            </div>
+
+            <div className={styles.comparisonOfferCard}>
+              <dl className={styles.comparisonList}>
+                <div className={styles.comparisonItemRow}>
+                  <dt className={styles.comparisonItemMeta}>
+                    <strong className={styles.comparisonItemName}>Sabão Líquido Concentrado Bryza — 5L</strong>
+                    <span className={styles.comparisonItemDetail}>5 litros</span>
+                  </dt>
+                  <dd className={styles.comparisonItemPrice}>R$39,90</dd>
+                </div>
+
+                <div className={styles.comparisonItemRow}>
+                  <dt className={styles.comparisonItemMeta}>
+                    <strong className={styles.comparisonItemName}>Amaciante Concentrado Microencapsulado Bryza — 5L</strong>
+                    <span className={styles.comparisonItemDetail}>5 litros</span>
+                  </dt>
+                  <dd className={styles.comparisonItemPrice}>R$39,90</dd>
+                </div>
+
+                <div className={styles.comparisonItemRow}>
+                  <dt className={styles.comparisonItemMeta}>
+                    <div className={styles.comparisonItemNameGroup}>
+                      <strong className={styles.comparisonItemName}>2 Panos Xadrez de Alta Absorção — 45 × 70 cm</strong>
+                      <span className={styles.giftTagBadge}>BRINDE</span>
+                    </div>
+                    <span className={styles.comparisonItemDetail}>45 × 70 cm</span>
+                  </dt>
+                  <dd className={styles.comparisonItemPrice}>R$25,98</dd>
+                </div>
+
+                <div className={styles.comparisonItemRow}>
+                  <dt className={styles.comparisonItemMeta}>
+                    <strong className={styles.comparisonItemName}>Entrega nas regiões atendidas</strong>
+                    <span className={styles.comparisonItemDetail}>R$0 antecipado</span>
+                  </dt>
+                  <dd className={styles.comparisonItemPrice}>
+                    <strong className={styles.freeDeliveryBadge}>GRÁTIS</strong>
+                  </dd>
+                </div>
+              </dl>
+
+              <div className={styles.comparisonDivider} />
+
+              <div className={styles.comparisonSummaryBlock}>
+                <div className={styles.comparisonRowTotalStruck}>
+                  <span>Valor total dos produtos e brindes</span>
+                  <s aria-label="Valor anterior: cento e cinco reais e setenta e oito centavos">R$105,78</s>
+                </div>
+
+                <div className={styles.comparisonRowMainPrice}>
+                  <div className={styles.comparisonMainPriceMeta}>
+                    <span>Valor especial do Kit Bryza</span>
+                    <strong aria-label="Valor atual: setenta e nove reais e oitenta centavos">R$79,80</strong>
+                    <span className={styles.costPerLiterBadge}>Menos de R$7,99 por litro</span>
+                  </div>
+                </div>
+
+                <div className={styles.comparisonSavingsBox}>
+                  <strong>Você recebe R$25,98 em brindes.</strong>
+                  <p>Os 2 Panos Xadrez de Alta Absorção vão de presente na compra do kit completo.</p>
+                </div>
+
+                <button type="button" className={styles.comparisonCtaBtn} onClick={onOrder}>
+                  <span>QUERO AGENDAR MEU KIT BRYZA</span>
+                  <ArrowRight size={18} aria-hidden="true" />
+                </button>
+
+                <p className={styles.noPrepayNote}>Você não paga nada antecipadamente.</p>
+                <p className={styles.securityNote}>Frete grátis nas regiões atendidas • Pagamento somente na entrega</p>
+                <p className={styles.scarcityNote}>
+                  Os brindes estão disponíveis conforme a quantidade destinada a cada campanha e rota de entrega.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className={styles.benefitsSection}>
           <div className={styles.sectionIntro}><span>Qualidade que você sente</span><h2>Mais rendimento, mais perfume e cuidado real.</h2><p>Fórmulas desenvolvidas para entregar limpeza, maciez e perfume para a rotina da sua família.</p></div>
           <div className={styles.benefitGrid}>{benefits.map((benefit) => { const Icon = benefitIcons[benefit.icon]; return <article key={benefit.title}><Icon /><h3>{benefit.title}</h3><p>{benefit.text}</p></article>; })}</div>
-        </section>
-
-        <section id="oferta" className={styles.valueSection}>
-          <div className={styles.valueCopy}><span>Conta que fecha</span><h2>Você leva mais e paga menos.</h2><p>Em vez de comprar embalagens menores diversas vezes, você garante 10 litros de produtos e ainda recebe dois acessórios premium para completar a limpeza da casa.</p></div>
-          <div className={styles.receipt}><h3>Resumo da oferta</h3><div><span>Sabão Líquido Bryza 5L</span><strong>R$ 39,90</strong></div><div><span>Amaciante Bryza 5L</span><strong>R$ 39,90</strong></div><div><span>2 Panos Premium</span><strong>R$ 25,98</strong></div><div><span>Entrega nas regiões atendidas</span><b>Grátis</b></div><div className={styles.receiptOld}><span>Valor total</span><s>R$ 105,78</s></div><div className={styles.receiptTotal}><span>Preço do kit</span><strong>R$ 79,80</strong></div><div className={styles.savings}>Economia de R$ 25,98 nos brindes</div><OrderButton onClick={onOrder}>Quero garantir meu kit</OrderButton><small><LockKeyhole /> Pagamento somente quando o pedido for entregue.</small></div>
         </section>
 
         <section id="como-funciona" className={styles.stepsSection}>
