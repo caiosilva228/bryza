@@ -74,7 +74,7 @@
 
 .hero { position: relative; border-top: 1px solid var(--neutral-200); background: #fbfaf7; }
 .heroInner { min-height: calc(100vh - 92px); min-height: calc(100dvh - 92px); display: grid; grid-template-columns: minmax(480px, .96fr) minmax(420px, 1.04fr); align-items: center; }
-.heroCopy { padding: 24px max(32px, calc((100vw - 1200px) / 2)) 28px; position: relative; z-index: 3; background: linear-gradient(90deg, #fff 0%, rgba(255,255,255,.97) 76%, rgba(255,255,255,.2) 100%); }
+.heroCopy { padding: 24px max(32px, calc((100vw - 1200px) / 2)) 28px; position: relative; z-index: 3; background: transparent; }
 .heroTags { display: flex; align-items: center; gap: 8px; }
 .heroTags span, .heroTags b { min-height: 22px; padding: 3px 10px; border: 1px solid var(--neutral-300); border-radius: 99px; color: var(--bryza-navy-950); font-size: 9px; font-weight: 700; letter-spacing: .11em; line-height: 1; text-transform: uppercase; }
 .heroTags b { color: #fff; background: var(--bryza-green-700); border-color: var(--bryza-green-700); }
@@ -108,7 +108,7 @@
 .cta:focus-visible, .ctaInverse:focus-visible, .faqItem button:focus-visible, .mobileSticky button:focus-visible { outline: 3px solid var(--bryza-blue-500); outline-offset: 3px; }
 
 .heroProduct { height: 100%; min-height: 480px; position: relative; overflow: hidden; }
-.heroProduct > img { object-fit: cover; object-position: 88% center; z-index: 1; }
+.heroProduct > img { display: none; }
 .heroProduct::before { content: ""; position: absolute; z-index: 2; inset: 0; pointer-events: none; background: linear-gradient(90deg, #061121 0%, rgba(6, 17, 33, 0.35) 25%, transparent 55%); }
 .plaidCloths { display: none; }
 .clothSeal { width: 104px; height: 104px; position: absolute; z-index: 3; right: 5%; bottom: 6%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; background: var(--bryza-green-600); border: 3px solid #fff; border-radius: 50%; box-shadow: 0 12px 28px rgba(16,24,70,.16); text-align: center; text-transform: uppercase; }
@@ -460,29 +460,36 @@
 
 .hero {
   border-top: 0;
-  background: #061121;
+  background-color: #061121;
+  background-image: linear-gradient(90deg, rgba(5, 15, 32, 0.84) 0%, rgba(5, 15, 32, 0.58) 48%, rgba(5, 15, 32, 0.12) 100%), url('/hero-pv-link-embaixador.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
 }
 
 .heroCopy {
   color: #fff;
-  background: linear-gradient(90deg, rgba(5, 15, 32, 0.99) 0%, rgba(5, 15, 32, 0.95) 75%, rgba(5, 15, 32, 0.6) 100%);
+  background: transparent;
 }
 
-.hero h1,
+.hero h1 {
+  color: #fff;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.6);
+}
+
 .hero h1 em {
   color: #fff;
-}
-
-.hero h1 em {
   background: linear-gradient(135deg, #b8dc55 0%, #a6ce39 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  text-shadow: none;
 }
 
 .heroCopy > p {
-  color: rgba(241, 245, 249, 0.88);
+  color: rgba(241, 245, 249, 0.92);
   font-size: 15px;
   line-height: 1.5;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .heroTags span {
@@ -505,6 +512,7 @@
 
 .heroTrust span {
   color: #f8fafc;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 .heroTrust span + span {
@@ -516,7 +524,7 @@
 }
 
 .heroProduct::before {
-  background: linear-gradient(90deg, #061121 0%, rgba(6, 17, 33, 0.4) 25%, transparent 50%);
+  display: none;
 }
 
 .offerBox {
