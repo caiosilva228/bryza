@@ -9,7 +9,9 @@ import {
   ChevronDown,
   ClipboardList,
   Flower2,
+  FileText,
   Gift,
+  HelpCircle,
   Leaf,
   LockKeyhole,
   MapPinCheck,
@@ -809,7 +811,86 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
           <div className={styles.benefitGrid}>{benefits.map((benefit) => { const Icon = benefitIcons[benefit.icon]; return <article key={benefit.title}><Icon /><h3>{benefit.title}</h3><p>{benefit.text}</p></article>; })}</div>
         </section>
 
-        <section className={styles.securitySection}><div><span><ShieldCheck /></span><h2>Peça com tranquilidade.</h2></div><ul><li><Check />Nenhum pagamento antecipado</li><li><MessageCircle />Confirmação pelo WhatsApp</li><li><MapPinCheck />Entrega conforme disponibilidade da rota</li><li><PackageCheck />Atendimento da equipe Bryza</li><li><Check />Sem assinatura ou cobrança recorrente</li></ul></section>
+        {/* Secao 9: Seguranca e tranquilidade */}
+        <section id="seguranca" className={styles.securitySection} aria-label="Segurança e tranquilidade">
+          <header className={styles.sectionIntro}>
+            <span className={styles.sectionEyebrow}>PEÇA COM TRANQUILIDADE</span>
+            <h2>Seu pedido é simples, seguro e sem pagamento antecipado.</h2>
+            <p>
+              Você solicita o agendamento, recebe a confirmação pelo WhatsApp e paga somente quando o Kit Bryza chegar.
+            </p>
+          </header>
+
+          <ul role="list" className={styles.securityGrid}>
+            <li role="listitem" className={styles.securityItem}>
+              <div className={styles.securityIconBox} aria-hidden="true">
+                <WalletCards size={22} className={styles.securityIcon} />
+              </div>
+              <div className={styles.securityContent}>
+                <h3>Nenhum pagamento antecipado</h3>
+                <p>Você não precisa pagar nada para solicitar o agendamento.</p>
+              </div>
+            </li>
+
+            <li role="listitem" className={styles.securityItem}>
+              <div className={styles.securityIconBox} aria-hidden="true">
+                <PackageCheck size={22} className={styles.securityIcon} />
+              </div>
+              <div className={styles.securityContent}>
+                <h3>Pagamento somente na entrega</h3>
+                <p>Você realiza o pagamento apenas quando receber o Kit Bryza.</p>
+              </div>
+            </li>
+
+            <li role="listitem" className={styles.securityItem}>
+              <div className={styles.securityIconBox} aria-hidden="true">
+                <MessageCircle size={22} className={styles.securityIcon} />
+              </div>
+              <div className={styles.securityContent}>
+                <h3>Confirmação pelo WhatsApp</h3>
+                <p>A equipe Bryza confirma a rota e os detalhes diretamente com você.</p>
+              </div>
+            </li>
+
+            <li role="listitem" className={styles.securityItem}>
+              <div className={styles.securityIconBox} aria-hidden="true">
+                <Truck size={22} className={styles.securityIcon} />
+              </div>
+              <div className={styles.securityContent}>
+                <h3>Frete grátis nas regiões atendidas</h3>
+                <p>Não há cobrança de entrega nas rotas participantes da campanha.</p>
+              </div>
+            </li>
+
+            <li role="listitem" className={styles.securityItem}>
+              <div className={styles.securityIconBox} aria-hidden="true">
+                <FileText size={22} className={styles.securityIcon} />
+              </div>
+              <div className={styles.securityContent}>
+                <h3>Sem assinatura</h3>
+                <p>A compra é única e não gera nenhum plano ou compromisso mensal.</p>
+              </div>
+            </li>
+
+            <li role="listitem" className={styles.securityItem}>
+              <div className={styles.securityIconBox} aria-hidden="true">
+                <ShieldCheck size={22} className={styles.securityIcon} />
+              </div>
+              <div className={styles.securityContent}>
+                <h3>Sem cobrança recorrente</h3>
+                <p>Não existe renovação automática ou cobrança futura vinculada ao pedido.</p>
+              </div>
+            </li>
+          </ul>
+
+          <div className={styles.securityFooterBanner}>
+            <strong>Você solicita agora e só paga quando receber.</strong>
+            <p>A equipe Bryza confirmará a disponibilidade da rota e os detalhes da entrega pelo WhatsApp.</p>
+            <a href="#duvidas" className={styles.faqAnchorLink}>
+              <span>Ficou com alguma dúvida? Veja as respostas abaixo.</span>
+            </a>
+          </div>
+        </section>
 
         <section id="duvidas" className={styles.faqSection}>
           <div className={styles.sectionIntro}><span>Dúvidas frequentes</span><h2>Antes de garantir o seu kit</h2></div>
