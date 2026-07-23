@@ -411,6 +411,12 @@
 }
 .mobileHeroProduct { display: none; }
 
+.desktopSubheadline { display: block; }
+.mobileSubheadlineGroup { display: none; }
+.mobileProductBlock { display: none; }
+.trustItem { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.trustFull { display: inline-flex; }
+
 .indicators { width: min(1060px, calc(100% - 64px)); margin: 0 auto; padding: 24px 0; display: grid; grid-template-columns: repeat(4, 1fr); color: #fff; background: var(--bryza-navy-950); border-radius: 0 0 14px 14px; box-shadow: 0 12px 32px rgba(16,24,70,.09); }
 .indicators div { display: flex; flex-direction: column; align-items: center; text-align: center; border-right: 1px solid rgba(255,255,255,.15); }
 .indicators div:last-child { border: 0; }
@@ -572,82 +578,262 @@
   .securitySection ul { grid-template-columns: repeat(3, 1fr); }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .announcement {
-    top: 56px;
-    min-height: 28px;
-    padding: 4px 12px;
-    font-size: 10px;
+    top: 58px !important;
+    min-height: 30px !important;
+    height: 30px !important;
+    padding: 4px 12px !important;
+    font-size: 11.5px !important;
+    background: #051329 !important;
   }
-  .desktopAnnouncement { display: none; }
-  .mobileAnnouncement { display: inline-block; }
+  .desktopAnnouncement { display: none !important; }
+  .mobileAnnouncement { display: inline-block !important; }
 
-  .header { height: 56px; min-height: 56px; padding-inline: 14px; }
-  .brand img { width: 94px; height: auto; }
-  
-  .ambassadorBadge { padding: 3px 8px; gap: 5px; }
-  .ambassadorAvatar { width: 22px; height: 22px; font-size: 9.5px; }
-  .ambassadorMeta small { font-size: 7.5px; }
-  .ambassadorMeta strong { font-size: 9px; max-width: 80px; }
-  .ambassadorIcon { width: 12px; height: 12px; }
+  .header {
+    height: 58px !important;
+    min-height: 58px !important;
+    padding-inline: 16px !important;
+  }
+  .brand img {
+    width: 100px !important;
+    height: auto !important;
+  }
+
+  .ambassadorBadge {
+    max-width: 45% !important;
+    max-height: 38px !important;
+    padding: 4px 8px !important;
+    gap: 6px !important;
+  }
+  .ambassadorAvatar {
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 9.5px !important;
+  }
+  .ambassadorMeta small {
+    font-size: 8px !important;
+    color: #64748b !important;
+  }
+  .ambassadorMeta strong {
+    font-size: 9.5px !important;
+    color: #051329 !important;
+    max-width: 90px !important;
+  }
+  .ambassadorIcon {
+    width: 12px !important;
+    height: 12px !important;
+  }
 
   .hero {
-    min-height: auto;
-    background-color: #050f20;
-    background-image:
-      linear-gradient(
-        180deg,
-        rgba(5, 15, 32, 0.90) 0%,
-        rgba(5, 15, 32, 0.75) 55%,
-        rgba(5, 15, 32, 0.35) 100%
-      ),
-      url('/hero-pv-link-embaixador.jpg');
-    background-size: cover;
-    background-position: 85% center;
+    min-height: auto !important;
+    background-image: none !important;
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
   }
-  .heroInner { width: 100%; padding: 20px 16px 28px; }
-  .heroCopy { max-width: 100%; }
+  .heroInner {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 24px 20px 28px !important;
+  }
+  .heroCopy {
+    max-width: 100% !important;
+    color: #051329 !important;
+  }
 
-  .heroTags { margin-bottom: 10px; }
-  .tagKit, .tagGift { padding: 3px 8px; font-size: 8.5px; }
+  .clothBadge { display: none !important; }
+  .desktopSubheadline { display: none !important; }
+  .mobileSubheadlineGroup { display: block !important; }
+
+  .heroTags {
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+  }
+  .tagKit {
+    height: 26px !important;
+    padding: 4px 9px !important;
+    font-size: 10px !important;
+    color: #475569 !important;
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+  .tagGift {
+    height: 26px !important;
+    padding: 4px 9px !important;
+    font-size: 10px !important;
+    color: #051329 !important;
+    background: #a6ce39 !important;
+    border: 0 !important;
+  }
 
   .hero h1 {
-    font-size: clamp(23px, 6.4vw, 28px);
-    line-height: 1.18;
-    margin: 6px 0 10px;
-    color: #ffffff;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+    font-size: clamp(34px, 8.5vw, 38px) !important;
+    font-weight: 800 !important;
+    line-height: 1.08 !important;
+    letter-spacing: -0.025em !important;
+    margin: 8px 0 14px !important;
+    color: #051329 !important;
+    text-shadow: none !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 4 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
   }
-  .heroSubheadline { font-size: 13px; line-height: 1.48; margin-bottom: 14px; color: rgba(241, 245, 249, 0.92); text-shadow: 0 1px 6px rgba(0,0,0,0.5); }
+  .hero h1 em {
+    color: #5a8216 !important;
+    font-style: normal !important;
+  }
 
-  .offerBox { padding: 14px; gap: 10px; border-radius: 12px; max-width: 100%; }
-  .priceHighlight strong { font-size: 30px; }
-  .giftValueHighlight { font-size: 10.5px; }
-  .offerAction .cta { min-height: 50px; height: 50px; font-size: 12px; }
-  .payOnDeliveryNote { font-size: 10px; }
-  
+  .mobileSubheadline {
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+    color: #435066 !important;
+    margin: 12px 0 6px !important;
+  }
+  .mobileSubheadlineFeature {
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    color: #0b5ea8 !important;
+    margin-bottom: 20px !important;
+  }
+
+  .mobileProductBlock {
+    display: block !important;
+    width: 100% !important;
+    margin-bottom: 20px !important;
+  }
+  .mobileProductImageWrapper {
+    width: 100% !important;
+    aspect-ratio: 4 / 3 !important;
+    min-height: 230px !important;
+    max-height: 290px !important;
+    position: relative !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    background: #F6F8FC !important;
+    border: 1px solid #E2E7EF !important;
+  }
+  .mobileProductCaption {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+    text-align: center !important;
+    margin-top: 8px !important;
+  }
+
+  .offerBox {
+    width: 100% !important;
+    max-width: 100% !important;
+    background: #ffffff !important;
+    border: 1px solid #E2E7EF !important;
+    border-radius: 14px !important;
+    padding: 20px !important;
+    margin-top: 18px !important;
+    box-shadow: 0 8px 24px rgba(16, 24, 70, 0.05) !important;
+    color: #051329 !important;
+    gap: 14px !important;
+  }
+
+  .priceHeader {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-size: 13px !important;
+    color: #64748b !important;
+  }
+  .priceStrikethrough {
+    font-size: 14px !important;
+    color: #94a3b8 !important;
+  }
+  .priceHighlight {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+    margin: 4px 0 0 !important;
+  }
+  .priceHighlight small {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+  }
+  .priceHighlight strong {
+    font-size: 42px !important;
+    font-weight: 800 !important;
+    color: #051329 !important;
+    line-height: 1 !important;
+  }
+  .literPriceNote {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #0b5ea8 !important;
+    margin-top: 2px !important;
+  }
+
+  .giftValueHighlight {
+    padding-top: 14px !important;
+    border-top: 1px solid #E2E7EF !important;
+    gap: 4px !important;
+    font-size: 13.5px !important;
+    line-height: 1.4 !important;
+    color: #334155 !important;
+  }
+  .giftValueHighlight strong {
+    color: #4d7c0f !important;
+    font-weight: 700 !important;
+  }
+  .giftValueHighlight small {
+    font-size: 13px !important;
+    color: #64748b !important;
+  }
+
+  .offerAction .cta {
+    width: 100% !important;
+    min-height: 54px !important;
+    height: 54px !important;
+    border-radius: 8px !important;
+    margin-top: 14px !important;
+    background: #8bb329 !important;
+    color: #051329 !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+  }
+  .payOnDeliveryNote {
+    font-size: 12.5px !important;
+    margin-top: 8px !important;
+    color: #64748b !important;
+    justify-content: center !important;
+  }
+
   .heroTrustLine {
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 6px;
-    font-size: 9.5px;
-    padding-top: 10px;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px 12px !important;
+    padding-top: 14px !important;
+    border-top: 1px solid #E2E7EF !important;
   }
-  .heroTrustLine i { display: none; }
-  .scarcityNote { font-size: 9.5px; margin-top: 10px; color: rgba(255, 255, 255, 0.65); }
-  .clothBadge { right: 12px; bottom: 12px; padding: 5px 9px; }
+  .trustItem {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    color: #334155 !important;
+  }
+  .trustFull {
+    grid-column: 1 / -1 !important;
+  }
+  .heroTrustLine i { display: none !important; }
 
-  .benefitsSection, .kitSection, .stepsSection, .faqSection { width: calc(100% - 32px); padding: 56px 0; }
-  .sectionIntro { margin-bottom: 24px; }
-  .sectionIntro h2, .giftCopy h2, .valueCopy h2 { font-size: 28px; }
-  .sectionIntro p, .giftCopy > p, .valueCopy p { font-size: 13.5px; }
-  .benefitGrid, .kitGrid { grid-template-columns: 1fr; }
-  .benefitGrid article { min-height: 0; padding: 20px; }
-  .kitSection { padding-top: 0; }
-  .productCrop { height: 180px; }
-  .itemCopy > p { min-height: 0; }
-  .giftSection { padding: 48px 16px; grid-template-columns: 1fr; gap: 28px; }
-  .giftVisual { min-height: 240px; }
+  .scarcityNote {
+    font-size: 13px !important;
+    line-height: 1.45 !important;
+    color: #667085 !important;
+    font-style: normal !important;
+    text-shadow: none !important;
+    margin-top: 16px !important;
+    margin-bottom: 24px !important;
+    max-width: 100% !important;
+  }
   .giftMath { grid-template-columns: 1fr; }
   .giftMath div { flex-direction: row; justify-content: space-between; }
   .giftMath div + div { border-left: 0; border-top: 1px solid var(--neutral-200); }

@@ -91,10 +91,10 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
         <div className={styles.ambassadorBadge}>
           <span className={styles.ambassadorAvatar}>{ambassador.display_name.charAt(0).toUpperCase()}</span>
           <div className={styles.ambassadorMeta}>
-            <small>Oferta indicada por</small>
+            <small>Indicado por</small>
             <strong>{ambassador.display_name}</strong>
           </div>
-          <ShieldCheck size={15} className={styles.ambassadorIcon} />
+          <ShieldCheck size={14} className={styles.ambassadorIcon} />
         </div>
       </header>
 
@@ -114,20 +114,38 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
 
               <h1>10 litros para roupas <em>limpas, macias e perfumadas.</em></h1>
 
-              <p className={styles.heroSubheadline}>
+              <p className={`${styles.heroSubheadline} ${styles.desktopSubheadline}`}>
                 {ambassador.display_name
                   ? `Sabão Líquido Concentrado 5L + Amaciante Microencapsulado 5L. Pela indicação de ${ambassador.display_name}, você ainda recebe 2 Panos Premium Xadrez de Alta Absorção — 45 × 70 cm.`
                   : 'Sabão Líquido Concentrado 5L + Amaciante Microencapsulado 5L e mais 2 Panos Premium Xadrez de Alta Absorção — 45 × 70 cm de presente.'}
               </p>
 
+              <div className={styles.mobileSubheadlineGroup}>
+                <p className={styles.mobileSubheadline}>
+                  Sabão Concentrado 5L + Amaciante Microencapsulado 5L e 2 Panos Premium Xadrez de presente.
+                </p>
+                <div className={styles.mobileSubheadlineFeature}>
+                  Panos Premium de Alta Absorção • 45 × 70 cm
+                </div>
+              </div>
+
+              <div className={styles.mobileProductBlock}>
+                <div className={styles.mobileProductImageWrapper}>
+                  <Image src="/hero-pv-link-embaixador.jpg" alt="Kit Bryza com Sabão Líquido, Amaciante de 5L e Panos Premium" fill priority sizes="100vw" style={{ objectFit: 'cover', objectPosition: '70% center' }} />
+                </div>
+                <div className={styles.mobileProductCaption}>
+                  Você recebe 2 Panos Premium Xadrez de 45 × 70 cm.
+                </div>
+              </div>
+
               <div className={styles.offerBox}>
                 <div className={styles.offerPriceMain}>
                   <div className={styles.priceHeader}>
-                    <span>Valor total do kit + brindes:</span>
+                    <span>Valor do kit + brindes</span>
                     <s className={styles.priceStrikethrough}>R$105,78</s>
                   </div>
                   <div className={styles.priceHighlight}>
-                    <small>Por apenas</small>
+                    <small>Hoje por</small>
                     <strong>R$79,80</strong>
                     <span className={styles.literPriceNote}>(Menos de R$7,99 por litro)</span>
                   </div>
@@ -135,7 +153,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
 
                 <div className={styles.giftValueHighlight}>
                   <span>Você recebe <strong>R$25,98 em brindes.</strong></span>
-                  <small>Nos supermercados, cada Pano Premium custa em média R$12,99.</small>
+                  <small>Cada Pano Premium custa em média R$12,99 nos supermercados.</small>
                 </div>
 
                 <div className={styles.offerAction}>
@@ -148,16 +166,14 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
                 </div>
 
                 <div className={styles.heroTrustLine}>
-                  <span><Truck size={14} /> Frete grátis</span>
-                  <i>•</i>
-                  <span><WalletCards size={14} /> Pagamento na entrega</span>
-                  <i>•</i>
-                  <span><MessageCircle size={14} /> Confirmação pelo WhatsApp</span>
+                  <div className={styles.trustItem}><Truck size={14} /> <span>Frete grátis</span></div>
+                  <div className={styles.trustItem}><WalletCards size={14} /> <span>Pagamento na entrega</span></div>
+                  <div className={`${styles.trustItem} ${styles.trustFull}`}><MessageCircle size={14} /> <span>Confirmação pelo WhatsApp</span></div>
                 </div>
               </div>
 
               <p className={styles.scarcityNote}>
-                Os brindes estão disponíveis conforme a quantidade destinada a cada campanha e rota de entrega.
+                Brindes disponíveis conforme a quantidade destinada a cada campanha e rota de entrega.
               </p>
             </div>
           </div>
