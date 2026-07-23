@@ -66,22 +66,23 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  background: #051329;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 .brand { width: fit-content; display: inline-flex; }
-.brand img { object-fit: contain; }
+.brand img {
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
 
 .ambassadorBadge {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 4px 12px;
-  background: rgba(0, 43, 92, 0.04);
-  border: 1px solid rgba(0, 43, 92, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 99px;
 }
 .ambassadorAvatar {
@@ -110,12 +111,12 @@
   line-height: 1.15;
 }
 .ambassadorMeta small {
-  color: var(--neutral-500);
+  color: rgba(255, 255, 255, 0.7);
   font-size: 9px;
   font-weight: 500;
 }
 .ambassadorMeta strong {
-  color: var(--bryza-navy-950);
+  color: #ffffff;
   font-size: 11px;
   font-weight: 700;
   max-width: 140px;
@@ -124,7 +125,7 @@
   white-space: nowrap;
 }
 .ambassadorIcon {
-  color: #0b5ea8;
+  color: #8bb329;
   flex-shrink: 0;
 }
 
@@ -1772,11 +1773,11 @@
   }
   .ambassadorMeta small {
     font-size: 8px !important;
-    color: #64748b !important;
+    color: rgba(255, 255, 255, 0.7) !important;
   }
   .ambassadorMeta strong {
     font-size: 9.5px !important;
-    color: #051329 !important;
+    color: #ffffff !important;
     max-width: 90px !important;
   }
   .ambassadorIcon {
