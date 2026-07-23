@@ -88,6 +88,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'CPF inválido.' }, { status: 400 });
     }
 
+    const phoneClean = (phone || '').replace(/\D/g, '');
+    if (!/^\d{10,11}$/.test(phoneClean)) {
+      return NextResponse.json(
+        { error: 'Telefone com DDD é obrigatório para gerar a senha inicial.' },
+        { status: 400 }
+      );
+    }
+
     const contactEmail = email.trim().toLowerCase();
 
     // Normalização rigorosa de Estado (UF) para atender a constraint chk_ambassador_state
@@ -216,11 +224,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ 
         error: `Erro ao iniciar cadastro: ${ambInsertError?.message || ambInsertError?.details || 'Erro ao inserir registro no banco.'}` 
       }, { status: 500 });
-    }
-
-    const phoneClean = (phone || '').replace(/\D/g, '');
-    if (!phoneClean || phoneClean.length < 10) {
-      return NextResponse.json({ error: 'Telefone com DDD é obrigatório para gerar a senha inicial.' }, { status: 400 });
     }
 
     // Gerar e-mail sintético e criar conta auth

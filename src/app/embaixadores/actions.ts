@@ -220,33 +220,55 @@ export async function redefinirAcesso(ambassadorId: string) {
 
   const { data: amb, error } = await adminClient
     .from('ambassadors')
-    .select('user_id, cpf, phone, username')
+    .select('user_id, phone, username')
     .eq('id', ambassadorId)
     .single();
 
   if (error || !amb || !amb.user_id) throw new Error('Embaixador não possui usuário auth ativo');
 
   const cleanPhone = amb.phone ? amb.phone.replace(/\D/g, '') : '';
-  const initialPassword = cleanPhone || (amb.cpf ? amb.cpf.replace(/\D/g, '') : '');
-  if (!initialPassword) throw new Error('Telefone ou CPF do embaixador não encontrado para redefinir senha.');
+  if (!/^\d{10,11}$/.test(cleanPhone)) {
+    throw new Error('Cadastre um telefone válido com DDD antes de redefinir o acesso.');
+  }
 
   const reqHeaders = await headers();
   const ipHash = getIpHash(reqHeaders);
 
-  // 1. Atualizar senha no Supabase Auth para o telefone limpo
-  const { error: authError } = await adminClient.auth.admin.updateUserById(amb.user_id, {
-    password: initialPassword
-  });
+  const { data: currentProfile, error: currentProfileError } = await adminClient
+    .from('profiles')
+    .select('must_change_password, ativo')
+    .eq('id', amb.user_id)
+    .single();
 
-  if (authError) throw new Error(`Falha ao redefinir credenciais: ${authError.message}`);
+  if (currentProfileError || !currentProfile) {
+    throw new Error('Perfil do embaixador não encontrado para redefinir o acesso.');
+  }
 
-  // 2. Atualizar perfil de primeiro acesso
+  // 1. Restaurar o estado de primeiro acesso antes de alterar a credencial.
   const { error: profileError } = await adminClient
     .from('profiles')
     .update({ must_change_password: true, ativo: true })
     .eq('id', amb.user_id);
 
   if (profileError) throw new Error('Falha ao restaurar status de primeiro acesso no perfil');
+
+  // 2. A senha temporária é sempre o telefone cadastrado, somente números.
+  const { error: authError } = await adminClient.auth.admin.updateUserById(amb.user_id, {
+    password: cleanPhone
+  });
+
+  if (authError) {
+    // Compensar a alteração do perfil caso o provedor de autenticação falhe.
+    await adminClient
+      .from('profiles')
+      .update({
+        must_change_password: currentProfile.must_change_password,
+        ativo: currentProfile.ativo
+      })
+      .eq('id', amb.user_id);
+
+    throw new Error(`Falha ao redefinir credenciais: ${authError.message}`);
+  }
 
   // 3. Registrar log de auditoria completo (sem expor a senha ou CPF)
   await adminClient.from('audit_logs').insert({
@@ -256,10 +278,15 @@ export async function redefinirAcesso(ambassadorId: string) {
     entity_type: 'profiles',
     entity_id: amb.user_id,
     ip_hash: ipHash,
-    metadata: { target_username: amb.username, reason: 'redefinir acesso' }
+    metadata: {
+      target_username: amb.username,
+      reason: 'redefinir acesso',
+      temporary_credential_source: 'registered_phone'
+    }
   });
 
   revalidatePath('/embaixadores');
+  revalidatePath(`/embaixadores/${ambassadorId}`);
   return { success: true };
 }
 

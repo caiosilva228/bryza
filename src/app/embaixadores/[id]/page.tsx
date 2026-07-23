@@ -183,11 +183,11 @@ export default function EmbaixadorDetailsPage({ params }: Context) {
   };
 
   const handleResetAccess = async () => {
-    if (!confirm('Deseja realmente redefinir o acesso deste embaixador? A senha voltará a ser o CPF (apenas números) e ele precisará alterá-la no primeiro acesso.')) return;
+    if (!confirm('Deseja realmente redefinir o acesso deste embaixador? A senha temporária será o número de telefone cadastrado (apenas números), e ele precisará alterá-la no primeiro acesso.')) return;
     startTransition(async () => {
       try {
         await redefinirAcesso(amb.id);
-        toast.success('Acesso redefinido com sucesso! Senha inicial: CPF (números).');
+        toast.success('Acesso redefinido! A senha temporária é o telefone cadastrado, apenas números.');
       } catch (e: any) {
         toast.error(e.message || 'Erro ao redefinir acesso.');
       }

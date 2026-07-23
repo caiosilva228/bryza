@@ -256,6 +256,12 @@ export default function NovoEmbaixadorPage() {
       return;
     }
 
+    const phoneClean = phone.replace(/\D/g, '');
+    if (!/^\d{10,11}$/.test(phoneClean)) {
+      toast.error('Informe um telefone válido com DDD.');
+      return;
+    }
+
     // Validar foto
     if (photoFile) {
       const allowedMime = ['image/jpeg', 'image/png', 'image/webp'];
@@ -347,7 +353,6 @@ export default function NovoEmbaixadorPage() {
         toast.success('Embaixador cadastrado com sucesso!');
         
         // 3. Exibir tela de confirmação
-        const phoneClean = phone.replace(/\D/g, '');
         setCreatedData({
           username: newAmb.username,
           phoneClean,
