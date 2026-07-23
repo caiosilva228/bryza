@@ -179,105 +179,103 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
       <a className={styles.skipLink} href="#inicio">Ir direto para a oferta</a>
       <div className={styles.announcement}>
         <span className={styles.desktopAnnouncement}>Frete grátis nas regiões atendidas • Pagamento somente na entrega</span>
-        <span className={styles.mobileAnnouncement}>Frete grátis • Pague na entrega</span>
+        <span className={styles.mobileAnnouncement}>
+          <Truck size={13} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px', color: '#FFFFFF' }} aria-hidden="true" />
+          <span style={{ verticalAlign: 'middle' }}>Frete grátis • Pague na entrega</span>
+        </span>
       </div>
-
-      <header className={styles.header}>
-        <a href="#inicio" className={styles.brand} aria-label="Bryza — início">
-          <Image
-            src="/Logo Bryza.svg"
-            alt="Bryza Logo"
-            width={104}
-            height={34}
-            priority
-          />
-        </a>
-        
-        {ambassador && (
-          <div className={styles.ambassadorBadge}>
-            <div className={styles.ambassadorAvatar}>
-              <AmbassadorAvatar photoPath={ambassador.photo_path} name={ambassadorName} size={26} />
-            </div>
-            <div className={styles.ambassadorMeta}>
-              <small>Indicado por</small>
-              <strong>{ambassadorName}</strong>
-            </div>
-          </div>
-        )}
-      </header>
 
       <main>
         <section id="inicio" ref={heroRef} className={styles.hero}>
           <div className={styles.heroInner}>
+
+            {/* Copy: badges, headline, subheadline */}
             <div className={styles.heroCopy}>
               <div className={styles.heroTags}>
                 <span className={styles.tagKit}>KIT CASA PERFUMADA</span>
                 <span className={styles.tagGift}>2 PANOS DE ALTA ABSORÇÃO</span>
               </div>
 
-              <h1>10 litros para roupas <em className={styles.highlightText}>limpas, macias e perfumadas.</em></h1>
+              <h1>
+                10 litros para roupas <br className={styles.mobileHeroBreak} />
+                <em className={styles.highlightText}>
+                  limpas, macias e <br className={styles.mobileHeroBreak} />
+                  perfumadas.
+                </em>
+              </h1>
 
+              {/* Subheadline desktop */}
               <p className={`${styles.heroSubheadline} ${styles.desktopSubheadline}`}>
                 {ambassador.display_name
                   ? `Sabão Líquido Concentrado 5L + Amaciante Microencapsulado 5L. Pela indicação de ${ambassador.display_name}, você ainda recebe 2 Panos Xadrez de Alta Absorção — 45 × 70 cm.`
                   : 'Sabão Líquido Concentrado 5L + Amaciante Microencapsulado 5L e mais 2 Panos Xadrez de Alta Absorção — 45 × 70 cm de presente.'}
               </p>
 
+              {/* Subheadline mobile */}
               <div className={styles.mobileSubheadlineGroup}>
                 <p className={styles.mobileSubheadline}>
-                  Sabão Concentrado 5L + Amaciante Microencapsulado 5L e 2 Panos Xadrez de Alta Absorção — 45 × 70 cm.
+                  Sabão Concentrado 5L + Amaciante<br />
+                  Microencapsulado 5L e 2 Panos Xadrez<br />
+                  de Alta Absorção — 45 × 70 cm.
                 </p>
               </div>
+            </div>
 
-              <div className={styles.mobileProductBlock}>
-                <div className={styles.mobileProductImageWrapper}>
-                  <Image src="/hero-pv-mobile_11zon.webp" alt="Kit Bryza com Sabão Líquido, Amaciante de 5L e 2 Panos Xadrez de Alta Absorção" fill priority sizes="100vw" style={{ objectFit: 'cover', objectPosition: 'center center' }} />
-                </div>
+            {/* Imagem do kit — edge-to-edge no mobile */}
+            <div className={styles.mobileProductBlock}>
+              <div className={styles.mobileProductImageWrapper}>
+                <Image src="/hero-pv-mobile_11zon.webp" alt="Kit Bryza com Sabão Líquido, Amaciante de 5L e 2 Panos Xadrez de Alta Absorção" fill priority sizes="100vw" style={{ objectFit: 'cover', objectPosition: 'center center' }} />
+              </div>
+            </div>
+
+            {/* Área de oferta: preço, brinde, CTA, benefícios */}
+            <div className={styles.heroOfferArea}>
+              <div className={styles.heroPriceRow}>
+                <span className={styles.heroPriceLabel}>Valor do kit + brindes</span>
+                <s className={styles.heroPriceStrikethrough}>R$105,78</s>
               </div>
 
-              <div className={styles.heroOfferArea}>
-                <div className={styles.heroPriceRow}>
-                  <span className={styles.heroPriceLabel}>Valor do kit + brindes</span>
-                  <s className={styles.heroPriceStrikethrough}>R$105,78</s>
-                </div>
-                
-                <div className={styles.heroPriceMain}>
-                  <span className={styles.heroPriceToday}>Hoje por</span>
-                  <strong className={styles.heroPriceValue}>R$79,80</strong>
-                  <span className={styles.heroLiterPrice}>
-                    Menos de R$7,99 por litro
-                  </span>
-                </div>
+              <div className={styles.heroPriceMain}>
+                <span className={styles.heroPriceToday}>Hoje por</span>
+                <strong className={styles.heroPriceValue}>R$79,80</strong>
+                <span className={styles.heroLiterPrice}>
+                  Menos de R$7,99 por litro
+                </span>
+              </div>
 
-                <div className={styles.heroGiftHighlight}>
+              <div className={styles.heroGiftHighlight}>
+                <div className={styles.heroGiftIconWrapper}>
+                  <Gift size={20} className={styles.heroGiftIcon} aria-hidden="true" />
+                </div>
+                <div className={styles.heroGiftContent}>
                   <span>Você recebe <strong className={styles.heroGiftGreenText}>R$25,98 em brindes.</strong></span>
                   <small className={styles.heroGiftAuxText}>Cada Pano Xadrez de Alta Absorção custa em média R$12,99 nos supermercados.</small>
                 </div>
+              </div>
 
-                <div className={styles.heroCtaBlock}>
-                  <button type="button" className={styles.heroCtaBtn} onClick={onOrder}>
-                    <span>AGENDAR MEU PEDIDO</span>
-                    <ArrowRight size={18} aria-hidden="true" />
-                  </button>
-                  <div className={styles.heroSecurityNote}>
-                    <LockKeyhole size={13} aria-hidden="true" />
-                    <span>Você não paga nada antecipadamente.</span>
-                  </div>
+              <div className={styles.heroCtaBlock}>
+                <button type="button" className={styles.heroCtaBtn} onClick={onOrder}>
+                  <span>AGENDAR MEU PEDIDO</span>
+                  <ArrowRight size={18} aria-hidden="true" />
+                </button>
+                <div className={styles.heroSecurityNote}>
+                  <LockKeyhole size={13} aria-hidden="true" />
+                  <span>Você não paga nada antecipadamente.</span>
                 </div>
+              </div>
 
-                <div className={styles.heroTrustLine}>
-                  <div className={styles.heroTrustItem}>
-                    <Truck size={18} aria-hidden="true" />
-                    <span>Frete grátis</span>
-                  </div>
-                  <div className={styles.heroTrustItem}>
-                    <WalletCards size={18} aria-hidden="true" />
-                    <span>Pagamento na entrega</span>
-                  </div>
-                  <div className={styles.heroTrustItem}>
-                    <MessageCircle size={18} aria-hidden="true" />
-                    <span>Confirmação pelo WhatsApp</span>
-                  </div>
+              <div className={styles.heroTrustLine}>
+                <div className={styles.heroTrustItem}>
+                  <Truck size={18} aria-hidden="true" />
+                  <span>Frete grátis</span>
+                </div>
+                <div className={styles.heroTrustItem}>
+                  <WalletCards size={18} aria-hidden="true" />
+                  <span>Pagamento na entrega</span>
+                </div>
+                <div className={styles.heroTrustItem}>
+                  <MessageCircle size={18} aria-hidden="true" />
+                  <span>Confirmação pelo WhatsApp</span>
                 </div>
               </div>
 
