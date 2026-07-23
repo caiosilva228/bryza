@@ -1042,6 +1042,301 @@
   margin: 0;
 }
 
+/* Secao 6: Demonstracao e Prova Real */
+.proofSection {
+  background: #f8fafc;
+  padding: 96px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.proofShowcase {
+  width: min(1180px, calc(100% - 64px));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 32px;
+  align-items: stretch;
+}
+
+.featuredVideoCard {
+  background: #ffffff;
+  border: 1px solid #e2e7ef;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(16, 24, 70, 0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.videoPlayerWrapper {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #051329;
+  position: relative;
+  overflow: hidden;
+}
+
+.videoElement {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.featuredVideoMeta {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.featuredVideoMeta h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #051329;
+  margin: 0;
+}
+
+.featuredVideoMeta p {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #667085;
+  margin: 0;
+}
+
+.proofGalleryBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.blockIntro {
+  margin-bottom: 8px;
+}
+
+.blockIntro h3 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #051329;
+  margin: 0 0 4px;
+}
+
+.blockIntro p {
+  font-size: 14px;
+  color: #667085;
+  margin: 0;
+}
+
+.proofGalleryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.proofMediaCard {
+  background: #ffffff;
+  border: 1px solid #e2e7ef;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.02);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .proofMediaCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(5, 19, 41, 0.08);
+  }
+}
+
+.proofMediaThumbnail {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  position: relative;
+  background: #f1f5f9;
+  overflow: hidden;
+}
+
+.playBadge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(5, 19, 41, 0.85);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.proofMediaCaption {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.proofMediaCaption p {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.proofMediaCaption small {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.testimonialsBlock {
+  width: min(1180px, calc(100% - 64px));
+  margin: 56px auto 0;
+}
+
+.testimonialsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.testimonialCard {
+  background: #ffffff;
+  border: 1px solid #e2e7ef;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .testimonialCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(5, 19, 41, 0.06);
+  }
+}
+
+.quoteIcon {
+  color: #5a8216;
+  opacity: 0.7;
+}
+
+.testimonialText {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #334155;
+  font-style: italic;
+  margin: 0;
+}
+
+.testimonialMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.testimonialAvatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #051329;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.testimonialAuthor {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.testimonialAuthor strong {
+  font-size: 14px;
+  color: #051329;
+}
+
+.testimonialAuthor span {
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.lightboxOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(5, 19, 41, 0.82);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.lightboxContent {
+  position: relative;
+  max-width: 860px;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lightboxCloseBtn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: 0;
+  color: #051329;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.lightboxCloseBtn:hover {
+  background: #e2e8f0;
+}
+
+.lightboxVideo {
+  width: 100%;
+  max-height: 75vh;
+  border-radius: 12px;
+  background: #000;
+}
+
+.lightboxCaption {
+  margin-top: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #051329;
+  text-align: center;
+}
+
 .valueSection { padding: 112px max(32px, calc((100vw - 1100px) / 2)); display: grid; grid-template-columns: 1fr 450px; align-items: center; gap: 100px; }
 .receipt { padding: 30px; background: #fff; border: 1px solid var(--neutral-200); border-radius: 14px; box-shadow: 0 12px 32px rgba(16,24,70,.09); }
 .receipt h3 { margin: 0 0 12px; padding-bottom: 17px; color: var(--bryza-navy-950); border-bottom: 1px solid var(--neutral-200); font-size: 16px; }
@@ -1653,6 +1948,41 @@
 
   .reasonCard p {
     font-size: 14px !important;
+  }
+
+  /* Secao 6: Demonstracao e Prova Real (Mobile) */
+  .proofSection {
+    padding: 64px 20px 72px !important;
+  }
+
+  .proofShowcase {
+    width: 100% !important;
+    grid-template-columns: 1fr !important;
+    gap: 28px !important;
+  }
+
+  .featuredVideoCard {
+    border-radius: 14px !important;
+  }
+
+  .proofGalleryGrid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .testimonialsBlock {
+    width: 100% !important;
+    margin-top: 40px !important;
+  }
+
+  .testimonialsGrid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .lightboxContent {
+    padding: 16px !important;
+    border-radius: 14px !important;
   }
   .giftMath { grid-template-columns: 1fr; }
   .giftMath div { flex-direction: row; justify-content: space-between; }

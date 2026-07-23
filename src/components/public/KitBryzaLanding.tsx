@@ -15,12 +15,15 @@ import {
   MessageCircle,
   PackageCheck,
   BadgePercent,
+  Play,
+  Quote,
   ShieldCheck,
   Sparkles,
   Truck,
   WalletCards,
+  X,
 } from 'lucide-react';
-import { benefits, faqs, kitItems, steps } from './kit-bryza-content';
+import { benefits, faqs, kitItems, realDemonstrations, realTestimonials, steps } from './kit-bryza-content';
 import styles from './KitBryzaSalesPage.module.css';
 import type { AmbassadorPublicInfo } from './kit-bryza-types';
 
@@ -113,11 +116,27 @@ function AmbassadorAvatar({ photoPath, name, size = 56 }: { photoPath?: string |
 export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBryzaLandingProps) {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [showSticky, setShowSticky] = useState(false);
+  const [activeMedia, setActiveMedia] = useState<{ url: string; title: string; type: 'video' | 'image'; alt: string } | null>(null);
   const heroRef = useRef<HTMLElement>(null);
+
+  const publishedDemos = realDemonstrations.filter((d) => d.isPublished);
+  const featuredDemo = publishedDemos.find((d) => d.isFeatured) || publishedDemos[0];
+  const galleryDemos = publishedDemos.filter((d) => d.id !== featuredDemo?.id);
+  const publishedTestimonials = realTestimonials.filter((t) => t.authorized && t.isPublished);
 
   const hasAmbassadorName = Boolean(ambassador?.display_name && ambassador.display_name.trim().length > 0);
   const ambassadorName = hasAmbassadorName ? ambassador.display_name.trim() : '';
   const customMessage = ambassador?.custom_message?.trim() || null;
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && activeMedia) {
+        setActiveMedia(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeMedia]);
 
   useEffect(() => {
     const hero = heroRef.current;
@@ -452,6 +471,159 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
             </article>
           </div>
         </section>
+
+        {/* Secao 6: Demonstracao e Prova Real */}
+        {publishedDemos.length > 0 || publishedTestimonials.length > 0 ? (
+          <section id="demonstracao" className={styles.proofSection} aria-label="Demonstração e Prova Real">
+            <header className={styles.sectionIntro}>
+              <span className={styles.sectionEyebrow}>VEJA A BRYZA NA PRÁTICA</span>
+              <h2>Produtos reais, uso real e entregas de verdade.</h2>
+              <p>
+                Conheça o Kit Bryza em uso, veja demonstrações dos produtos e acompanhe experiências reais de quem já recebeu.
+              </p>
+            </header>
+
+            {/* Bloco 1: Destaque de Video & Galeria de Provas Reais */}
+            {publishedDemos.length > 0 && (
+              <div className={styles.proofShowcase}>
+                {featuredDemo && (
+                  <article className={styles.featuredVideoCard}>
+                    <div className={styles.videoPlayerWrapper}>
+                      <video
+                        controls
+                        playsInline
+                        preload="metadata"
+                        poster={featuredDemo.posterUrl}
+                        className={styles.videoElement}
+                        aria-label={`Vídeo: ${featuredDemo.title}`}
+                      >
+                        <source src={featuredDemo.mediaUrl} type="video/mp4" />
+                        Seu navegador não suporta a exibição deste vídeo.
+                      </video>
+                    </div>
+                    <div className={styles.featuredVideoMeta}>
+                      <h3>{featuredDemo.title}</h3>
+                      <p>{featuredDemo.description}</p>
+                    </div>
+                  </article>
+                )}
+
+                {galleryDemos.length > 0 && (
+                  <div className={styles.proofGalleryBlock}>
+                    <header className={styles.blockIntro}>
+                      <h3>Da preparação até a entrega</h3>
+                      <p>Registros reais da rotina da Bryza e dos pedidos entregues aos clientes.</p>
+                    </header>
+                    <div role="list" className={styles.proofGalleryGrid}>
+                      {galleryDemos.map((demo) => (
+                        <article
+                          key={demo.id}
+                          role="listitem"
+                          className={styles.proofMediaCard}
+                          onClick={() =>
+                            setActiveMedia({
+                              url: demo.mediaUrl,
+                              title: demo.title,
+                              type: demo.type,
+                              alt: demo.alt,
+                            })
+                          }
+                        >
+                          <div className={styles.proofMediaThumbnail}>
+                            <Image
+                              src={demo.posterUrl}
+                              alt={demo.alt}
+                              width={320}
+                              height={220}
+                              unoptimized
+                              style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+                            />
+                            {demo.type === 'video' && (
+                              <span className={styles.playBadge} aria-hidden="true">
+                                <Play size={18} />
+                              </span>
+                            )}
+                          </div>
+                          <div className={styles.proofMediaCaption}>
+                            <p>{demo.caption}</p>
+                            {demo.location && <small>{demo.location}</small>}
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Bloco 3: Depoimentos Reais */}
+            {publishedTestimonials.length > 0 && (
+              <div className={styles.testimonialsBlock}>
+                <header className={styles.blockIntro}>
+                  <h3>O que os clientes estão dizendo</h3>
+                  <p>Experiências compartilhadas por pessoas que já receberam ou testaram os produtos Bryza.</p>
+                </header>
+                <div role="list" className={styles.testimonialsGrid}>
+                  {publishedTestimonials.map((item) => (
+                    <article key={item.id} role="listitem" className={styles.testimonialCard}>
+                      <Quote size={24} className={styles.quoteIcon} aria-hidden="true" />
+                      <p className={styles.testimonialText}>“{item.text}”</p>
+                      <footer className={styles.testimonialMeta}>
+                        <div className={styles.testimonialAvatar} aria-hidden="true">
+                          {item.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className={styles.testimonialAuthor}>
+                          <strong>{item.name}</strong>
+                          <span>{item.location} • Cliente Bryza</span>
+                        </div>
+                      </footer>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Lightbox Acessivel */}
+            {activeMedia && (
+              <div
+                className={styles.lightboxOverlay}
+                role="dialog"
+                aria-modal="true"
+                aria-label={activeMedia.title}
+                onClick={() => setActiveMedia(null)}
+              >
+                <div className={styles.lightboxContent} onClick={(e) => e.stopPropagation()}>
+                  <button
+                    type="button"
+                    className={styles.lightboxCloseBtn}
+                    onClick={() => setActiveMedia(null)}
+                    aria-label="Fechar visualização de mídia"
+                  >
+                    <X size={24} />
+                  </button>
+
+                  {activeMedia.type === 'video' ? (
+                    <video controls autoPlay playsInline className={styles.lightboxVideo}>
+                      <source src={activeMedia.url} type="video/mp4" />
+                    </video>
+                  ) : (
+                    <div className={styles.lightboxImageWrapper}>
+                      <Image
+                        src={activeMedia.url}
+                        alt={activeMedia.alt}
+                        width={800}
+                        height={600}
+                        unoptimized
+                        style={{ objectFit: 'contain', width: '100%', height: 'auto', maxHeight: '80vh' }}
+                      />
+                    </div>
+                  )}
+                  <p className={styles.lightboxCaption}>{activeMedia.title}</p>
+                </div>
+              </div>
+            )}
+          </section>
+        ) : null}
 
         <section className={styles.benefitsSection}>
           <div className={styles.sectionIntro}><span>Qualidade que você sente</span><h2>Mais rendimento, mais perfume e cuidado real.</h2><p>Fórmulas desenvolvidas para entregar limpeza, maciez e perfume para a rotina da sua família.</p></div>
