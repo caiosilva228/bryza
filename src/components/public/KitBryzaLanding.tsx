@@ -83,6 +83,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
 
   return (
     <div className={styles.page}>
+      <a className={styles.skipLink} href="#inicio">Ir direto para a oferta</a>
       <div className={styles.announcement}>
         <span><Truck size={14} /> Oferta especial da rota Bryza</span><i />
         <span><Gift size={14} /> 2 brindes exclusivos</span><i />
@@ -95,7 +96,10 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
         <nav aria-label="Navegação principal">
           <a href="#kit">Produtos</a><a href="#oferta">Kit e oferta</a><a href="#como-funciona">Como funciona</a><a href="#duvidas">Dúvidas</a>
         </nav>
-        <div className={styles.ambassador}><span>{ambassador.display_name.charAt(0).toUpperCase()}</span><div><small>Indicação de</small><strong>{ambassador.display_name}</strong></div><ShieldCheck size={17} aria-label="Indicação oficial" /></div>
+        <div className={styles.headerActions}>
+          <div className={styles.ambassador}><span>{ambassador.display_name.charAt(0).toUpperCase()}</span><div><small>Indicação de</small><strong>{ambassador.display_name}</strong></div><ShieldCheck size={17} aria-label="Indicação oficial" /></div>
+          <button type="button" className={styles.headerCta} onClick={onOrder}>Agendar agora<ArrowRight size={16} /></button>
+        </div>
       </header>
 
       <main>
@@ -173,4 +177,3 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
     </div>
   );
 }
-

@@ -47,16 +47,28 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
   const [result, setResult] = useState<PublicSchedulingResult | null>(null);
   const [error, setError] = useState('');
   const firstInputRef = useRef<HTMLInputElement>(null);
+  const modalRef = useRef<HTMLElement>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
   const idempotencyKeyRef = useRef(crypto.randomUUID());
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     firstInputRef.current?.focus();
-    const handleEscape = (event: KeyboardEvent) => { if (event.key === 'Escape' && !loading) onClose(); };
-    document.addEventListener('keydown', handleEscape);
-    return () => { document.body.style.overflow = previousOverflow; document.removeEventListener('keydown', handleEscape); };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !loading) onClose();
+      if (event.key !== 'Tab' || !modalRef.current) return;
+      const focusable = Array.from(modalRef.current.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), select:not(:disabled), [href], [tabindex]:not([tabindex="-1"])'));
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => { document.body.style.overflow = previousOverflow; document.removeEventListener('keydown', handleKeyDown); };
   }, [loading, onClose]);
+
+  useEffect(() => { if (error) errorRef.current?.focus(); }, [error]);
 
   const setField = <Key extends keyof OrderForm>(key: Key, value: OrderForm[Key]) => setForm(current => ({ ...current, [key]: value }));
 
@@ -74,7 +86,7 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
 
   return (
     <div className={styles.modalOverlay} onMouseDown={event => { if (event.target === event.currentTarget && !loading) onClose(); }}>
-      <section className={styles.orderModal} role="dialog" aria-modal="true" aria-labelledby="order-title" aria-describedby="order-description">
+      <section ref={modalRef} className={styles.orderModal} role="dialog" aria-modal="true" aria-labelledby="order-title" aria-describedby="order-description">
         <header className={styles.modalHeader}>
           <div><span>Kit Bryza Casa Perfumada</span><h2 id="order-title">{result ? 'Pedido recebido!' : 'Agendar meu pedido'}</h2><p id="order-description">{result ? 'Agora a equipe Bryza verificará a disponibilidade da rota.' : 'Preencha os dados abaixo. Você não paga nada antecipadamente.'}</p></div>
           <button type="button" onClick={onClose} disabled={loading} aria-label="Fechar formulário"><X /></button>
@@ -87,8 +99,8 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
             <button type="button" onClick={onClose}>Concluir</button>
           </div>
         ) : (
-          <form className={styles.orderForm} onSubmit={submit}>
-            {error && <div className={styles.formError} role="alert">{error}</div>}
+          <form className={styles.orderForm} onSubmit={submit} aria-busy={loading}>
+            {error && <div ref={errorRef} className={styles.formError} role="alert" tabIndex={-1}>{error}</div>}
             <fieldset><legend>Seus dados</legend><div className={styles.formGrid}>
               <label className={styles.fullField}>Nome completo *<input ref={firstInputRef} autoComplete="name" required minLength={3} maxLength={160} value={form.nome} onChange={event => setField('nome', event.target.value)} /></label>
               <label>WhatsApp *<input type="tel" inputMode="tel" autoComplete="tel" required placeholder="(00) 00000-0000" value={form.telefone} onChange={event => setField('telefone', maskPhone(event.target.value))} /></label>
@@ -117,4 +129,3 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
     </div>
   );
 }
-
