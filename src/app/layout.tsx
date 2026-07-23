@@ -6,10 +6,16 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'BRYZA SYSTEM - Gestão Operacional',
   description: 'Sistema de gestão do Programa de Embaixadores Bryza.',
+  applicationName: 'Espaço do Embaixador Bryza',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Bryza',
+  },
   icons: {
     icon: '/fiveicon.svg',
     shortcut: '/fiveicon.svg',
-    apple: '/fiveicon.svg',
+    apple: '/app-icon-192.png',
   },
 };
 

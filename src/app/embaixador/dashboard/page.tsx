@@ -7,6 +7,7 @@ import { getPortalDashboardData, type AmbassadorDashboardMetrics } from '../acti
 import { formatCurrency } from '@/utils/format';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { InstallAppButton } from '@/components/pwa/InstallAppButton';
 
 export default function EmbaixadorDashboardPage() {
   const [data, setData] = useState<AmbassadorDashboardMetrics | null>(null);
@@ -110,7 +111,8 @@ export default function EmbaixadorDashboardPage() {
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', flex: '0 1 auto' }}>
+            <InstallAppButton />
             <Link href="/embaixador/meu-link" style={{
               display: 'flex',
               alignItems: 'center',
