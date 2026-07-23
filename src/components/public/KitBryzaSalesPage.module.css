@@ -269,15 +269,9 @@
 .successState > button { min-height: 48px; padding: 12px 28px; color: #fff; background: var(--bryza-navy-950); border: 0; border-radius: 8px; font-weight: 700; cursor: pointer; }
 
 @media (max-width: 1024px) {
-  .header { width: calc(100% - 48px); grid-template-columns: 170px 1fr 190px; }
-  .header nav { gap: 18px; }
-  .heroInner { grid-template-columns: 1fr; }
-  .heroCopy { padding-inline: 40px; background: rgba(255,255,255,.96); }
-  .heroProduct { display: none; }
-  .mobileHeroProduct { height: 250px; margin: 10px 0 0; display: flex; align-items: flex-end; justify-content: center; position: relative; background: linear-gradient(180deg, transparent, #f1f5f9); border-radius: 14px; }
-  .mobileHeroProduct > img { width: 320px; height: auto; mix-blend-mode: multiply; }
-  .mobileHeroProduct .plaidCloths { position: absolute; right: 4%; bottom: 8px; transform: scale(.72); transform-origin: right bottom; }
-  .offerBox { max-width: none; }
+  .header { width: calc(100% - 48px); }
+  .heroInner { grid-template-columns: minmax(380px, 1fr) 1fr; }
+  .heroCopy { padding: 20px 24px; }
   .benefitGrid { grid-template-columns: repeat(2, 1fr); }
   .giftSection { gap: 48px; }
   .valueSection { grid-template-columns: 1fr 420px; gap: 54px; }
@@ -288,75 +282,72 @@
 @media (max-width: 768px) {
   .announcement { min-height: 30px; gap: 9px; font-size: 8px; }
   .announcement span:first-child, .announcement i:first-of-type, .announcement span:nth-of-type(3), .announcement i:nth-of-type(3) { display: none; }
-  .header { width: calc(100% - 40px); min-height: 62px; grid-template-columns: 1fr auto; }
+  .header { width: calc(100% - 32px); min-height: 60px; padding-inline: 0; }
   .brand img { width: 105px; height: auto; }
   .header nav { display: none; }
-  .ambassador strong { max-width: 95px; font-size: 9px; }
-  .ambassador small { display: none; }
   .headerActions { gap: 8px; }
   .headerActions .ambassador { display: none; }
-  .headerCta { min-height: 44px; padding-inline: 13px; }
-  .heroCopy { padding: 30px 20px 34px; }
-  .heroTags span, .heroTags b { padding: 6px 9px; font-size: 8px; }
-  .hero h1 { max-width: 520px; margin: 15px 0 10px; font-size: clamp(38px, 11vw, 44px); line-height: 1.04; }
-  .heroCopy > p { font-size: 15px; line-height: 1.55; }
-  .mobileHeroProduct { height: 205px; }
-  .mobileHeroProduct > img { width: 260px; }
-  .mobileHeroProduct .plaidCloths { right: -3%; transform: scale(.58); }
-  .heroTrust { margin-top: 12px; padding: 13px 0; }
-  .heroTrust span { gap: 5px; font-size: 9px; }
+  .headerCta { min-height: 38px; padding-inline: 12px; font-size: 9.5px; }
+
+  .heroInner { display: flex; flex-direction: column; min-height: auto; }
+  .heroCopy { padding: 24px 18px 28px; background: #051329; }
+  .heroProduct { display: none !important; }
+  .mobileHeroProduct { display: block !important; width: 100%; height: 220px; margin: 16px 0; border-radius: 14px; overflow: hidden; position: relative; background: #000; border: 1px solid rgba(255,255,255,0.15); }
+  .mobileHeroProduct > img { width: 100%; height: 100%; object-fit: cover; object-position: center; mix-blend-mode: normal; }
+
+  .heroTags span, .heroTags b { padding: 5px 8px; font-size: 8px; }
+  .hero h1 { max-width: 100%; margin: 12px 0 8px; font-size: clamp(26px, 7vw, 34px); line-height: 1.1; }
+  .heroCopy > p { font-size: 13.5px; line-height: 1.45; }
+  .heroTrust { margin-top: 12px; padding: 10px 0; grid-template-columns: repeat(3, 1fr); }
+  .heroTrust span { gap: 5px; font-size: 9px; flex-direction: column; align-items: flex-start; }
+  .heroTrust span br { display: none; }
   .heroTrust span + span { padding-left: 8px; }
-  .heroTrust svg { width: 19px; }
-  .offerBox { margin-top: 14px; padding: 16px; grid-template-columns: 1fr 1.12fr; gap: 10px; }
-  .literPrice { align-items: center; text-align: center; }
-  .literPrice strong { font-size: 34px; }
-  .totalPrice { min-height: 70px; padding-left: 12px; }
-  .totalPrice strong { font-size: 24px; }
-  .offerAction { grid-column: 1 / -1; }
-  .offerAction .cta { width: 100%; }
-  .giftValue { font-size: 9px; }
-  .indicators { width: calc(100% - 24px); padding: 8px; grid-template-columns: repeat(2, 1fr); border-radius: 0 0 10px 10px; }
-  .indicators div { padding: 10px 5px; }
-  .indicators div:nth-child(2) { border-right: 0; }
-  .indicators strong { font-size: 21px; }
-  .indicators span { font-size: 9px; }
-  .benefitsSection, .kitSection, .stepsSection, .faqSection { width: calc(100% - 40px); padding: 72px 0; }
-  .sectionIntro { margin-bottom: 29px; }
-  .sectionIntro h2, .giftCopy h2, .valueCopy h2 { font-size: 34px; }
-  .sectionIntro p, .giftCopy > p, .valueCopy p { font-size: 14px; }
+  .heroTrust svg { width: 18px; }
+
+  .offerBox { max-width: 100%; margin-top: 14px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+  .literPrice, .totalPrice { min-height: auto; flex: 1 1 auto; }
+  .totalPrice { border-left: 1px solid var(--neutral-200); padding-left: 12px; }
+  .literPrice strong { font-size: 26px; }
+  .totalPrice strong { font-size: 22px; }
+  .offerAction { width: 100%; flex: 1 1 100%; min-width: 0; }
+  .offerAction .cta { width: 100%; min-height: 48px; font-size: 11px; white-space: normal; text-align: center; }
+  .giftValue { font-size: 9px; padding-top: 8px; }
+
+  .benefitsSection, .kitSection, .stepsSection, .faqSection { width: calc(100% - 32px); padding: 56px 0; }
+  .sectionIntro { margin-bottom: 24px; }
+  .sectionIntro h2, .giftCopy h2, .valueCopy h2 { font-size: 28px; }
+  .sectionIntro p, .giftCopy > p, .valueCopy p { font-size: 13.5px; }
   .benefitGrid, .kitGrid { grid-template-columns: 1fr; }
-  .benefitGrid article { min-height: 0; }
+  .benefitGrid article { min-height: 0; padding: 20px; }
   .kitSection { padding-top: 0; }
-  .productCrop { height: 205px; }
+  .productCrop { height: 180px; }
   .itemCopy > p { min-height: 0; }
-  .giftSection { padding: 72px 20px; grid-template-columns: 1fr; gap: 38px; }
-  .giftVisual { min-height: 300px; }
-  .giftVisual .plaidCloths { transform: scale(.86) rotate(-3deg); }
+  .giftSection { padding: 48px 16px; grid-template-columns: 1fr; gap: 28px; }
+  .giftVisual { min-height: 240px; }
   .giftMath { grid-template-columns: 1fr; }
   .giftMath div { flex-direction: row; justify-content: space-between; }
   .giftMath div + div { border-left: 0; border-top: 1px solid var(--neutral-200); }
-  .valueSection { padding: 72px 20px; grid-template-columns: 1fr; gap: 34px; }
+  .valueSection { padding: 48px 16px; grid-template-columns: 1fr; gap: 28px; }
   .steps { grid-template-columns: 1fr; border-bottom: 0; }
-  .steps article { padding: 24px 8px; border-bottom: 1px solid var(--neutral-200); }
+  .steps article { padding: 20px 8px; border-bottom: 1px solid var(--neutral-200); }
   .steps article + article { border-left: 0; }
-  .securitySection { padding: 45px 20px; }
+  .securitySection { padding: 36px 16px; }
   .securitySection ul { grid-template-columns: 1fr; }
   .faqItem button { font-size: 13px; }
-  .finalCta { width: calc(100% - 32px); min-height: 0; margin-bottom: 50px; padding: 38px 24px 32px; grid-template-columns: 1fr; gap: 28px; }
-  .finalCta h2 { font-size: 37px; }
+  .finalCta { width: calc(100% - 32px); min-height: 0; margin-bottom: 40px; padding: 32px 20px 28px; grid-template-columns: 1fr; gap: 24px; }
+  .finalCta h2 { font-size: 30px; }
   .finalBenefits { display: grid; grid-template-columns: repeat(2, 1fr); }
   .ctaInverse { width: 100%; min-width: 0; }
-  .finalProducts { min-height: 190px; }
-  .finalProducts > img { width: 270px; }
-  .finalProducts .plaidCloths { right: -22px; transform: scale(.55); }
-  .footer { padding-bottom: 105px; }
-  .footer nav { gap: 14px; }
-  .mobileSticky { position: fixed; z-index: 950; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); padding: 9px 9px 9px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; background: rgba(255,255,255,.97); border: 1px solid var(--neutral-200); border-radius: 10px; box-shadow: 0 12px 32px rgba(16,24,70,.18); opacity: 0; pointer-events: none; transform: translateY(18px); transition: opacity .3s ease, transform .3s ease; }
+  .finalProducts { min-height: 160px; }
+  .finalProducts > img { width: 240px; }
+  .footer { padding-bottom: 90px; }
+  .footer nav { gap: 12px; }
+  .mobileSticky { position: fixed; z-index: 950; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); padding: 9px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; background: rgba(255,255,255,.97); border: 1px solid var(--neutral-200); border-radius: 10px; box-shadow: 0 12px 32px rgba(16,24,70,.18); opacity: 0; pointer-events: none; transform: translateY(18px); transition: opacity .3s ease, transform .3s ease; }
   .mobileStickyVisible { opacity: 1; pointer-events: auto; transform: translateY(0); }
   .mobileSticky > div { display: flex; flex-direction: column; }
   .mobileSticky span { color: var(--neutral-600); font-size: 9px; }
   .mobileSticky strong { color: var(--bryza-navy-950); font-family: "DM Serif Display", Georgia, serif; font-size: 21px; font-weight: 400; }
-  .mobileSticky button { min-height: 44px; padding: 10px 15px; display: flex; align-items: center; gap: 5px; color: #fff; background: var(--bryza-green-600); border: 0; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+  .mobileSticky button { min-height: 42px; padding: 8px 14px; display: flex; align-items: center; gap: 5px; color: #fff; background: var(--bryza-green-600); border: 0; border-radius: 8px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; }
   .mobileSticky svg { width: 16px; }
   .modalOverlay { padding: 0; place-items: end center; }
   .orderModal { max-height: 96dvh; border-radius: 16px 16px 0 0; }
@@ -371,14 +362,8 @@
 }
 
 @media (max-width: 480px) {
-  .heroTags { gap: 5px; }
-  .heroTags span, .heroTags b { letter-spacing: .07em; }
-  .mobileHeroProduct > img { width: 230px; }
-  .heroTrust { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .heroTrust span { flex-direction: column; align-items: flex-start; }
-  .heroTrust span br { display: none; }
-  .offerBox { grid-template-columns: .92fr 1.08fr; }
-  .receipt { padding: 24px 18px; }
+  .heroTrust { grid-template-columns: repeat(3, 1fr); }
+  .offerBox { padding: 12px; }
   .finalBenefits { grid-template-columns: 1fr; }
 }
 
@@ -761,24 +746,7 @@
   box-shadow: 0 12px 32px rgba(0, 20, 50, 0.22);
 }
 
-@media (max-width: 1024px) {
-  .heroCopy {
-    background: linear-gradient(180deg, rgba(5, 15, 32, 0.99), rgba(5, 15, 32, 0.95));
-  }
-
-  .mobileHeroProduct {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 16px;
-  }
-}
-
 @media (max-width: 768px) {
-  .header {
-    width: 100%;
-    min-height: 66px;
-    padding-inline: 20px;
-  }
-
   .heroCopy {
     background: linear-gradient(180deg, rgba(5, 15, 32, 0.99), rgba(5, 15, 32, 0.96));
   }
