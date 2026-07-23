@@ -3246,16 +3246,25 @@
 
   .stepCard {
     display: grid !important;
-    grid-template-columns: 48px 1fr !important;
-    gap: 14px !important;
+    grid-template-columns: 48px minmax(0, 1fr) !important;
+    grid-template-areas:
+      "header category"
+      "header title"
+      "header description"
+      "header auxiliary" !important;
+    column-gap: 14px !important;
+    row-gap: 6px !important;
+    align-content: start !important;
     padding: 20px !important;
     border-radius: 14px !important;
   }
 
   .stepHeader {
+    grid-area: header !important;
     margin-bottom: 0 !important;
     flex-direction: column !important;
     align-items: flex-start !important;
+    justify-content: flex-start !important;
     gap: 8px !important;
   }
 
@@ -3263,14 +3272,34 @@
     font-size: 36px !important;
   }
 
+  .stepCategory {
+    grid-area: category !important;
+    align-self: center !important;
+    min-width: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
   .stepCard h3 {
+    grid-area: title !important;
+    min-width: 0 !important;
     font-size: 19px !important;
-    margin-bottom: 6px !important;
+    margin: 2px 0 0 !important;
+    overflow-wrap: anywhere;
   }
 
   .stepDescription {
+    grid-area: description !important;
+    min-width: 0 !important;
     font-size: 14px !important;
-    margin-bottom: 8px !important;
+    margin: 0 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .stepAuxiliary {
+    grid-area: auxiliary !important;
+    min-width: 0 !important;
+    margin-top: 2px !important;
+    overflow-wrap: anywhere;
   }
 
   .stepsSecurityBox {
@@ -3531,6 +3560,49 @@
   .heroTrust { grid-template-columns: repeat(3, 1fr); }
   .offerBox { padding: 12px; }
   .finalBenefits { grid-template-columns: 1fr; }
+
+  .stepsSection {
+    padding-inline: 16px !important;
+  }
+
+  .stepCard {
+    grid-template-columns: 42px minmax(0, 1fr) !important;
+    column-gap: 12px !important;
+    padding: 18px 16px !important;
+  }
+
+  .stepNumberBadge {
+    font-size: 32px !important;
+  }
+
+  .stepIconBox {
+    width: 42px !important;
+    height: 42px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .stepCard {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas:
+      "header"
+      "category"
+      "title"
+      "description"
+      "auxiliary" !important;
+    row-gap: 8px !important;
+  }
+
+  .stepHeader {
+    width: 100% !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  .stepCard h3 {
+    margin-top: 0 !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
