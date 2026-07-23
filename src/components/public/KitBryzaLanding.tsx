@@ -1087,7 +1087,125 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
         </section>
       </main>
 
-      <footer className={styles.footer}><Image src="/Logo Bryza.svg" alt="Bryza" width={126} height={44} /><p>O perfume que anuncia a presença.</p><nav aria-label="Links institucionais"><a href="#">Política de privacidade</a><a href="#">Termos de uso</a><a href="#duvidas">Atendimento</a></nav><small>© 2026 Bryza. Todos os direitos reservados. • Indicação {ambassador.referral_code.toUpperCase()}</small></footer>
+      {/* Secao 12: Footer */}
+      <footer className={styles.footerSection} aria-label="Rodapé institucional Bryza">
+        <div className={styles.footerInner}>
+          <div className={styles.footerMainGrid}>
+            {/* Coluna 1 — Marca */}
+            <div className={styles.footerBrandCol}>
+              <a href="#inicio" className={styles.footerBrandLogo} aria-label="Bryza — início">
+                <Image
+                  src="/Logo Bryza.svg"
+                  alt="Bryza — O perfume que anuncia a presença."
+                  width={145}
+                  height={46}
+                  style={{ filter: 'brightness(0) invert(1)' }}
+                />
+              </a>
+              <p className={styles.footerSlogan}>O perfume que anuncia a presença.</p>
+              <p className={styles.footerDescription}>
+                Produtos para cuidar das roupas e da casa, com qualidade, praticidade e atendimento direto da equipe Bryza.
+              </p>
+            </div>
+
+            {/* Coluna 2 — Atendimento */}
+            <div className={styles.footerCol}>
+              <h3 className={styles.footerColTitle}>Atendimento</h3>
+              <ul role="list" className={styles.footerNavList}>
+                <li>
+                  <a
+                    href={`https://wa.me/5561999999999?text=${encodeURIComponent('Olá, estou na página do Kit Bryza e preciso de ajuda com meu pedido.')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.footerWhatsappLink}
+                    onClick={() => {
+                      if (typeof window !== 'undefined' && (window as unknown as { dataLayer?: Record<string, unknown>[] }).dataLayer) {
+                        (window as unknown as { dataLayer: Record<string, unknown>[] }).dataLayer.push({
+                          event: 'footer_link_clicked',
+                          link_type: 'whatsapp',
+                          destination: 'https://wa.me/...',
+                          referral_code: ambassador?.referral_code,
+                        });
+                      }
+                    }}
+                  >
+                    <MessageCircle size={16} aria-hidden="true" />
+                    <span>Falar com a equipe Bryza</span>
+                  </a>
+                </li>
+                <li className={styles.footerMetaItem}>
+                  <small>Horário de atendimento:</small>
+                  <span>Segunda a Sexta, das 08h às 18h</span>
+                </li>
+                <li className={styles.footerMetaItem}>
+                  <small>Regiões atendidas:</small>
+                  <span>Consulte a disponibilidade da rota pelo WhatsApp.</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Coluna 3 — Informações */}
+            <div className={styles.footerCol}>
+              <h3 className={styles.footerColTitle}>Informações</h3>
+              <nav aria-label="Links institucionais do rodapé">
+                <ul role="list" className={styles.footerNavList}>
+                  <li><a href="#kit">O que vem no Kit Bryza</a></li>
+                  <li><a href="#como-funciona">Como funciona o pedido</a></li>
+                  <li><a href="#duvidas">Perguntas frequentes</a></li>
+                  <li><a href="/privacidade">Política de Privacidade</a></li>
+                  <li><a href="/termos">Termos de Uso</a></li>
+                  <li><a href="/politica-de-entrega">Política de Entrega</a></li>
+                </ul>
+              </nav>
+            </div>
+
+            {/* Coluna 4 — Dados da Empresa */}
+            <div className={styles.footerCol}>
+              <h3 className={styles.footerColTitle}>Bryza</h3>
+              <address className={styles.footerAddressBlock}>
+                <p>Atendimento direto em Cidade Ocidental e regiões atendidas pelas rotas Bryza.</p>
+                <p style={{ marginTop: '8px', opacity: 0.8 }}>Pagamento somente no ato da entrega.</p>
+              </address>
+            </div>
+          </div>
+
+          {/* Aviso sobre o programa de indicação */}
+          <div className={styles.footerReferralNotice}>
+            <p>
+              Esta página pode ser acessada por meio do link de um Embaixador Bryza. A indicação não altera o preço pago pelo cliente.
+            </p>
+            <p>
+              O atendimento, a confirmação do pedido e a entrega são realizados diretamente pela equipe Bryza.
+            </p>
+          </div>
+
+          {/* Área Inferior do Footer */}
+          <div className={styles.footerBottomBar}>
+            <div className={styles.footerCopyright}>
+              <span>© {new Date().getFullYear()} Bryza. Todos os direitos reservados.</span>
+              {ambassador?.referral_code && (
+                <span className={styles.footerRefTag}>
+                  • Indicação {ambassador.referral_code.toUpperCase()}
+                </span>
+              )}
+            </div>
+
+            <div className={styles.footerLegalLinks}>
+              <a href="/privacidade">Política de Privacidade</a>
+              <span aria-hidden="true">•</span>
+              <a href="/termos">Termos de Uso</a>
+              <span aria-hidden="true">•</span>
+              <a href="/politica-de-entrega">Política de Entrega</a>
+            </div>
+          </div>
+
+          <div className={styles.footerLegalDisclaimer}>
+            <small>
+              Compra sujeita à confirmação da rota de entrega. Os produtos e condições apresentados nesta página podem estar disponíveis apenas nas regiões participantes.
+            </small>
+          </div>
+        </div>
+      </footer>
 
       {!productAvailable && <div className={styles.unavailable}><PackageCheck /><div><strong>Oferta temporariamente indisponível</strong><span>Fale com a equipe Bryza para receber ajuda.</span></div></div>}
       {productAvailable && <div className={`${styles.mobileSticky} ${showSticky ? styles.mobileStickyVisible : ''}`}><div><span>Kit completo</span><strong>R$ 79,80</strong></div><button type="button" onClick={onOrder}>Agendar <ArrowRight /></button></div>}

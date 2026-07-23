@@ -2300,11 +2300,186 @@
   color: #a6ce39;
 }
 
-.footer { padding: 46px 24px 112px; display: flex; flex-direction: column; align-items: center; color: var(--neutral-600); background: var(--neutral-50); text-align: center; }
-.footer p { margin: 2px 0 17px; font-family: "DM Serif Display", Georgia, serif; font-size: 15px; }
-.footer nav { display: flex; gap: 22px; margin-bottom: 17px; }
-.footer a { color: var(--neutral-600); font-size: 10px; text-decoration: none; }
-.footer small { font-size: 9px; }
+/* Secao 12: Footer */
+.footerSection {
+  background: #051329;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.footerInner {
+  width: min(1180px, calc(100% - 64px));
+  margin: 0 auto;
+  padding-top: 72px;
+  padding-bottom: 32px;
+}
+
+.footerMainGrid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1.1fr;
+  gap: 48px;
+  align-items: start;
+}
+
+.footerBrandCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.footerBrandLogo {
+  display: inline-flex;
+  margin-bottom: 12px;
+}
+
+.footerSlogan {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 8px;
+}
+
+.footerDescription {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.68);
+  max-width: 330px;
+  margin: 0;
+}
+
+.footerCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.footerColTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 18px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.footerNavList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footerNavList a {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.72);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .footerNavList a:hover {
+    color: #a6ce39;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}
+
+.footerWhatsappLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #a6ce39 !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+.footerMetaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.footerMetaItem small {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 500;
+}
+
+.footerAddressBlock {
+  font-style: normal;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.footerReferralNotice {
+  margin-top: 48px;
+  padding: 20px 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.footerBottomBar {
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.footerCopyright {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.footerRefTag {
+  color: #a6ce39;
+  font-weight: 600;
+}
+
+.footerLegalLinks {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footerLegalLinks a {
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .footerLegalLinks a:hover {
+    color: #a6ce39;
+    text-decoration: underline;
+  }
+}
+
+.footerLegalDisclaimer {
+  margin-top: 14px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.45;
+  text-align: center;
+}
 
 .mobileSticky { display: none; }
 .unavailable { position: fixed; z-index: 900; left: 50%; bottom: 20px; padding: 15px 18px; display: flex; align-items: center; gap: 12px; color: var(--bryza-navy-950); background: #fff; border: 1px solid var(--neutral-200); border-radius: 10px; box-shadow: 0 12px 32px rgba(16,24,70,.09); transform: translateX(-50%); }
@@ -3157,6 +3332,36 @@
     max-width: 100% !important;
     min-height: 56px !important;
     font-size: 15px !important;
+  }
+
+  /* Secao 12: Footer (Mobile) */
+  .footerSection {
+    padding-bottom: 80px !important;
+  }
+
+  .footerInner {
+    width: 100% !important;
+    padding: 52px 20px 32px !important;
+  }
+
+  .footerMainGrid {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+
+  .footerDescription {
+    max-width: 100% !important;
+  }
+
+  .footerBottomBar {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 14px !important;
+  }
+
+  .footerLegalLinks {
+    flex-wrap: wrap !important;
+    gap: 8px 12px !important;
   }
   .giftMath { grid-template-columns: 1fr; }
   .giftMath div { flex-direction: row; justify-content: space-between; }
