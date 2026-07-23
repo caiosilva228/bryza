@@ -124,10 +124,6 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
           </div>
         </section>
 
-        <section className={styles.indicators} aria-label="Indicadores da oferta">
-          <div><strong>10L</strong><span>de produtos</span></div><div><strong>2</strong><span>brindes premium</span></div><div><strong>&lt; R$ 7,99</strong><span>por litro</span></div><div><strong>R$ 0</strong><span>de entrada</span></div>
-        </section>
-
         <section className={styles.benefitsSection}>
           <div className={styles.sectionIntro}><span>Qualidade que você sente</span><h2>Mais rendimento, mais perfume e cuidado real.</h2><p>Fórmulas desenvolvidas para entregar limpeza, maciez e perfume para a rotina da sua família.</p></div>
           <div className={styles.benefitGrid}>{benefits.map((benefit) => { const Icon = benefitIcons[benefit.icon]; return <article key={benefit.title}><Icon /><h3>{benefit.title}</h3><p>{benefit.text}</p></article>; })}</div>
