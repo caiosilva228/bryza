@@ -188,78 +188,89 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
             <div className={styles.heroCopy}>
               <div className={styles.heroTags}>
                 <span className={styles.tagKit}>KIT CASA PERFUMADA</span>
-                <span className={styles.tagGift}>2 BRINDES PREMIUM</span>
+                <span className={styles.tagGift}>2 PANOS DE ALTA ABSORÇÃO</span>
               </div>
 
-              <h1>10 litros para roupas <em>limpas, macias e perfumadas.</em></h1>
+              <h1>10 litros para roupas <em className={styles.highlightText}>limpas, macias e perfumadas.</em></h1>
 
               <p className={`${styles.heroSubheadline} ${styles.desktopSubheadline}`}>
                 {ambassador.display_name
-                  ? `Sabão Líquido Concentrado 5L + Amaciante Microencapsulado 5L. Pela indicação de ${ambassador.display_name}, você ainda recebe 2 Panos Premium Xadrez de Alta Absorção — 45 × 70 cm.`
-                  : 'Sabão Líquido Concentrado 5L + Amaciante Microencapsulado 5L e mais 2 Panos Premium Xadrez de Alta Absorção — 45 × 70 cm de presente.'}
+                  ? `Sabão Líquido Concentrado 5L + Amaciante Microencapsulado 5L. Pela indicação de ${ambassador.display_name}, você ainda recebe 2 Panos Xadrez de Alta Absorção — 45 × 70 cm.`
+                  : 'Sabão Líquido Concentrado 5L + Amaciante Microencapsulado 5L e mais 2 Panos Xadrez de Alta Absorção — 45 × 70 cm de presente.'}
               </p>
 
               <div className={styles.mobileSubheadlineGroup}>
                 <p className={styles.mobileSubheadline}>
-                  Sabão Concentrado 5L + Amaciante Microencapsulado 5L e 2 Panos Premium Xadrez de presente.
+                  Sabão Concentrado 5L + Amaciante Microencapsulado 5L. Pela indicação de {ambassador.display_name || 'um Embaixador'}, você ainda recebe 2 Panos Xadrez de Alta Absorção — 45 × 70 cm.
                 </p>
-                <div className={styles.mobileSubheadlineFeature}>
-                  Panos Premium de Alta Absorção • 45 × 70 cm
-                </div>
               </div>
 
               <div className={styles.mobileProductBlock}>
                 <div className={styles.mobileProductImageWrapper}>
-                  <Image src="/hero-pv-link-embaixador.jpg" alt="Kit Bryza com Sabão Líquido, Amaciante de 5L e Panos Premium" fill priority sizes="100vw" style={{ objectFit: 'cover', objectPosition: '70% center' }} />
+                  <Image src="/hero-pv-link-embaixador.jpg" alt="Kit Bryza com Sabão Líquido, Amaciante de 5L e 2 Panos Xadrez de Alta Absorção" fill priority sizes="100vw" style={{ objectFit: 'cover', objectPosition: '70% center' }} />
                 </div>
                 <div className={styles.mobileProductCaption}>
-                  Você recebe 2 Panos Premium Xadrez de 45 × 70 cm.
+                  Você recebe 2 Panos Xadrez de Alta Absorção — 45 × 70 cm.
                 </div>
               </div>
 
-              <div className={styles.offerBox}>
-                <div className={styles.offerPriceMain}>
-                  <div className={styles.priceHeader}>
-                    <span>Valor do kit + brindes</span>
-                    <s className={styles.priceStrikethrough}>R$105,78</s>
-                  </div>
-                  <div className={styles.priceHighlight}>
-                    <small>Hoje por</small>
-                    <strong>R$79,80</strong>
-                    <span className={styles.literPriceNote}>(Menos de R$7,99 por litro)</span>
-                  </div>
+              <div className={styles.heroOfferArea}>
+                <div className={styles.heroPriceRow}>
+                  <span className={styles.heroPriceLabel}>Valor total do kit + brindes</span>
+                  <s className={styles.heroPriceStrikethrough}>R$105,78</s>
+                </div>
+                
+                <div className={styles.heroPriceMain}>
+                  <span className={styles.heroPriceToday}>Hoje por</span>
+                  <strong className={styles.heroPriceValue}>R$79,80</strong>
+                </div>
+                
+                <div className={styles.heroLiterPrice}>
+                  Menos de R$7,99 por litro
                 </div>
 
-                <div className={styles.giftValueHighlight}>
-                  <span>Você recebe <strong>R$25,98 em brindes.</strong></span>
-                  <small>Cada Pano Premium custa em média R$12,99 nos supermercados.</small>
+                <div className={styles.heroGiftHighlight}>
+                  <span>Você recebe <strong className={styles.heroGiftGreenText}>R$25,98 em brindes.</strong></span>
+                  <small className={styles.heroGiftAuxText}>Cada Pano Xadrez de Alta Absorção custa em média R$12,99 nos supermercados.</small>
                 </div>
 
-                <div className={styles.offerAction}>
-                  <OrderButton onClick={onOrder}>
-                    AGENDAR MEU PEDIDO <ArrowRight size={18} />
-                  </OrderButton>
-                  <small className={styles.payOnDeliveryNote}>
-                    <LockKeyhole size={14} /> Você não paga nada antecipadamente.
-                  </small>
+                <div className={styles.heroCtaBlock}>
+                  <button type="button" className={styles.heroCtaBtn} onClick={onOrder}>
+                    <span>AGENDAR MEU PEDIDO</span>
+                    <ArrowRight size={18} aria-hidden="true" />
+                  </button>
+                  <div className={styles.heroSecurityNote}>
+                    <LockKeyhole size={13} aria-hidden="true" />
+                    <span>Você não paga nada antecipadamente.</span>
+                  </div>
                 </div>
 
                 <div className={styles.heroTrustLine}>
-                  <div className={styles.trustItem}><Truck size={14} /> <span>Frete grátis</span></div>
-                  <div className={styles.trustItem}><WalletCards size={14} /> <span>Pagamento na entrega</span></div>
-                  <div className={`${styles.trustItem} ${styles.trustFull}`}><MessageCircle size={14} /> <span>Confirmação pelo WhatsApp</span></div>
+                  <div className={styles.heroTrustItem}>
+                    <Truck size={14} aria-hidden="true" />
+                    <span>Frete grátis</span>
+                  </div>
+                  <div className={styles.heroTrustItem}>
+                    <WalletCards size={14} aria-hidden="true" />
+                    <span>Pagamento na entrega</span>
+                  </div>
+                  <div className={styles.heroTrustItem}>
+                    <MessageCircle size={14} aria-hidden="true" />
+                    <span>Confirmação pelo WhatsApp</span>
+                  </div>
                 </div>
               </div>
 
-              <p className={styles.scarcityNote}>
+              <p className={styles.heroScarcity}>
                 Brindes disponíveis conforme a quantidade destinada a cada campanha e rota de entrega.
               </p>
             </div>
           </div>
 
           <div className={styles.clothBadge}>
-            <strong>2 Panos Premium</strong>
-            <span>45 × 70 cm</span>
+            <strong>2 PANOS XADREZ</strong>
+            <span>ALTA ABSORÇÃO</span>
+            <small>45 × 70 cm</small>
           </div>
         </section>
 
