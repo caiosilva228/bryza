@@ -106,7 +106,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
               <div className={styles.heroTags}><span>Kit Casa Perfumada</span><b>2 brindes exclusivos</b></div>
               <h1>10 litros para uma casa <em>limpa e perfumada.</em></h1>
               <p>Sabão Líquido Concentrado 5L + Amaciante Microencapsulado 5L e 2 Panos Premium Xadrez para completar sua rotina de limpeza.</p>
-              <div className={styles.mobileHeroProduct}><Image src="/Hero-pv-link-embaixador.webp" alt="Sabão Líquido e Amaciante Bryza de 5 litros" width={336} height={255} priority /><PlaidCloths /></div>
+              <div className={styles.mobileHeroProduct}><Image src="/hero-pv-link-embaixador.webp" alt="Sabão Líquido e Amaciante Bryza de 5 litros" width={336} height={255} priority /><PlaidCloths /></div>
               <div className={styles.heroTrust}>
                 <span><Truck /> <b>Frete<br />grátis*</b></span><span><WalletCards /> <b>Pagamento<br />na entrega</b></span><span><Gift /> <b>Mais de R$ 20<br />em brindes</b></span>
               </div>
@@ -118,7 +118,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
               </div>
             </div>
             <div className={styles.heroProduct}>
-              <Image src="/Hero-pv-link-embaixador.webp" alt="Kit Bryza com Sabão Líquido e Amaciante de 5 litros" fill sizes="(max-width: 1024px) 100vw, 55vw" priority />
+              <Image src="/hero-pv-link-embaixador.webp" alt="Kit Bryza com Sabão Líquido e Amaciante de 5 litros" fill sizes="(max-width: 1024px) 100vw, 55vw" priority />
               <PlaidCloths large />
               <div className={styles.clothSeal}><strong>2 panos</strong><span>premium xadrez</span><small>45 × 70 cm</small></div>
             </div>
