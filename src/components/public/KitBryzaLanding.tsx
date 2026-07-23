@@ -1236,7 +1236,12 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
         <div className={`${styles.mobileSticky} ${showSticky ? styles.mobileStickyVisible : ''}`}>
           <div>
             <span>Kit completo</span>
-            <strong>R$ 79,80</strong>
+            <div className={styles.mobileStickyPriceRow}>
+              <strong>R$ 79,80</strong>
+              <s className={styles.mobileStickyOldPrice} aria-label="Valor anterior: cento e cinco reais e setenta e oito centavos">
+                R$ 105,78
+              </s>
+            </div>
           </div>
           <button type="button" onClick={onOrder}>
             AGENDAR
