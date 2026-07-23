@@ -130,6 +130,13 @@ export default function ProdutoClientPage({ initialProdutos }: ProdutoClientPage
         <ProdutoFormModal 
           produto={editingProduto} 
           onClose={() => setIsModalOpen(false)} 
+          onImageDeleted={(deletedUrl) => {
+            setProdutos((current) =>
+              current.map((item) =>
+                item.imagem_url === deletedUrl ? { ...item, imagem_url: null } : item
+              )
+            );
+          }}
           onSuccess={(newOrUpdated) => {
             if (editingProduto) {
               setProdutos(prev => prev.map(p => p.id === newOrUpdated.id ? newOrUpdated : p));

@@ -4,16 +4,24 @@ import { useState, useEffect } from 'react';
 import { Produto } from '@/models/types';
 import { saveProduto } from './actions';
 import { createClient } from '@/utils/supabase/client';
+import ProductImageLibrary from './ProductImageLibrary';
 
 interface ProdutoFormModalProps {
   produto?: Produto | null;
   onClose: () => void;
   onSuccess: (produto: Produto) => void;
+  onImageDeleted: (imageUrl: string) => void;
 }
 
-export default function ProdutoFormModal({ produto, onClose, onSuccess }: ProdutoFormModalProps) {
+export default function ProdutoFormModal({
+  produto,
+  onClose,
+  onSuccess,
+  onImageDeleted,
+}: ProdutoFormModalProps) {
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [isImageLibraryOpen, setIsImageLibraryOpen] = useState(false);
   const [formData, setFormData] = useState({
     nome_produto: '',
     categoria: 'Produto Final',
@@ -204,7 +212,7 @@ export default function ProdutoFormModal({ produto, onClose, onSuccess }: Produt
 
                 {/* Upload Actions */}
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
                     <label style={{
                       padding: '8px 16px',
                       borderRadius: '8px',
@@ -227,6 +235,31 @@ export default function ProdutoFormModal({ produto, onClose, onSuccess }: Produt
                         style={{ display: 'none' }}
                       />
                     </label>
+
+                    {produto && (
+                      <button
+                        type="button"
+                        onClick={() => setIsImageLibraryOpen(true)}
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          border: '1px solid var(--color-primary)',
+                          backgroundColor: 'transparent',
+                          color: 'var(--color-primary)',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+                          photo_library
+                        </span>
+                        Biblioteca
+                      </button>
+                    )}
 
                     {formData.imagem_url && (
                       <button
@@ -495,6 +528,22 @@ export default function ProdutoFormModal({ produto, onClose, onSuccess }: Produt
             </button>
           </div>
         </form>
+
+        {isImageLibraryOpen && (
+          <ProductImageLibrary
+            currentImageUrl={formData.imagem_url}
+            onClose={() => setIsImageLibraryOpen(false)}
+            onSelect={(imageUrl) => {
+              setFormData((current) => ({ ...current, imagem_url: imageUrl }));
+            }}
+            onDelete={(deletedUrl) => {
+              if (formData.imagem_url === deletedUrl) {
+                setFormData((current) => ({ ...current, imagem_url: '' }));
+              }
+              onImageDeleted(deletedUrl);
+            }}
+          />
+        )}
 
         <style jsx>{`
           @keyframes slideUp {

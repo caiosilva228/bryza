@@ -1,0 +1,259 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(5, 15, 32, 0.66);
+  backdrop-filter: blur(8px);
+}
+
+.modal {
+  display: flex;
+  width: min(920px, 100%);
+  max-height: min(760px, calc(100vh - 48px));
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 24px;
+  background: var(--color-surface);
+  box-shadow: 0 28px 70px rgba(5, 15, 32, 0.32);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--color-outline-variant);
+  background: var(--color-surface-container-lowest);
+}
+
+.header h2 {
+  margin: 0;
+  color: var(--color-on-surface);
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.header p {
+  margin: 5px 0 0;
+  color: var(--color-on-surface-variant);
+  font-size: 13px;
+}
+
+.closeButton {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+}
+
+.content {
+  min-height: 250px;
+  padding: 24px 28px 28px;
+  overflow-y: auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 18px;
+  background: var(--color-surface-container-lowest);
+}
+
+.cardSelected {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+.imageWrap {
+  position: relative;
+  display: grid;
+  aspect-ratio: 1.25;
+  place-items: center;
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-outline-variant);
+  background:
+    linear-gradient(45deg, #f2f4f5 25%, transparent 25%),
+    linear-gradient(-45deg, #f2f4f5 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #f2f4f5 75%),
+    linear-gradient(-45deg, transparent 75%, #f2f4f5 75%),
+    #fff;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  background-size: 16px 16px;
+}
+
+.imageWrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 12px;
+}
+
+.selectedBadge,
+.usageBadge {
+  position: absolute;
+  top: 10px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.selectedBadge {
+  left: 10px;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.usageBadge {
+  right: 10px;
+  background: rgba(5, 15, 32, 0.78);
+  color: #fff;
+}
+
+.cardBody {
+  padding: 14px;
+}
+
+.fileName {
+  margin: 0;
+  overflow: hidden;
+  color: var(--color-on-surface);
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  margin: 4px 0 12px;
+  color: var(--color-on-surface-variant);
+  font-size: 10px;
+}
+
+.usedBy {
+  min-height: 32px;
+  margin: 0 0 12px;
+  overflow: hidden;
+  color: var(--color-on-surface-variant);
+  font-size: 10px;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.useButton,
+.deleteButton,
+.retryButton {
+  min-height: 38px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.useButton {
+  border: 0;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.useButton:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.deleteButton {
+  display: grid;
+  width: 40px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--color-error) 34%, transparent);
+  background: color-mix(in srgb, var(--color-error) 7%, white);
+  color: var(--color-error);
+}
+
+.deleteButton:disabled {
+  opacity: 0.45;
+  cursor: wait;
+}
+
+.deleteButton span {
+  font-size: 18px;
+}
+
+.state {
+  display: grid;
+  min-height: 260px;
+  place-items: center;
+  color: var(--color-on-surface-variant);
+  text-align: center;
+}
+
+.state span {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 38px;
+}
+
+.state p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.retryButton {
+  margin-top: 14px;
+  padding: 0 18px;
+  border: 0;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+@media (max-width: 760px) {
+  .overlay {
+    padding: 12px;
+  }
+
+  .modal {
+    max-height: calc(100vh - 24px);
+    border-radius: 20px;
+  }
+
+  .header,
+  .content {
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
