@@ -3950,8 +3950,8 @@
     position: absolute !important;
     inset: 0 auto auto 0 !important;
     z-index: 3 !important;
-    width: min(49%, 196px) !important;
-    padding: 22px 0 0 22px !important;
+    width: min(51%, 210px) !important;
+    padding: 18px 0 0 18px !important;
     color: #101846 !important;
     background: transparent !important;
     pointer-events: none !important;
@@ -3987,10 +3987,10 @@
     width: 100% !important;
     margin: 0 0 13px !important;
     color: #101846 !important;
-    font-size: clamp(19px, 5.15vw, 22px) !important;
+    font-size: clamp(21px, 5.55vw, 23.5px) !important;
     font-weight: 800 !important;
     line-height: 1.08 !important;
-    letter-spacing: -.038em !important;
+    letter-spacing: -.055em !important;
     text-wrap: nowrap !important;
   }
 
@@ -4011,7 +4011,7 @@
   .mobileSubheadline {
     margin: 0 !important;
     color: #334155 !important;
-    font-size: clamp(7px, 2.05vw, 8px) !important;
+    font-size: clamp(7.75px, 2.2vw, 9.2px) !important;
     font-weight: 500 !important;
     line-height: 1.43 !important;
   }
@@ -4023,27 +4023,30 @@
 
   .mobileProductImageWrapper {
     width: 100% !important;
-    height: 89vw !important;
-    min-height: 342px !important;
-    max-height: 430px !important;
+    height: 84vw !important;
+    min-height: 320px !important;
+    max-height: 400px !important;
     aspect-ratio: auto !important;
   }
 
   .mobileProductImageWrapper img {
     object-fit: cover !important;
     object-position: center center !important;
+    top: -10px !important;
+    bottom: auto !important;
+    height: calc(100% + 10px) !important;
   }
 
   .heroOfferArea {
     order: 2 !important;
-    padding: 20px 22px 0 !important;
+    padding: 14px 22px 0 !important;
     border-top: 1px solid #d8dee8 !important;
   }
 
   .heroPriceRow {
     justify-content: flex-start !important;
     gap: 30px !important;
-    padding-bottom: 9px !important;
+    padding-bottom: 6px !important;
   }
 
   .heroPriceMain {
@@ -4051,34 +4054,34 @@
     grid-template-columns: auto auto minmax(82px, 1fr) !important;
     align-items: end !important;
     column-gap: 7px !important;
-    margin: 10px 0 17px !important;
+    margin: 6px 0 12px !important;
   }
 
   .heroPriceToday {
-    padding: 0 0 7px !important;
-    font-size: 12.5px !important;
+    padding: 0 0 5px !important;
+    font-size: 12px !important;
   }
 
   .heroPriceValue {
-    font-size: clamp(41px, 11.4vw, 49px) !important;
+    font-size: clamp(37px, 10vw, 43px) !important;
     white-space: nowrap !important;
   }
 
   .heroLiterPrice {
     align-self: end !important;
-    margin: 0 0 7px !important;
-    font-size: clamp(9.5px, 2.55vw, 11px) !important;
+    margin: 0 0 5px !important;
+    font-size: clamp(9px, 2.35vw, 10px) !important;
     line-height: 1.25 !important;
     white-space: normal !important;
   }
 
   .heroGiftHighlight {
-    margin-bottom: 18px !important;
-    padding: 14px 0 !important;
+    margin-bottom: 12px !important;
+    padding: 10px 0 !important;
   }
 
   .heroCtaBtn {
-    min-height: 56px !important;
+    min-height: 52px !important;
     border-radius: 8px !important;
     color: #101846 !important;
     background: linear-gradient(90deg, #9aca2b 0%, #a6ce39 52%, #95bf2d 100%) !important;
@@ -4091,6 +4094,9 @@
 
   .heroTrustLine {
     gap: 8px !important;
+    margin-top: 12px !important;
+    padding-top: 12px !important;
+    padding-bottom: 0 !important;
   }
 
   .heroTrustItem {
@@ -4099,6 +4105,16 @@
     justify-content: center !important;
     text-align: center !important;
     line-height: 1.25 !important;
+  }
+
+  .heroSecurityNote {
+    margin-top: 8px !important;
+    margin-bottom: 0 !important;
+  }
+
+  .heroScarcity {
+    margin-top: 12px !important;
+    padding-bottom: 14px !important;
   }
 }
 
