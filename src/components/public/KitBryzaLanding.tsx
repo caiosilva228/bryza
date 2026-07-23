@@ -975,9 +975,115 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
           </div>
         </section>
 
-        <section className={styles.finalCta}>
-          <div><span>Kit Bryza Casa Perfumada</span><h2>Garanta 10 litros + 2 Panos Premium por <em>R$ 79,80.</em></h2><div className={styles.finalBenefits}><b><Truck />Frete grátis*</b><b><WalletCards />Pagamento na entrega</b><b><Gift />Mais de R$ 20 em brindes</b><b><PackageCheck />10 litros de produtos</b></div><OrderButton onClick={onOrder} inverse /><small><LockKeyhole /> Você não paga nada antecipadamente.</small><p>Os brindes são limitados à quantidade destinada a cada campanha e rota de entrega.</p></div>
-          <div className={styles.finalProducts}><Image src="/hero-products.webp" alt="Kit Bryza Casa Perfumada" width={336} height={255} /><PlaidCloths /></div>
+        {/* Secao 11: CTA Final */}
+        <section id="oferta-final" className={styles.finalCtaSection} aria-label="Garanta seu Kit Bryza">
+          <div className={styles.finalCtaInner}>
+            <div className={styles.finalCtaCopyBlock}>
+              <span className={styles.finalCtaEyebrow}>SEU KIT BRYZA ESTÁ A UM PASSO</span>
+              <h2 className={styles.finalCtaTitle}>
+                Garanta 10 litros de produtos Bryza e leve 2 Panos de Alta Absorção de presente.
+              </h2>
+              <p className={styles.finalCtaSupportText}>
+                Receba o Sabão Líquido Concentrado 5L, o Amaciante Microencapsulado 5L e 2 Panos Xadrez de Alta Absorção — 45 × 70 cm.
+              </p>
+
+              {/* Bloco de imagem no mobile */}
+              <figure className={styles.finalCtaMobileMediaBlock}>
+                <Image
+                  src="/hero-products.webp"
+                  alt="Kit Bryza com Sabão Líquido 5L, Amaciante 5L e dois Panos Xadrez de Alta Absorção"
+                  width={340}
+                  height={258}
+                  className={styles.finalCtaImage}
+                />
+                <figcaption className={styles.finalCtaImageCaption}>
+                  2 Panos Xadrez de Alta Absorção — 45 × 70 cm (BRINDE)
+                </figcaption>
+              </figure>
+
+              <ul role="list" className={styles.finalCtaBenefitsGrid}>
+                <li>
+                  <Check size={18} className={styles.finalCheckIcon} aria-hidden="true" />
+                  <span>10 litros de produtos</span>
+                </li>
+                <li>
+                  <Check size={18} className={styles.finalCheckIcon} aria-hidden="true" />
+                  <span>2 Panos Xadrez de Alta Absorção</span>
+                </li>
+                <li>
+                  <Check size={18} className={styles.finalCheckIcon} aria-hidden="true" />
+                  <span>Frete grátis nas regiões atendidas</span>
+                </li>
+                <li>
+                  <Check size={18} className={styles.finalCheckIcon} aria-hidden="true" />
+                  <span>Pagamento somente na entrega</span>
+                </li>
+              </ul>
+
+              <div className={styles.finalPriceBox}>
+                <div className={styles.finalPriceHeader}>
+                  <span className={styles.finalPriceLabel}>Kit completo</span>
+                  <strong className={styles.finalMainPrice}>R$ 79,80</strong>
+                  <span className={styles.finalLiterPrice}>Menos de R$7,99 por litro</span>
+                </div>
+                <div className={styles.finalGiftBanner}>
+                  <strong>Você recebe R$25,98 em brindes.</strong>
+                  <span>Os dois panos vão de presente na compra do kit completo.</span>
+                </div>
+              </div>
+
+              <div className={styles.finalCtaActionGroup}>
+                <button
+                  type="button"
+                  className={styles.finalCtaSubmitBtn}
+                  onClick={() => {
+                    if (typeof window !== 'undefined' && (window as unknown as { dataLayer?: Record<string, unknown>[] }).dataLayer) {
+                      (window as unknown as { dataLayer: Record<string, unknown>[] }).dataLayer.push({
+                        event: 'final_cta_clicked',
+                        referral_code: ambassador?.referral_code,
+                        ambassador_name: ambassador?.display_name,
+                        section: 'final_cta',
+                        offer_price: 79.80,
+                      });
+                    }
+                    onOrder();
+                  }}
+                >
+                  <span>AGENDAR MEU PEDIDO AGORA</span>
+                  <ArrowRight size={18} aria-hidden="true" />
+                </button>
+
+                <div className={styles.finalSecurityNote}>
+                  <LockKeyhole size={14} aria-hidden="true" />
+                  <span>Você não paga nada antecipadamente.</span>
+                </div>
+                <p className={styles.finalTeamNote}>
+                  A equipe Bryza verificará a disponibilidade da sua rota e confirmará os detalhes pelo WhatsApp.
+                </p>
+                <p className={styles.finalScarcityNote}>
+                  Os brindes estão disponíveis conforme a quantidade destinada a cada campanha e rota de entrega.
+                </p>
+              </div>
+            </div>
+
+            {/* Imagem Desktop */}
+            <div className={styles.finalCtaDesktopMediaBlock}>
+              <figure className={styles.finalMediaFigure}>
+                <Image
+                  src="/hero-products.webp"
+                  alt="Kit Bryza com Sabão Líquido 5L, Amaciante 5L e dois Panos Xadrez de Alta Absorção"
+                  width={480}
+                  height={365}
+                  priority
+                  className={styles.finalCtaDesktopImage}
+                />
+                <figcaption className={styles.finalCtaDesktopCaption}>
+                  <strong>2 Panos Xadrez de Alta Absorção</strong>
+                  <small>45 × 70 cm — Presente exclusivo</small>
+                </figcaption>
+              </figure>
+            </div>
+          </div>
         </section>
       </main>
 

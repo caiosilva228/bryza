@@ -2065,19 +2065,240 @@
 }
 .faqItem div p { margin: -2px 36px 18px 4px; color: var(--neutral-600); font-size: 13px; line-height: 1.65; }
 
-.finalCta { width: min(1200px, calc(100% - 64px)); min-height: 390px; margin: 0 auto 72px; padding: 55px 60px; display: grid; grid-template-columns: 1.15fr .85fr; align-items: center; gap: 50px; overflow: hidden; color: #fff; background: var(--bryza-navy-950); border-radius: 18px; }
-.finalCta > div > span { color: #a9bde9; }
-.finalCta h2 { max-width: 650px; margin: 12px 0 23px; color: #fff; font-size: clamp(37px, 4vw, 50px); line-height: 1.05; }
-.finalCta h2 em { color: #9ac85e; font-style: normal; }
-.finalBenefits { margin-bottom: 22px; display: flex; flex-wrap: wrap; gap: 13px 22px; }
-.finalBenefits b { display: flex; align-items: center; gap: 6px; color: #dbe4f8; font-size: 10px; font-weight: 600; }
-.finalBenefits svg { width: 16px; color: #9ac85e; }
-.ctaInverse { min-width: 330px; }
-.finalCta > div > small { width: fit-content; margin: 9px 0 0; color: #c5cfe7; }
-.finalCta > div > p { margin: 20px 0 0; color: #9eabd0; font-size: 9px; }
-.finalProducts { min-height: 260px; position: relative; display: flex; align-items: center; justify-content: center; }
-.finalProducts > img { width: min(100%, 380px); height: auto; filter: drop-shadow(0 22px 24px rgba(0,0,0,.25)); }
-.finalProducts .plaidCloths { position: absolute; right: -5px; bottom: -8px; transform: scale(.78) rotate(-4deg); }
+/* Secao 11: CTA Final */
+.finalCtaSection {
+  background-color: #051329;
+  background-image: radial-gradient(circle at 78% 48%, rgba(52, 120, 229, 0.18), rgba(5, 19, 41, 0) 52%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.finalCtaInner {
+  width: min(1180px, calc(100% - 64px));
+  margin: 0 auto;
+  padding: 96px 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 56px;
+  align-items: center;
+}
+
+.finalCtaEyebrow {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #a6ce39;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: block;
+}
+
+.finalCtaTitle {
+  font-size: clamp(38px, 3.8vw, 48px);
+  font-weight: 800;
+  line-height: 1.08;
+  color: #ffffff;
+  margin: 0 0 18px;
+  max-width: 640px;
+}
+
+.finalCtaSupportText {
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0 0 28px;
+  max-width: 600px;
+}
+
+.finalCtaMobileMediaBlock {
+  display: none;
+}
+
+.finalCtaBenefitsGrid {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px 24px;
+}
+
+.finalCtaBenefitsGrid li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.finalCheckIcon {
+  color: #a6ce39;
+  flex-shrink: 0;
+}
+
+.finalPriceBox {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 22px 26px;
+  margin-bottom: 28px;
+  backdrop-filter: blur(8px);
+}
+
+.finalPriceHeader {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  margin-bottom: 10px;
+}
+
+.finalPriceLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.finalMainPrice {
+  font-size: 48px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.finalLiterPrice {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #a6ce39;
+}
+
+.finalGiftBanner {
+  border-top: 1px dashed rgba(255, 255, 255, 0.16);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.finalGiftBanner strong {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.finalGiftBanner span {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.finalCtaActionGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.finalCtaSubmitBtn {
+  min-width: 320px;
+  max-width: 390px;
+  min-height: 58px;
+  padding: 0 32px;
+  background: #8bb329;
+  color: #051329;
+  border: 0;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(139, 179, 41, 0.35);
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .finalCtaSubmitBtn:hover {
+    background: #7ca322;
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(139, 179, 41, 0.42);
+  }
+}
+
+.finalCtaSubmitBtn:active {
+  transform: scale(0.99);
+}
+
+.finalSecurityNote {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 12px;
+}
+
+.finalTeamNote {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 4px 0 0;
+  line-height: 1.4;
+  max-width: 480px;
+}
+
+.finalScarcityNote {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.60);
+  margin: 16px 0 0;
+  line-height: 1.45;
+  max-width: 480px;
+}
+
+.finalCtaDesktopMediaBlock {
+  display: block;
+}
+
+.finalMediaFigure {
+  position: relative;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+}
+
+.finalCtaDesktopImage {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 24px rgba(0, 0, 0, 0.35));
+}
+
+.finalCtaDesktopCaption {
+  margin-top: 14px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.finalCtaDesktopCaption strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.finalCtaDesktopCaption small {
+  font-size: 12px;
+  color: #a6ce39;
+}
 
 .footer { padding: 46px 24px 112px; display: flex; flex-direction: column; align-items: center; color: var(--neutral-600); background: var(--neutral-50); text-align: center; }
 .footer p { margin: 2px 0 17px; font-family: "DM Serif Display", Georgia, serif; font-size: 15px; }
@@ -2864,6 +3085,78 @@
   .faqAnswerInner p {
     font-size: 14.5px !important;
     line-height: 1.55 !important;
+  }
+
+  /* Secao 11: CTA Final (Mobile) */
+  .finalCtaSection {
+    background-image: none !important;
+  }
+
+  .finalCtaInner {
+    width: 100% !important;
+    grid-template-columns: 1fr !important;
+    gap: 28px !important;
+    padding: 64px 20px 72px !important;
+  }
+
+  .finalCtaDesktopMediaBlock {
+    display: none !important;
+  }
+
+  .finalCtaMobileMediaBlock {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin: 20px 0 !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 16px !important;
+    padding: 18px 16px !important;
+  }
+
+  .finalCtaImage {
+    width: min(100%, 300px) !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
+
+  .finalCtaImageCaption {
+    margin-top: 10px !important;
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    color: #a6ce39 !important;
+    text-align: center !important;
+  }
+
+  .finalCtaTitle {
+    font-size: clamp(30px, 7.5vw, 35px) !important;
+    line-height: 1.1 !important;
+    margin-bottom: 12px !important;
+  }
+
+  .finalCtaSupportText {
+    font-size: 15px !important;
+    line-height: 1.55 !important;
+    margin-bottom: 20px !important;
+  }
+
+  .finalCtaBenefitsGrid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .finalMainPrice {
+    font-size: 42px !important;
+  }
+
+  .finalCtaSubmitBtn {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    min-height: 56px !important;
+    font-size: 15px !important;
   }
   .giftMath { grid-template-columns: 1fr; }
   .giftMath div { flex-direction: row; justify-content: space-between; }
