@@ -8,6 +8,7 @@ import {
   Clock3,
   Copy,
   ExternalLink,
+  Gift,
   RotateCcw,
   ShieldCheck,
   Sparkles,
@@ -16,11 +17,16 @@ import {
   Users,
   WalletCards,
 } from 'lucide-react';
+import {
+  calculateEarnings,
+  type FirstPurchaseBonusConfig,
+} from '@/lib/ambassadors/earnings-calculation';
 import styles from './calculadora.module.css';
 
 type Props = {
   planName: string;
   levels: Array<{ level_number: number; name: string; percentage: number }>;
+  firstPurchaseBonus: FirstPurchaseBonusConfig;
   embedded?: boolean;
 };
 
@@ -50,7 +56,12 @@ function safeNumber(value: NumericInput, fallback: number, min: number, max: num
   return Math.min(Math.max(Number(value), min), max);
 }
 
-export function EarningsCalculator({ planName, levels, embedded = false }: Props) {
+export function EarningsCalculator({
+  planName,
+  levels,
+  firstPurchaseBonus,
+  embedded = false,
+}: Props) {
   const [goal, setGoal] = useState<NumericInput>(DEFAULTS.goal);
   const [months, setMonths] = useState<NumericInput>(DEFAULTS.months);
   const [monthlyVolume, setMonthlyVolume] = useState<NumericInput>(DEFAULTS.monthlyVolume);
@@ -67,30 +78,24 @@ export function EarningsCalculator({ planName, levels, embedded = false }: Props
     const normalizedMonths = Math.round(safeNumber(months, DEFAULTS.months, 1, 120));
     const normalizedVolume = safeNumber(monthlyVolume, DEFAULTS.monthlyVolume, 1, 1_000_000);
     const normalizedDuplication = Math.round(safeNumber(duplication, DEFAULTS.duplication, 1, 10));
-    const monthlyGoal = normalizedGoal;
-    const rates = levels.map((level) => level.percentage / 100);
-    const earningsPerDirectBranch = normalizedVolume * rates.reduce(
-      (total, rate, index) => total + normalizedDuplication ** index * rate,
-      0,
-    );
-    const level1 = Math.max(1, Math.ceil(monthlyGoal / Math.max(earningsPerDirectBranch, 0.01)));
-    const people = rates.map((_, index) => level1 * normalizedDuplication ** index);
-    const earnings = people.map((count, index) => count * normalizedVolume * rates[index]);
-    const projectedMonthly = earnings.reduce((sum, value) => sum + value, 0);
+    const calculation = calculateEarnings({
+      goal: normalizedGoal,
+      months: normalizedMonths,
+      monthlyVolume: normalizedVolume,
+      duplication: normalizedDuplication,
+      levels,
+      firstPurchaseBonus,
+    });
 
     return {
+      ...calculation,
       normalizedGoal,
       normalizedMonths,
       normalizedVolume,
       normalizedDuplication,
-      monthlyGoal,
-      people,
-      earnings,
-      projectedMonthly,
-      directReferralsPerMonth: Math.ceil(level1 / normalizedMonths),
-      totalPeople: people.reduce((sum, value) => sum + value, 0),
+      monthlyGoal: normalizedGoal,
     };
-  }, [duplication, goal, levels, monthlyVolume, months]);
+  }, [duplication, firstPurchaseBonus, goal, levels, monthlyVolume, months]);
 
   function reset() {
     setGoal(DEFAULTS.goal);
@@ -230,6 +235,24 @@ export function EarningsCalculator({ planName, levels, embedded = false }: Props
               ))}
             </div>
 
+            {firstPurchaseBonus.enabled && (
+              <div className={`${styles.bonusCard} ${!result.firstPurchaseBonusEligible ? styles.bonusCardInactive : ''}`}>
+                <div className={styles.bonusIcon}><Gift size={21} /></div>
+                <div className={styles.bonusContent}>
+                  <strong>Bônus da primeira compra</strong>
+                  <p>
+                    {result.firstPurchaseBonusEligible
+                      ? `${money.format(firstPurchaseBonus.amount)} por indicação direta cuja primeira compra elegível seja de pelo menos ${money.format(firstPurchaseBonus.minimumAmount)}.`
+                      : `O volume informado está abaixo do mínimo de ${money.format(firstPurchaseBonus.minimumAmount)} exigido para o bônus.`}
+                  </p>
+                </div>
+                <div className={styles.bonusValues}>
+                  <span><small>Potencial no período</small><strong>{money.format(result.firstPurchaseBonusTotal)}</strong></span>
+                  <span><small>Média durante a formação</small><strong>{money.format(result.firstPurchaseBonusMonthlyAverage)} / mês</strong></span>
+                </div>
+              </div>
+            )}
+
             <div className={styles.summary}>
               <div><span>Ganho mensal projetado</span><strong>{money.format(result.projectedMonthly)}</strong></div>
               <div><span>Indicações diretas por mês</span><strong>{wholeNumber.format(result.directReferralsPerMonth)}</strong></div>
@@ -253,7 +276,7 @@ export function EarningsCalculator({ planName, levels, embedded = false }: Props
       </section>}
 
       {!embedded && <footer className={styles.footer}>
-        <strong>Importante:</strong> esta é uma simulação educativa baseada no plano {planName}, em volume mensal constante e nas premissas informadas. Não há garantia de renda. As comissões reais dependem de vendas válidas, aprovadas e das regras vigentes do programa.
+        <strong>Importante:</strong> esta é uma simulação educativa baseada no plano {planName}, em volume mensal constante e nas premissas informadas. O bônus é pontual e não compõe o ganho mensal recorrente. Não há garantia de renda. As comissões e bonificações reais dependem de vendas válidas, aprovadas e das regras vigentes do programa.
       </footer>}
     </RootElement>
   );

@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import PedidoClientPage from './components/PedidoClientPage';
-import { getClientes } from '@/services/clientes';
+import { getActiveAmbassadorsForCustomerAssignment, getClientes } from '@/services/clientes';
 import { getProdutos } from '@/services/produtos';
 import { getVendedores } from '@/services/profiles';
 import { getPedidos, getPedidosStats } from './actions';
@@ -13,12 +13,13 @@ export const metadata = {
 
 export default async function PedidosPage() {
   // Busca inicial de dados em paralelo no servidor
-  const [pedidos, stats, clientes, produtos, vendedores] = await Promise.all([
+  const [pedidos, stats, clientes, produtos, vendedores, ambassadors] = await Promise.all([
     getPedidos(),
     getPedidosStats(),
     getClientes(),
     getProdutos(),
     getVendedores(),
+    getActiveAmbassadorsForCustomerAssignment(),
   ]);
 
   return (
@@ -31,6 +32,7 @@ export default async function PedidosPage() {
             clientes={clientes}
             produtos={produtos}
             vendedores={vendedores}
+            ambassadors={ambassadors}
           />
         </Suspense>
       </div>

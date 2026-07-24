@@ -17,6 +17,7 @@ export default async function EarningsCalculatorPage() {
     <EarningsCalculator
       planName={plan.name}
       levels={plan.levels}
+      firstPurchaseBonus={plan.firstPurchaseBonus}
     />
   );
 }

@@ -42,6 +42,7 @@ export async function updateSession(request: NextRequest) {
   const isPublicIndication = pathname.startsWith('/r/');
   const isPublicSalesPage = /^\/bryza[0-9]+$/.test(pathname.toLowerCase());
   const isPublicEarningsCalculator = pathname === '/calculadora-de-ganhos';
+  const isAmbassadorAcceptance = pathname.startsWith('/programa/embaixadores/aceitar');
   
   // Ignorar assets estáticos comuns
   const isStaticAsset = pathname.match(/\.(svg|png|jpg|jpeg|gif|webp|ico|css|js)$/) || pathname.includes('_next/');
@@ -64,7 +65,7 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
     }
 
-    if (isAuthRoute || (subdomain === 'public' && pathname === '/')) {
+    if (isAuthRoute || isAmbassadorAcceptance || (subdomain === 'public' && pathname === '/')) {
       return supabaseResponse;
     }
 
@@ -108,6 +109,12 @@ export async function updateSession(request: NextRequest) {
       });
       return redirectRes;
     }
+    return supabaseResponse;
+  }
+
+  // O usuário convidado ainda não possui perfil de embaixador ativo. A única
+  // operação permitida antes da ativação é validar e aceitar este convite.
+  if (isAmbassadorAcceptance) {
     return supabaseResponse;
   }
 

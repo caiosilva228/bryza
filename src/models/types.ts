@@ -129,9 +129,11 @@ export interface VendedorMetricas extends Profile {
 
 export interface Cliente {
   id: string;
+  person_id?: string | null;
   codigo_cliente?: number;
   nome: string;
   telefone: string;
+  email?: string | null;
   cpf?: string | null;
   cep?: string;
   endereco: string;
@@ -147,6 +149,26 @@ export interface Cliente {
     nome: string;
     codigo_vendedor?: number;
   } | null;
+  commissionable_ambassador_id?: string | null;
+  current_referral_assignment_id?: string | null;
+  ambassador_id?: string | null;
+  referral_code?: string | null;
+  referral_source?: string | null;
+  referral_attributed_at?: string | null;
+  referral_locked_at?: string | null;
+  lifecycle_status?: 'active' | 'inactive' | 'archived';
+  indicated_by?: {
+    id: string;
+    full_name: string;
+    referral_code: string;
+    status: string;
+  } | null;
+  own_ambassador?: {
+    id: string;
+    full_name: string;
+    referral_code: string;
+    status: string;
+  } | null;
   observacoes?: string | null;
   latitude?: number | null;
   longitude?: number | null;
@@ -157,6 +179,14 @@ export interface Cliente {
   ticket_medio: number;
   data_ultima_compra?: string | null;
   dias_sem_comprar: number;
+}
+
+export interface AmbassadorAssignmentOption {
+  id: string;
+  full_name: string;
+  display_name?: string | null;
+  username?: string | null;
+  referral_code: string;
 }
 
 export interface Produto {
@@ -333,6 +363,13 @@ export interface Pedido {
   // Dados desnormalizados do vendedor
   nome_vendedor?: string;
   codigo_vendedor?: number;
+
+  // Atribuição oficial de indicação congelada no momento do pedido
+  ambassador_id?: string | null;
+  referral_assignment_id?: string | null;
+  referral_validated_snapshot?: boolean;
+  referral_commissionable_snapshot?: boolean;
+  ambassador_qualified_snapshot?: boolean;
   
   // Relacionais (opcionais para quando houver join)
   cliente?: {
@@ -349,6 +386,12 @@ export interface Pedido {
   vendedor?: {
     nome: string;
   };
+  ambassador?: {
+    id: string;
+    full_name: string;
+    referral_code: string;
+    status: string;
+  } | null;
   // Itens do pedido (presente quando há join com pedido_itens)
   itens?: PedidoItem[];
 

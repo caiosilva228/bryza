@@ -374,15 +374,14 @@ export function KitBryzaSalesPage({ ambassador, products }: KitBryzaSalesPagePro
                   </dl>
                 </div>
 
+                {result.program_invitation_available && (
                 <div style={{ marginTop: '16px', padding: '20px', borderRadius: '14px', backgroundColor: '#172554', border: '1px solid #1d4ed8' }}>
-                  <div style={{ color: '#bfdbfe', fontSize: '0.83rem', marginBottom: '7px' }}>Seu código de embaixador Bryza</div>
-                  <div style={{ color: '#fff', fontFamily: 'monospace', fontWeight: 900, fontSize: 'clamp(1.45rem, 7vw, 2rem)', letterSpacing: '.04em' }}>
-                    {result.novo_referral_code.toUpperCase()}
-                  </div>
+                  <div style={{ color: '#fff', fontWeight: 800, fontSize: '1rem' }}>Programa de Embaixadores Bryza</div>
                   <p style={{ color: '#bfdbfe', fontSize: '0.82rem', lineHeight: 1.5, margin: '9px 0 0' }}>
-                    Este código identifica você no programa de embaixadores. A equipe Bryza poderá orientar seus próximos passos.
+                    Seu cadastro poderá receber um convite. A participação só será ativada após aceite dos termos e confirmação do acesso.
                   </p>
                 </div>
+                )}
 
                 <button type="button" onClick={closeSchedulingModal} style={{ width: '100%', minHeight: '50px', marginTop: '20px', border: 0, borderRadius: '11px', backgroundColor: '#2563eb', color: '#fff', fontWeight: 800, cursor: 'pointer' }}>
                   Concluir

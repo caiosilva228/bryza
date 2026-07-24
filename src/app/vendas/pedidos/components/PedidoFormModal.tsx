@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Cliente, Produto, Profile, PedidoItem, Pedido, TipoDesconto, Agendamento } from '@/models/types';
-import { savePedido, updatePedidoAction } from '../actions';
+import { Cliente, Produto, Profile, PedidoItem, Pedido, TipoDesconto, Agendamento, AmbassadorAssignmentOption } from '@/models/types';
+import { assignCustomerAmbassadorForOrder, savePedido, updatePedidoAction } from '../actions';
 import { criarAgendamentoAction, updateAgendamentoAction } from '../../agendamentos/actions';
 import { formatCurrency } from '@/utils/format';
 import { toast } from 'sonner';
@@ -13,6 +13,7 @@ interface Props {
   clientes: Cliente[];
   produtos: Produto[];
   vendedores: Profile[];
+  ambassadors?: AmbassadorAssignmentOption[];
   pedidoToEdit?: Pedido | null;
   agendamentoToEdit?: Agendamento | null;
 }
@@ -250,6 +251,7 @@ export default function PedidoFormModal({
   clientes, 
   produtos, 
   vendedores,
+  ambassadors = [],
   pedidoToEdit,
   agendamentoToEdit
 }: Props) {
@@ -263,6 +265,8 @@ export default function PedidoFormModal({
   const [orderDiscount, setOrderDiscount] = useState<DiscountState>({ tipo: 'none', valor: 0 });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [productSearch, setProductSearch] = useState('');
+  const [selectedAmbassadorId, setSelectedAmbassadorId] = useState('');
+  const orderIdempotencyKeyRef = React.useRef(crypto.randomUUID());
 
   // Agendamento
   const [isAgendamentoOpen, setIsAgendamentoOpen] = useState(false);
@@ -326,8 +330,10 @@ export default function PedidoFormModal({
       setCart([]);
       setOrderDiscount({ tipo: 'none', valor: 0 });
       setProductSearch('');
+      setSelectedAmbassadorId('');
       setAgendamentoDate('');
       setAgendamentoTime('');
+      orderIdempotencyKeyRef.current = crypto.randomUUID();
     }
   }, [isOpen, pedidoToEdit, agendamentoToEdit]);
 
@@ -350,6 +356,10 @@ export default function PedidoFormModal({
   );
 
   const total = roundCurrency(cartSummary.subtotalLiquido - descontoPedidoAplicado);
+  const selectedCliente = useMemo(
+    () => clientes.find((cliente) => cliente.id === selectedClienteId),
+    [clientes, selectedClienteId]
+  );
 
   const clientesSearchItems = useMemo(() => clientes.map(c => {
     const paddedCode = c.codigo_cliente?.toString().padStart(5, '0') || '00000';
@@ -372,6 +382,14 @@ export default function PedidoFormModal({
       name: v.nome
     };
   }), [vendedores]);
+
+  const ambassadorSearchItems = useMemo(() => ambassadors.map((ambassador) => ({
+    id: ambassador.id,
+    display: `[${ambassador.referral_code}] ${ambassador.full_name}`,
+    search: `${ambassador.referral_code} ${ambassador.full_name} ${ambassador.display_name || ''}`,
+    code: ambassador.referral_code,
+    name: ambassador.full_name,
+  })), [ambassadors]);
 
   const addToCart = (produto: Produto) => {
     const existing = cart.find(c => c.produtoId === produto.id);
@@ -482,7 +500,26 @@ export default function PedidoFormModal({
         await updatePedidoAction(pedidoToEdit.id, pedidoMeta, itensData as any);
         toast.success('Pedido atualizado com sucesso!');
       } else {
-        await savePedido({ ...pedidoMeta, status_pedido: 'aguardando_preparacao' } as any, itensData as any);
+        if (!clienteSelecionado?.indicated_by && selectedAmbassadorId) {
+          const assignment = await assignCustomerAmbassadorForOrder(
+            selectedClienteId,
+            selectedAmbassadorId,
+            crypto.randomUUID()
+          );
+          if (assignment.status !== 'assigned') {
+            throw new Error(
+              assignment.code === 'self_referral_forbidden'
+                ? 'O cliente não pode indicar a si próprio.'
+                : 'Não foi possível registrar a indicação oficial deste pedido.'
+            );
+          }
+        }
+        await savePedido(
+          { ...pedidoMeta, status_pedido: 'aguardando_preparacao' } as any,
+          itensData as any,
+          orderIdempotencyKeyRef.current
+        );
+        orderIdempotencyKeyRef.current = crypto.randomUUID();
         toast.success('Pedido registrado com sucesso!');
       }
 
@@ -667,6 +704,48 @@ export default function PedidoFormModal({
               </div>
             </div>
           </div>
+          {selectedClienteId && (
+            <div style={{
+              padding: '8px 20px',
+              borderBottom: '1px solid var(--color-outline-variant)',
+              backgroundColor: 'var(--color-surface-container-low)',
+              color: 'var(--color-on-surface-variant)',
+              fontSize: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '17px', color: 'var(--color-primary)' }}>
+                loyalty
+              </span>
+              {selectedCliente?.indicated_by ? (
+                <span>
+                  Indicado por <strong>{selectedCliente.indicated_by.full_name}</strong>
+                  {' '}({selectedCliente.indicated_by.referral_code}) · {selectedCliente.referral_source || 'atribuição oficial'}
+                </span>
+              ) : (
+                <span>Cliente sem indicação comissionável vigente.</span>
+              )}
+            </div>
+          )}
+          {selectedClienteId && !selectedCliente?.indicated_by && !isEditMode && (
+            <div style={{
+              padding: '10px 20px',
+              borderBottom: '1px solid var(--color-outline-variant)',
+              backgroundColor: 'var(--color-surface-container-lowest)',
+            }}>
+              <SearchSelector
+                label="Embaixador indicador (opcional)"
+                placeholder="Buscar por nome ou código..."
+                items={ambassadorSearchItems}
+                selectedId={selectedAmbassadorId}
+                onSelect={setSelectedAmbassadorId}
+              />
+              <p style={{ margin: '5px 0 0', fontSize: '11px', color: 'var(--color-outline)' }}>
+                Ao salvar, a indicação será validada e auditada antes da criação do pedido.
+              </p>
+            </div>
+          )}
 
           <div className={styles.body} style={{ display: 'flex', flex: 1, minHeight: 0, flexDirection: 'row' }}>
             {/* Left Box: Catalog */}

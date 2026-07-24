@@ -5,6 +5,7 @@ import { unstable_rethrow } from 'next/navigation';
 import * as pedidoService from '@/services/pedidos';
 import { getProdutos } from '@/services/produtos';
 import { StatusPedido, Pedido, PedidoItem } from '@/models/types';
+import { createClient } from '@/utils/supabase/server';
 
 export async function getPedidos() {
   try {
@@ -38,10 +39,11 @@ export async function getProdutosAction() {
 
 export async function savePedido(
   pedido: Omit<Pedido, 'id' | 'numero_pedido' | 'created_at' | 'updated_at'>,
-  itens: Omit<PedidoItem, 'id' | 'pedido_id' | 'created_at'>[]
+  itens: Omit<PedidoItem, 'id' | 'pedido_id' | 'created_at'>[],
+  idempotencyKey: string
 ) {
   try {
-    const data = await pedidoService.createPedido(pedido, itens);
+    const data = await pedidoService.createPedido(pedido, itens, idempotencyKey);
     revalidatePath('/');
     revalidatePath('/vendas/pedidos');
     revalidatePath('/estoque');
@@ -52,6 +54,26 @@ export async function savePedido(
     console.error('Erro ao salvar pedido:', error);
     throw new Error('Falha ao salvar o pedido. Verifique os dados e tente novamente.');
   }
+}
+
+export async function assignCustomerAmbassadorForOrder(
+  customerId: string,
+  ambassadorId: string,
+  idempotencyKey: string
+): Promise<{ status: string; code?: string }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc('fn_assign_customer_ambassador', {
+    p_customer_id: customerId,
+    p_ambassador_id: ambassadorId,
+    p_source: 'manual_order_selection',
+    p_reason: 'Indicação validada individualmente durante a criação manual do pedido.',
+    p_idempotency_key: idempotencyKey,
+  });
+
+  if (error) throw new Error(error.message);
+  revalidatePath('/clientes');
+  revalidatePath('/vendas/pedidos');
+  return data as { status: string; code?: string };
 }
 
 export async function updatePedidoStatus(id: string, status: StatusPedido) {

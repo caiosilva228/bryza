@@ -8,7 +8,8 @@ export const fetchPedidos = async () => {
     .select(`
       *,
       cliente:clientes(nome, telefone, bairro, cidade, estado, endereco, numero),
-      vendedor:profiles(nome)
+      vendedor:profiles(nome),
+      ambassador:ambassadors!pedidos_ambassador_id_fkey(id, full_name, referral_code, status)
     `)
     .order('created_at', { ascending: false });
 
@@ -24,6 +25,7 @@ export const fetchPedidoById = async (id: string) => {
       *,
       cliente:clientes(nome, telefone, bairro, cidade, estado, endereco, numero),
       vendedor:profiles(nome),
+      ambassador:ambassadors!pedidos_ambassador_id_fkey(id, full_name, referral_code, status),
       itens:pedido_itens(
         *,
         produto:produtos(nome_produto, codigo_produto)
@@ -38,35 +40,25 @@ export const fetchPedidoById = async (id: string) => {
 
 export const createPedido = async (
   pedido: Omit<Pedido, 'id' | 'numero_pedido' | 'created_at' | 'updated_at'>,
-  itens: Omit<PedidoItem, 'id' | 'pedido_id' | 'created_at'>[]
+  itens: Omit<PedidoItem, 'id' | 'pedido_id' | 'created_at'>[],
+  idempotencyKey: string
 ) => {
   const supabase = await createClient();
-  // 1. Inserir o pedido
-  const { data: pedidoData, error: pedidoError } = await supabase
-    .from('pedidos')
-    .insert([pedido])
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc('fn_create_manual_order_canonical', {
+    p_order: pedido,
+    p_items: itens,
+    p_idempotency_key: idempotencyKey,
+  });
 
-  if (pedidoError) throw pedidoError;
+  if (error) throw error;
 
-  // 2. Inserir os itens vinculados ao ID do pedido criado
-  const itensComId = itens.map(item => ({
-    ...item,
-    pedido_id: pedidoData.id
-  }));
-
-  const { error: itensError } = await supabase
-    .from('pedido_itens')
-    .insert(itensComId);
-
-  if (itensError) {
-    // Se der erro nos itens, deveríamos deletar o pedido (rollback manual simples)
-    await supabase.from('pedidos').delete().eq('id', pedidoData.id);
-    throw itensError;
+  const result = data as { status?: string; order_id?: string; order_number?: string } | null;
+  if (!result) throw new Error('O banco não retornou o resultado da criação do pedido.');
+  if (result.status === 'idempotency_conflict') {
+    throw new Error('Esta tentativa de pedido já foi usada com dados diferentes. Reabra o formulário e tente novamente.');
   }
 
-  return pedidoData;
+  return result;
 };
 
 export const updateStatusPedido = async (id: string, status: StatusPedido) => {

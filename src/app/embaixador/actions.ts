@@ -389,8 +389,22 @@ export async function atualizarMeuPerfil(payload: {
     }
   }
 
+  if (normalizedPhone) {
+    const { data: identityResult, error: identityError } = await supabase.rpc(
+      'fn_update_my_profile_canonical',
+      {
+        p_full_name: null,
+        p_phone: normalizedPhone,
+      }
+    );
+    if (identityError) throw new Error(identityError.message);
+    if ((identityResult as { status?: string })?.status === 'manual_review_required') {
+      throw new Error('O telefone informado exige revisão administrativa.');
+    }
+  }
+
   const { data, error } = await supabase.rpc('fn_update_meu_perfil', {
-    p_phone: normalizedPhone,
+    p_phone: null,
     p_instagram: payload.instagram !== undefined ? payload.instagram.trim() : null,
     p_city: payload.city !== undefined ? payload.city.trim() : null,
     p_state: normalizedState,

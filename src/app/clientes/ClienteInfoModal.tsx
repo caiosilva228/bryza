@@ -21,6 +21,9 @@ export default function ClienteInfoModal({ cliente, onClose, isAdmin, onDelete, 
   const [expandedVendaId, setExpandedVendaId] = useState<string | null>(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [deleteNameConfirm, setDeleteNameConfirm] = useState('');
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteMessage, setInviteMessage] = useState('');
+  const [inviteLink, setInviteLink] = useState('');
 
   useEffect(() => {
     if (cliente) {
@@ -38,6 +41,46 @@ export default function ClienteInfoModal({ cliente, onClose, isAdmin, onDelete, 
       console.error('Erro ao carregar histórico:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createAmbassadorInvitation = async () => {
+    if (!cliente) return;
+    setInviteLoading(true);
+    setInviteMessage('');
+    setInviteLink('');
+    try {
+      const response = await fetch('/api/clientes/invitations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customer_id: cliente.id }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Não foi possível criar o convite.');
+
+      const result = payload.result as {
+        status?: string;
+        acceptance_url?: string;
+        email_delivery?: string;
+      };
+      if (result.status === 'created' && result.acceptance_url) {
+        setInviteLink(result.acceptance_url);
+        setInviteMessage(
+          result.email_delivery === 'sent'
+            ? 'Convite enviado por e-mail. O link também pode ser copiado abaixo.'
+            : 'Convite criado. Compartilhe o link abaixo com o cliente.'
+        );
+      } else if (result.status === 'pending_invitation_exists') {
+        setInviteMessage('Já existe um convite pendente e válido para esta pessoa.');
+      } else if (result.status === 'already_ambassador') {
+        setInviteMessage('Esta pessoa já possui participação no programa.');
+      } else {
+        setInviteMessage('O convite exige revisão administrativa da identidade.');
+      }
+    } catch (error) {
+      setInviteMessage(error instanceof Error ? error.message : 'Não foi possível criar o convite.');
+    } finally {
+      setInviteLoading(false);
     }
   };
 
@@ -194,6 +237,85 @@ export default function ClienteInfoModal({ cliente, onClose, isAdmin, onDelete, 
                         </React.Fragment>
                       ))}
                     </span>
+                  </div>
+                </div>
+              </section>
+
+              <section>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '12px' }}>
+                  Programa de Embaixadores
+                </label>
+                <div style={{
+                  backgroundColor: 'var(--color-surface-container-lowest)',
+                  padding: '20px',
+                  borderRadius: '20px',
+                  border: '1px solid var(--color-outline-variant)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '14px',
+                }}>
+                  <div>
+                    <span style={{ fontSize: '11px', color: 'var(--color-outline)', fontWeight: 700 }}>
+                      INDICADO POR
+                    </span>
+                    {cliente.indicated_by ? (
+                      <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span className="material-symbols-outlined" style={{ color: 'var(--color-primary)' }}>loyalty</span>
+                        <div>
+                          <div style={{ fontSize: '14px', fontWeight: 800 }}>{cliente.indicated_by.full_name}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+                            Código {cliente.indicated_by.referral_code} · {cliente.referral_source || 'origem não informada'}
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--color-outline)' }}>
+                            {cliente.referral_attributed_at
+                              ? `Atribuído em ${new Date(cliente.referral_attributed_at).toLocaleDateString('pt-BR')}`
+                              : 'Sem data de atribuição'}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <p style={{ margin: '6px 0 0', fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
+                        Nenhuma indicação comissionável validada.
+                      </p>
+                    )}
+                  </div>
+                  <div style={{ paddingTop: '12px', borderTop: '1px solid var(--color-outline-variant)' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--color-outline)', fontWeight: 700 }}>
+                      PARTICIPAÇÃO DO PRÓPRIO CLIENTE
+                    </span>
+                    <p style={{ margin: '6px 0 0', fontSize: '13px', fontWeight: 700 }}>
+                      {cliente.own_ambassador
+                        ? `Também é embaixador (${cliente.own_ambassador.referral_code})`
+                        : 'Não participa como embaixador'}
+                    </p>
+                    {isAdmin && !cliente.own_ambassador && (
+                      <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <button
+                          type="button"
+                          onClick={createAmbassadorInvitation}
+                          disabled={inviteLoading}
+                          className="btn-secondary"
+                          style={{ alignSelf: 'flex-start' }}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>mail</span>
+                          {inviteLoading ? 'Criando convite…' : 'Convidar para o programa'}
+                        </button>
+                        {inviteMessage && (
+                          <p role="status" style={{ margin: 0, fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+                            {inviteMessage}
+                          </p>
+                        )}
+                        {inviteLink && (
+                          <button
+                            type="button"
+                            onClick={() => navigator.clipboard.writeText(inviteLink)}
+                            style={{ border: 0, background: 'transparent', color: 'var(--color-primary)', padding: 0, textAlign: 'left', cursor: 'pointer', fontSize: '12px', fontWeight: 700 }}
+                          >
+                            Copiar link de aceite
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </section>
@@ -415,7 +537,7 @@ export default function ClienteInfoModal({ cliente, onClose, isAdmin, onDelete, 
                     <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
                       {isDeleting ? 'hourglass_top' : 'delete'}
                     </span>
-                    Excluir Cliente
+                    Arquivar Cliente
                   </button>
                 )}
               </div>
@@ -467,10 +589,10 @@ export default function ClienteInfoModal({ cliente, onClose, isAdmin, onDelete, 
             <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--color-error)' }}>
                 <span className="material-symbols-outlined">warning</span>
-                <span style={{ fontWeight: 800, fontSize: '15px' }}>Zona de Perigo - Exclusão de Cliente</span>
+                <span style={{ fontWeight: 800, fontSize: '15px' }}>Arquivamento do Cliente</span>
               </div>
               <p style={{ fontSize: '14px', color: 'var(--color-on-surface-variant)', margin: 0 }}>
-                Para excluir <strong>{cliente.nome.toUpperCase()}</strong>, digite o primeiro nome do cliente abaixo para autorizar:
+                Para arquivar <strong>{cliente.nome.toUpperCase()}</strong>, digite o primeiro nome do cliente abaixo para autorizar. O histórico será preservado:
               </p>
               
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -527,7 +649,7 @@ export default function ClienteInfoModal({ cliente, onClose, isAdmin, onDelete, 
                     opacity: (isDeleting || deleteNameConfirm.trim().toLowerCase() !== cliente.nome.split(' ')[0].toLowerCase()) ? 0.5 : 1
                   }}
                 >
-                  {isDeleting ? 'Excluindo...' : 'Confirmar Exclusão'}
+                  {isDeleting ? 'Arquivando...' : 'Confirmar Arquivamento'}
                 </button>
               </div>
             </div>

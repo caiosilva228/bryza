@@ -1,5 +1,8 @@
 import { MainLayout } from '@/components/layout/MainLayout';
-import { getClienteById } from '@/services/clientes';
+import {
+  getActiveAmbassadorsForCustomerAssignment,
+  getClienteById,
+} from '@/services/clientes';
 import { getVendedores, getCurrentProfile } from '@/services/profiles';
 import { ClienteForm } from '../../novo/ClienteForm';
 import { redirect } from 'next/navigation';
@@ -16,9 +19,10 @@ export default async function EditarClientePage({ params }: Props) {
     redirect('/login');
   }
 
-  const [cliente, vendedores] = await Promise.all([
+  const [cliente, vendedores, ambassadors] = await Promise.all([
     getClienteById(id),
-    getVendedores()
+    getVendedores(),
+    getActiveAmbassadorsForCustomerAssignment(),
   ]);
 
   if (!cliente) {
@@ -53,6 +57,7 @@ export default async function EditarClientePage({ params }: Props) {
           <ClienteForm 
             profile={profile} 
             vendedores={vendedores} 
+            ambassadors={ambassadors}
             isVendedor={profile.role === 'vendedor'} 
             initialData={cliente}
           />

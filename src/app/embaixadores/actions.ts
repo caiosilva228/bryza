@@ -340,8 +340,8 @@ export async function alterarPlano(ambassadorId: string, planId: string) {
 
 // 6. Editar Embaixador
 export async function editarEmbaixador(ambassadorId: string, data: any) {
-  const admin = await checkAdminAccess();
-  const adminClient = createAdminClient();
+  await checkAdminAccess();
+  const supabase = await createClient();
 
   const { 
     full_name, 
@@ -368,12 +368,6 @@ export async function editarEmbaixador(ambassadorId: string, data: any) {
     throw new Error('Informe um telefone válido com DDD.');
   }
 
-  const { data: oldAmb } = await adminClient
-    .from('ambassadors')
-    .select('user_id, username')
-    .eq('id', ambassadorId)
-    .single();
-
   const normalizedState = state && state.trim() ? state.trim().toUpperCase() : null;
   let normalizedPixType: string | null = pix_type || null;
   if (normalizedPixType === 'pix' || normalizedPixType === 'outro') {
@@ -394,8 +388,8 @@ export async function editarEmbaixador(ambassadorId: string, data: any) {
     address: address || null,
     number: number || null,
     neighborhood: neighborhood || null,
-    latitude: latitude ? Number(latitude) : null,
-    longitude: longitude ? Number(longitude) : null
+    latitude: latitude ? String(Number(latitude)) : null,
+    longitude: longitude ? String(Number(longitude)) : null
   };
 
   // Uma chave mascarada/omitida significa "preservar a chave atual".
@@ -404,39 +398,15 @@ export async function editarEmbaixador(ambassadorId: string, data: any) {
     updateData.pix_key = pix_key.trim();
   }
 
-  const { error } = await adminClient
-    .from('ambassadors')
-    .update(updateData)
-    .eq('id', ambassadorId)
-    .select('id')
-    .single();
+  const { data: result, error } = await supabase.rpc('fn_admin_update_ambassador_canonical', {
+    p_ambassador_id: ambassadorId,
+    p_data: updateData,
+  });
 
   if (error) throw new Error('Falha ao atualizar dados do embaixador');
-
-  // Sincronizar nome no perfil auth/profile se alterado
-  if (oldAmb?.user_id) {
-    const { error: profileSyncError } = await adminClient
-      .from('profiles')
-      .update({ nome: full_name, telefone: cleanPhone })
-      .eq('id', oldAmb.user_id);
-
-    if (profileSyncError) {
-      throw new Error('Cadastro atualizado, mas falhou ao sincronizar o telefone de acesso.');
-    }
+  if ((result as { status?: string })?.status === 'manual_review_required') {
+    throw new Error('Os dados informados exigem revisão administrativa.');
   }
-
-  const reqHeaders = await headers();
-  const ipHash = getIpHash(reqHeaders);
-
-  await adminClient.from('audit_logs').insert({
-    actor_id: admin.id,
-    actor_role: 'admin',
-    action: 'edit_ambassador',
-    entity_type: 'ambassadors',
-    entity_id: ambassadorId,
-    ip_hash: ipHash,
-    metadata: { target_username: oldAmb?.username || '' }
-  });
 
   revalidatePath('/embaixadores');
   return { success: true };

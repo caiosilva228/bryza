@@ -890,7 +890,7 @@ export const LandingPage: React.FC = () => {
               fontStyle: 'italic',
               fontWeight: 400
             }}>
-              "O nome Bryza nasce da inspiração em Gênesis 3:8, onde a brisa da viração do dia precede a presença de Deus no jardim. Para nós, ela simboliza um perfume que chega antes, anuncia uma presença e transforma o ambiente. É essa sensação que buscamos levar para cada casa através dos nossos produtos."
+              &ldquo;O nome Bryza nasce da inspiração em Gênesis 3:8, onde a brisa da viração do dia precede a presença de Deus no jardim. Para nós, ela simboliza um perfume que chega antes, anuncia uma presença e transforma o ambiente. É essa sensação que buscamos levar para cada casa através dos nossos produtos.&rdquo;
             </p>
             <div style={{
               fontSize: '14.5px',
