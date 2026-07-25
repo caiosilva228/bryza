@@ -11,6 +11,7 @@ import { createClient } from '@/utils/supabase/client';
 
 interface ClienteIndicado {
   id: string;
+  id_cliente?: string;
   nome: string;
   telefone: string;
   email: string | null;
@@ -109,10 +110,11 @@ export default function ClientesIndicadosTab() {
 
   const handlePromote = () => {
     if (!modalCliente) return;
+    const targetCustomerId = modalCliente.id_cliente || modalCliente.id;
     startTransition(async () => {
       try {
         const result = await promoverClienteParaEmbaixador({
-          clienteId: modalCliente.id,
+          clienteId: targetCustomerId,
           planId: selectedPlanId || undefined,
           initialStatus: 'pendente',
         });
