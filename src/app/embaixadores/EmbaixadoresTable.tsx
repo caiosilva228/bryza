@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getSignedPhotoUrl, alterarStatus } from './actions';
+import { getSignedPhotoUrl, alterarStatus, getEmbaixadoresNetworkStats } from './actions';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toast } from 'sonner';
 
@@ -27,6 +27,14 @@ interface EmbaixadorItem {
   total_recebido: number;
 }
 
+interface NetworkStat {
+  ambassador_id: string;
+  clients_active: number;
+  clients_inactive: number;
+  sub_ambassadors_active: number;
+  sub_ambassadors_inactive: number;
+}
+
 interface TableProps {
   lista: EmbaixadorItem[];
   onRefresh: () => void;
@@ -34,6 +42,7 @@ interface TableProps {
 
 export default function EmbaixadoresTable({ lista, onRefresh }: TableProps) {
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
+  const [networkStats, setNetworkStats] = useState<Record<string, NetworkStat>>({});
 
   useEffect(() => {
     const fetchPhotos = async () => {
@@ -42,9 +51,7 @@ export default function EmbaixadoresTable({ lista, onRefresh }: TableProps) {
         if (item.photo_path) {
           try {
             const url = await getSignedPhotoUrl(item.photo_path);
-            if (url) {
-              urls[item.id] = url;
-            }
+            if (url) urls[item.id] = url;
           } catch (e) {
             console.error('Erro ao buscar signed URL para foto:', e);
           }
@@ -54,7 +61,21 @@ export default function EmbaixadoresTable({ lista, onRefresh }: TableProps) {
       setPhotoUrls(urls);
     };
 
+    const fetchNetworkStats = async () => {
+      if (!lista.length) return;
+      try {
+        const ids = lista.map((i) => i.id);
+        const stats = await getEmbaixadoresNetworkStats(ids);
+        const map: Record<string, NetworkStat> = {};
+        stats.forEach((s) => { map[s.ambassador_id] = s; });
+        setNetworkStats(map);
+      } catch (e) {
+        console.error('Erro ao buscar stats de rede:', e);
+      }
+    };
+
     fetchPhotos();
+    fetchNetworkStats();
   }, [lista]);
 
   const handleStatusChange = async (id: string, newStatus: string, name: string) => {
@@ -112,6 +133,7 @@ export default function EmbaixadoresTable({ lista, onRefresh }: TableProps) {
             <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>Vendas</th>
             <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)', textAlign: 'right' }}>C. Liberada</th>
             <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)', textAlign: 'right' }}>Total Pago</th>
+            <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>Rede</th>
             <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>Status</th>
             <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>Cadastro</th>
             <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>Ações</th>
@@ -120,6 +142,7 @@ export default function EmbaixadoresTable({ lista, onRefresh }: TableProps) {
         <tbody>
           {lista.map((item) => {
             const photoUrl = photoUrls[item.id] || null;
+            const net = networkStats[item.id];
             return (
               <tr key={item.id} style={{
                 borderBottom: '1px solid var(--color-outline-variant)',
@@ -199,6 +222,28 @@ export default function EmbaixadoresTable({ lista, onRefresh }: TableProps) {
                 {/* Total Recebido */}
                 <td style={{ padding: '12px 20px', textAlign: 'right', fontWeight: 600, color: 'var(--color-primary)' }}>
                   {formatCurrency(item.total_recebido)}
+                </td>
+
+                {/* Rede */}
+                <td style={{ padding: '12px 20px', whiteSpace: 'nowrap' }}>
+                  {net ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '14px', color: 'var(--color-on-surface-variant)' }}>person</span>
+                        <span style={{ color: '#059669', fontWeight: 700 }}>{net.clients_active}</span>
+                        {net.clients_inactive > 0 && <span style={{ color: 'var(--color-on-surface-variant)' }}>+{net.clients_inactive} in.</span>}
+                        <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '11px' }}>clientes</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '14px', color: 'var(--color-on-surface-variant)' }}>workspace_premium</span>
+                        <span style={{ color: 'var(--color-primary)', fontWeight: 700 }}>{net.sub_ambassadors_active}</span>
+                        {net.sub_ambassadors_inactive > 0 && <span style={{ color: 'var(--color-on-surface-variant)' }}>+{net.sub_ambassadors_inactive} in.</span>}
+                        <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '11px' }}>emb.</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: '12px', color: 'var(--color-outline)' }}>—</span>
+                  )}
                 </td>
 
                 {/* Status */}

@@ -543,3 +543,89 @@ export async function getEmbaixadorNetwork(ambassadorId: string) {
     }
   };
 }
+
+// 10. Listar Clientes Indicados por Embaixadores (ainda não embaixadores)
+export async function getClientesIndicadosPaginados(params: {
+  limit: number;
+  offset: number;
+  search?: string;
+  ambassadorId?: string;
+  status?: string;
+}) {
+  await checkAdminAccess();
+  const adminClient = createAdminClient();
+
+  const { data, error } = await adminClient.rpc('fn_get_clientes_indicados', {
+    p_limit: params.limit,
+    p_offset: params.offset,
+    p_search: params.search || null,
+    p_ambassador_id: params.ambassadorId || null,
+    p_status: params.status || null,
+  });
+
+  if (error) {
+    console.error('Erro na RPC de clientes indicados:', error);
+    throw new Error('Erro ao listar clientes indicados');
+  }
+
+  const result = data as { items: any[]; total: number };
+  return {
+    items: result.items || [],
+    total: result.total || 0,
+  };
+}
+
+// 11. Stats de rede de embaixadores (batch)
+export async function getEmbaixadoresNetworkStats(ambassadorIds: string[]) {
+  await checkAdminAccess();
+  if (!ambassadorIds.length) return [];
+  const adminClient = createAdminClient();
+
+  const { data, error } = await adminClient.rpc('fn_get_ambassador_network_stats', {
+    p_ambassador_ids: ambassadorIds,
+  });
+
+  if (error) {
+    console.error('Erro ao buscar stats de rede:', error);
+    return [];
+  }
+
+  return (data || []) as {
+    ambassador_id: string;
+    clients_active: number;
+    clients_inactive: number;
+    sub_ambassadors_active: number;
+    sub_ambassadors_inactive: number;
+  }[];
+}
+
+// 12. Promover Cliente para Embaixador (Admin)
+export async function promoverClienteParaEmbaixador(params: {
+  clienteId: string;
+  planId?: string;
+  initialStatus?: 'pendente' | 'ativo';
+}) {
+  await checkAdminAccess();
+  const adminClient = createAdminClient();
+
+  const { data, error } = await adminClient.rpc('fn_admin_promote_client_to_ambassador', {
+    p_customer_id: params.clienteId,
+    p_plan_id: params.planId || null,
+    p_initial_status: params.initialStatus || 'pendente',
+  });
+
+  if (error) {
+    console.error('Erro ao promover cliente para embaixador:', error);
+    throw new Error(error.message || 'Falha ao promover o cliente para embaixador');
+  }
+
+  const result = data as { status: string; ambassador_id?: string; referral_code?: string; username?: string };
+
+  if (result.status === 'customer_not_found') throw new Error('Cliente não encontrado.');
+  if (result.status === 'already_ambassador') throw new Error('Este cliente já é um embaixador.');
+
+  revalidatePath('/embaixadores');
+  revalidatePath('/clientes');
+  return result;
+}
+
