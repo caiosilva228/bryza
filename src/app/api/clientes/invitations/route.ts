@@ -4,6 +4,38 @@ import { createAdminClient } from '@/utils/supabase/admin';
 
 const TERMS_VERSION = 'programa-embaixadores-v1';
 
+export async function GET(request: NextRequest) {
+  const supabase = await createClient();
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) {
+    return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', userData.user.id)
+    .single();
+  if (profile?.role !== 'admin') {
+    return NextResponse.json({ error: 'Apenas administradores podem consultar convites.' }, { status: 403 });
+  }
+
+  const customerId = request.nextUrl.searchParams.get('customerId');
+  if (!customerId) {
+    return NextResponse.json({ error: 'Cliente não informado.' }, { status: 400 });
+  }
+
+  const { data, error } = await supabase.rpc(
+    'fn_admin_get_customer_program_status',
+    { p_customer_id: customerId }
+  );
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  return NextResponse.json({ result: data });
+}
+
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();

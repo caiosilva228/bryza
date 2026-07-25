@@ -15,6 +15,15 @@ interface ClienteInfoModalProps {
   isDeleting?: boolean;
 }
 
+interface CustomerProgramStatus {
+  eligible?: boolean;
+  eligibility_label?: string | null;
+  invitation_status?: string | null;
+  campaign_name?: string | null;
+  campaign_waives_purchase_minimum?: boolean;
+  is_ambassador?: boolean;
+}
+
 export default function ClienteInfoModal({ cliente, onClose, isAdmin, onDelete, isDeleting }: ClienteInfoModalProps) {
   const [vendas, setVendas] = useState<VendaWithItens[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,12 +33,14 @@ export default function ClienteInfoModal({ cliente, onClose, isAdmin, onDelete, 
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteMessage, setInviteMessage] = useState('');
   const [inviteLink, setInviteLink] = useState('');
+  const [programStatus, setProgramStatus] = useState<CustomerProgramStatus | null>(null);
 
   useEffect(() => {
     if (cliente) {
       loadVendas();
+      if (isAdmin) loadProgramStatus();
     }
-  }, [cliente]);
+  }, [cliente, isAdmin]);
 
   const loadVendas = async () => {
     if (!cliente) return;
@@ -41,6 +52,19 @@ export default function ClienteInfoModal({ cliente, onClose, isAdmin, onDelete, 
       console.error('Erro ao carregar histórico:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadProgramStatus = async () => {
+    if (!cliente || !isAdmin) return;
+    try {
+      const response = await fetch(
+        `/api/clientes/invitations?customerId=${encodeURIComponent(cliente.id)}`
+      );
+      const payload = await response.json();
+      if (response.ok) setProgramStatus(payload.result || null);
+    } catch (error) {
+      console.error('Erro ao carregar elegibilidade do programa:', error);
     }
   };
 
@@ -77,6 +101,7 @@ export default function ClienteInfoModal({ cliente, onClose, isAdmin, onDelete, 
       } else {
         setInviteMessage('O convite exige revisão administrativa da identidade.');
       }
+      await loadProgramStatus();
     } catch (error) {
       setInviteMessage(error instanceof Error ? error.message : 'Não foi possível criar o convite.');
     } finally {
@@ -243,6 +268,37 @@ export default function ClienteInfoModal({ cliente, onClose, isAdmin, onDelete, 
 
               <section>
                 <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '12px' }}>
+                  Responsável comercial
+                </label>
+                <div style={{
+                  backgroundColor: 'var(--color-surface-container-lowest)',
+                  padding: '20px',
+                  borderRadius: '20px',
+                  border: '1px solid var(--color-outline-variant)',
+                }}>
+                  {cliente.vendedor ? (
+                    <>
+                      <div style={{ fontSize: '14px', fontWeight: 800 }}>{cliente.vendedor.nome}</div>
+                      <div style={{ marginTop: '4px', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+                        Vendedor responsável
+                        {cliente.vendedor.codigo_vendedor
+                          ? ` · Código ${cliente.vendedor.codigo_vendedor}`
+                          : ''}
+                      </div>
+                    </>
+                  ) : (
+                    <p style={{ margin: 0, color: 'var(--color-on-surface-variant)', fontSize: '13px' }}>
+                      Sem responsável comercial vigente.
+                    </p>
+                  )}
+                  <p style={{ margin: '10px 0 0', color: 'var(--color-outline)', fontSize: '11px' }}>
+                    Responsabilidade comercial não equivale a indicação comissionável.
+                  </p>
+                </div>
+              </section>
+
+              <section>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '12px' }}>
                   Programa de Embaixadores
                 </label>
                 <div style={{
@@ -271,11 +327,14 @@ export default function ClienteInfoModal({ cliente, onClose, isAdmin, onDelete, 
                               ? `Atribuído em ${new Date(cliente.referral_attributed_at).toLocaleDateString('pt-BR')}`
                               : 'Sem data de atribuição'}
                           </div>
+                          <div style={{ marginTop: '4px', fontSize: '11px', color: '#047857', fontWeight: 800 }}>
+                            Ativa, validada e comissionável
+                          </div>
                         </div>
                       </div>
                     ) : (
                       <p style={{ margin: '6px 0 0', fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
-                        Nenhuma indicação comissionável validada.
+                        Sem indicação comissionável.
                       </p>
                     )}
                   </div>
@@ -288,6 +347,26 @@ export default function ClienteInfoModal({ cliente, onClose, isAdmin, onDelete, 
                         ? `Também é embaixador (${cliente.own_ambassador.referral_code})`
                         : 'Não participa como embaixador'}
                     </p>
+                    {isAdmin && programStatus && !cliente.own_ambassador && (
+                      <div style={{ marginTop: '8px', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+                        <div>
+                          {programStatus.eligible
+                            ? programStatus.eligibility_label || 'Elegível para convite'
+                            : 'Ainda não marcado como elegível'}
+                        </div>
+                        {programStatus.invitation_status && (
+                          <div>Último convite: {programStatus.invitation_status}</div>
+                        )}
+                        {programStatus.campaign_name && (
+                          <div>
+                            Campanha: {programStatus.campaign_name}
+                            {programStatus.campaign_waives_purchase_minimum
+                              ? ' · entrada sem compra mínima'
+                              : ''}
+                          </div>
+                        )}
+                      </div>
+                    )}
                     {isAdmin && !cliente.own_ambassador && (
                       <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <button

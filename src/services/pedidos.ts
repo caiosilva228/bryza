@@ -52,10 +52,24 @@ export const createPedido = async (
 
   if (error) throw error;
 
-  const result = data as { status?: string; order_id?: string; order_number?: string } | null;
+  const result = data as {
+    status?: string;
+    code?: string;
+    order_id?: string;
+    order_number?: string;
+  } | null;
   if (!result) throw new Error('O banco não retornou o resultado da criação do pedido.');
   if (result.status === 'idempotency_conflict') {
     throw new Error('Esta tentativa de pedido já foi usada com dados diferentes. Reabra o formulário e tente novamente.');
+  }
+  if (result.status === 'assignment_rejected') {
+    if (result.code === 'self_referral_forbidden') {
+      throw new Error('O cliente não pode indicar a si próprio.');
+    }
+    if (result.code === 'existing_official_assignment_preserved') {
+      throw new Error('O cliente já possui outra indicação oficial. O vínculo original foi preservado.');
+    }
+    throw new Error('Não foi possível registrar a indicação oficial deste pedido.');
   }
 
   return result;

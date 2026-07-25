@@ -4,8 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 
-const TERMS_VERSION = 'programa-embaixadores-v1';
-
 export default function AmbassadorInvitationAcceptance({ token }: { token: string }) {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -31,10 +29,15 @@ export default function AmbassadorInvitationAcceptance({ token }: { token: strin
         );
       }
 
+      const termsVersion = prepared.result?.terms_version;
+      if (!termsVersion) {
+        throw new Error('A versão dos termos deste convite não pôde ser confirmada.');
+      }
+
       const supabase = createClient();
       const { data, error } = await supabase.rpc('fn_accept_ambassador_invitation', {
         p_invitation_token: token,
-        p_terms_version: TERMS_VERSION,
+        p_terms_version: termsVersion,
       });
       if (error) throw error;
 
@@ -48,7 +51,12 @@ export default function AmbassadorInvitationAcceptance({ token }: { token: strin
       }
 
       setSuccess(true);
-      setMessage(`Participação ativada. Seu código é ${result.referral_code || 'gerado pela Bryza'}.`);
+      setMessage(
+        `Participação ativada. Seu código é ${result.referral_code || 'gerado pela Bryza'}.`
+        + (prepared.result?.purchase_minimum_waiver
+          ? ' A condição temporária de entrada sem compra mínima foi registrada.'
+          : '')
+      );
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Não foi possível aceitar o convite.');
     } finally {

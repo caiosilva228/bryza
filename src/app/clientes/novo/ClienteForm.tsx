@@ -40,6 +40,7 @@ export function ClienteForm({
   const [selectedAmbassadorId, setSelectedAmbassadorId] = useState(
     initialData?.commissionable_ambassador_id || ''
   );
+  const [assignmentReason, setAssignmentReason] = useState('');
   const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
   
   const [cidades, setCidades] = useState<string[]>([]);
@@ -297,6 +298,24 @@ export function ClienteForm({
     e.preventDefault();
     if (isSubmitting) return;
 
+    const currentAmbassadorId = initialData?.commissionable_ambassador_id || '';
+    const isNewAssignment = !currentAmbassadorId && Boolean(selectedAmbassadorId);
+    const isReassignment = Boolean(
+      currentAmbassadorId
+      && selectedAmbassadorId
+      && currentAmbassadorId !== selectedAmbassadorId
+    );
+
+    if (currentAmbassadorId && !selectedAmbassadorId) {
+      toast.error('A indicação vigente não pode ser removida silenciosamente. Selecione o indicador atual ou faça uma reatribuição auditada.');
+      return;
+    }
+
+    if ((isNewAssignment || isReassignment) && assignmentReason.trim().length < 5) {
+      toast.error('Informe a evidência ou o motivo auditável da indicação.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -307,6 +326,16 @@ export function ClienteForm({
         formData.set('cliente_id', initialData.id);
       }
       formData.set('ambassador_id', selectedAmbassadorId);
+      if (selectedAmbassadorId) {
+        formData.set(
+          'assignment_reason',
+          isNewAssignment || isReassignment
+            ? assignmentReason.trim()
+            : 'Vínculo oficial existente preservado sem alteração.'
+        );
+      } else {
+        formData.delete('assignment_reason');
+      }
       formData.set('idempotency_key', idempotencyKeyRef.current);
 
       const response = await fetch('/api/clientes', {
@@ -437,18 +466,31 @@ export function ClienteForm({
               ))}
             </datalist>
             <input type="hidden" name="ambassador_id" value={selectedAmbassadorId} />
-            {selectedAmbassadorId ? (
-              <input
-                type="hidden"
-                name="assignment_reason"
-                value={initialData?.commissionable_ambassador_id
-                  && initialData.commissionable_ambassador_id !== selectedAmbassadorId
-                  ? 'Reatribuição validada individualmente no cadastro do cliente'
-                  : 'Indicação validada individualmente no cadastro do cliente'}
-              />
-            ) : null}
+            {selectedAmbassadorId && (
+              !initialData?.commissionable_ambassador_id
+              || initialData.commissionable_ambassador_id !== selectedAmbassadorId
+            ) && (
+              <>
+                <label style={labelStyle}>
+                  {initialData?.commissionable_ambassador_id
+                    ? 'Motivo e evidência da reatribuição *'
+                    : 'Evidência da indicação *'}
+                </label>
+                <input
+                  type="text"
+                  value={assignmentReason}
+                  onChange={(event) => setAssignmentReason(event.currentTarget.value)}
+                  minLength={5}
+                  maxLength={500}
+                  required
+                  placeholder="Ex.: indicação confirmada pelo cliente durante o atendimento"
+                  style={{ ...inputStyle, textTransform: 'none' }}
+                />
+              </>
+            )}
             <p style={{ margin: '-8px 0 16px', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
               Somente embaixadores ativos aparecem. O responsável comercial é registrado separadamente.
+              Uma indicação vigente só pode ser trocada com motivo auditável e nunca é removida silenciosamente.
             </p>
           </div>
         )}

@@ -195,22 +195,49 @@ export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onCl
                 <span className="material-symbols-outlined" style={{ fontSize: '16px', color: 'var(--color-outline)' }}>loyalty</span>
                 <h3 style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>INDICAÇÃO DO PEDIDO</h3>
               </div>
-              {pedido.referral_commissionable_snapshot && pedido.ambassador ? (
+              {pedido.referral_assignment_id && pedido.referral_validated_snapshot ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '14px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
                     <span style={{ color: 'var(--color-on-surface-variant)' }}>Embaixador:</span>
-                    <span style={{ fontWeight: 600 }}>{pedido.ambassador.full_name}</span>
+                    <span style={{ fontWeight: 600 }}>
+                      {pedido.ambassador_name_snapshot || pedido.ambassador?.full_name || '--'}
+                    </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
                     <span style={{ color: 'var(--color-on-surface-variant)' }}>Código:</span>
-                    <span style={{ fontWeight: 600 }}>{pedido.ambassador.referral_code}</span>
+                    <span style={{ fontWeight: 600 }}>
+                      {pedido.referral_code_snapshot || pedido.ambassador?.referral_code || '--'}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
+                    <span style={{ color: 'var(--color-on-surface-variant)' }}>Origem/data:</span>
+                    <span style={{ fontWeight: 600, textAlign: 'right' }}>
+                      {pedido.attribution_source || '--'}
+                      {pedido.attributed_at
+                        ? ` · ${new Date(pedido.attributed_at).toLocaleString('pt-BR')}`
+                        : ''}
+                    </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
                     <span style={{ color: 'var(--color-on-surface-variant)' }}>Situação congelada:</span>
                     <span style={{ fontWeight: 600 }}>
-                      {pedido.ambassador_qualified_snapshot ? 'Qualificado' : 'Não qualificado'}
+                      {pedido.referral_commissionable_snapshot
+                        ? 'Comissionável e qualificado'
+                        : pedido.ambassador_qualified_snapshot
+                          ? 'Qualificado, sem comissão'
+                          : 'Não qualificado'}
                     </span>
                   </div>
+                  {pedido.commission_levels_snapshot?.length ? (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
+                      <span style={{ color: 'var(--color-on-surface-variant)' }}>Plano congelado:</span>
+                      <span style={{ fontWeight: 600, textAlign: 'right' }}>
+                        {pedido.commission_levels_snapshot
+                          .map((level) => `${level.name}: ${level.percentage}%`)
+                          .join(' · ')}
+                      </span>
+                    </div>
+                  ) : null}
                 </div>
               ) : (
                 <p style={{ margin: 0, color: 'var(--color-on-surface-variant)', fontSize: '14px' }}>

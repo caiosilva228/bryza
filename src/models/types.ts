@@ -370,6 +370,27 @@ export interface Pedido {
   referral_validated_snapshot?: boolean;
   referral_commissionable_snapshot?: boolean;
   ambassador_qualified_snapshot?: boolean;
+  referral_code_snapshot?: string | null;
+  ambassador_name_snapshot?: string | null;
+  attributed_at?: string | null;
+  attribution_source?: string | null;
+  commission_plan_id_snapshot?: string | null;
+  commission_percentage_snapshot?: number | null;
+  commission_levels_snapshot?: Array<{
+    level_number: number;
+    name: string;
+    percentage: number;
+  }> | null;
+  qualification_snapshot?: {
+    qualification_id?: string | null;
+    status?: string | null;
+    rule_code?: string | null;
+    period_start?: string | null;
+    period_end?: string | null;
+    rule_snapshot?: Record<string, unknown> | null;
+    exception_id?: string | null;
+    evaluated_at?: string | null;
+  } | null;
   
   // Relacionais (opcionais para quando houver join)
   cliente?: {

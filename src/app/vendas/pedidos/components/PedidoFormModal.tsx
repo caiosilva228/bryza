@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Cliente, Produto, Profile, PedidoItem, Pedido, TipoDesconto, Agendamento, AmbassadorAssignmentOption } from '@/models/types';
-import { assignCustomerAmbassadorForOrder, savePedido, updatePedidoAction } from '../actions';
+import { savePedido, updatePedidoAction } from '../actions';
 import { criarAgendamentoAction, updateAgendamentoAction } from '../../agendamentos/actions';
 import { formatCurrency } from '@/utils/format';
 import { toast } from 'sonner';
@@ -500,22 +500,12 @@ export default function PedidoFormModal({
         await updatePedidoAction(pedidoToEdit.id, pedidoMeta, itensData as any);
         toast.success('Pedido atualizado com sucesso!');
       } else {
-        if (!clienteSelecionado?.indicated_by && selectedAmbassadorId) {
-          const assignment = await assignCustomerAmbassadorForOrder(
-            selectedClienteId,
-            selectedAmbassadorId,
-            crypto.randomUUID()
-          );
-          if (assignment.status !== 'assigned') {
-            throw new Error(
-              assignment.code === 'self_referral_forbidden'
-                ? 'O cliente não pode indicar a si próprio.'
-                : 'Não foi possível registrar a indicação oficial deste pedido.'
-            );
-          }
-        }
         await savePedido(
-          { ...pedidoMeta, status_pedido: 'aguardando_preparacao' } as any,
+          {
+            ...pedidoMeta,
+            selected_ambassador_id: selectedAmbassadorId || null,
+            status_pedido: 'aguardando_preparacao',
+          } as any,
           itensData as any,
           orderIdempotencyKeyRef.current
         );
