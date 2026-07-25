@@ -96,6 +96,19 @@
 .levelCard > small { color: #8797a5; font-size: 9px; }
 .levelCard footer { margin-top: 15px; padding-top: 10px; border-top: 1px solid #e8eef3; color: #087957; font-size: 12px; font-weight: 800; }
 .levelCard footer small { color: #81909e; font-size: 9px; font-weight: 500; }
+.bonusCard { margin: 18px 30px 0; padding: 16px 18px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; border: 1px solid #bcebdc; border-radius: 14px; background: linear-gradient(120deg, #f1fcf8, #f7fffc); }
+.bonusCardInactive { border-color: #dce5eb; background: #f7f9fb; }
+.bonusIcon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; background: #d8f7eb; color: #087957; }
+.bonusCardInactive .bonusIcon { background: #e8edf1; color: #718291; }
+.bonusContent { min-width: 0; }
+.bonusContent strong { color: var(--navy); font: 700 14px Outfit, sans-serif; }
+.bonusContent p { max-width: 500px; margin: 4px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
+.bonusValues { display: flex; align-items: stretch; gap: 16px; }
+.bonusValues > span { min-width: 118px; display: grid; align-content: center; gap: 3px; }
+.bonusValues > span + span { padding-left: 16px; border-left: 1px solid #cde5dc; }
+.bonusValues small { color: var(--muted); font-size: 9px; }
+.bonusValues strong { color: #087957; font: 700 14px Outfit, sans-serif; white-space: nowrap; }
+.bonusCardInactive .bonusValues strong { color: #718291; }
 .summary { margin: 22px 30px 0; padding: 18px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; border-radius: 13px; background: #f0f6f9; }
 .summary div { display: grid; gap: 5px; }
 .summary div + div { padding-left: 24px; border-left: 1px solid #d7e3e9; }
@@ -136,6 +149,9 @@
   .levelTop { grid-row: 1 / span 3; display: grid; gap: 6px; }
   .levelCard > span, .levelCard > strong, .levelCard > small { grid-column: 2; margin: 0; }
   .levelCard footer { grid-column: 3; grid-row: 1 / span 3; margin: 0; padding: 0; border: 0; text-align: right; }
+  .bonusCard { margin: 16px 20px 0; grid-template-columns: auto 1fr; align-items: start; }
+  .bonusValues { grid-column: 1 / -1; padding-top: 4px; }
+  .bonusValues > span { min-width: 0; flex: 1; }
   .summary { margin: 18px 20px 0; grid-template-columns: 1fr; gap: 14px; }
   .summary div + div { padding: 14px 0 0; border-left: 0; border-top: 1px solid #d7e3e9; }
   .resultNote { margin: 16px 20px 22px; align-items: flex-start; }

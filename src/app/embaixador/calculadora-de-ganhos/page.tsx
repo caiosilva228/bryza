@@ -18,6 +18,7 @@ export default async function AmbassadorEarningsCalculatorPage() {
         embedded
         planName={plan.name}
         levels={plan.levels}
+        firstPurchaseBonus={plan.firstPurchaseBonus}
       />
     </MainLayout>
   );
