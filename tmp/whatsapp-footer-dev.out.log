@@ -1,0 +1,17 @@
+
+> bryza@0.1.0 dev
+> next dev --hostname 0.0.0.0 --port 3002
+
+▲ Next.js 16.2.4 (Turbopack)
+- Local:         http://localhost:3002
+- Network:       http://0.0.0.0:3002
+- Environments: .env.local
+✓ Ready in 2.1s
+
+ GET /bryza02 200 in 10.5s (next.js: 6.6s, proxy.ts: 1226ms, application-code: 2.7s)
+ GET /bryza02 200 in 2.6s (next.js: 602ms, proxy.ts: 205ms, application-code: 1760ms)
+ GET /bryza02 200 in 1514ms (next.js: 172ms, proxy.ts: 21ms, application-code: 1321ms)
+ GET /bryza02 200 in 1150ms (next.js: 54ms, proxy.ts: 18ms, application-code: 1078ms)
+ GET /bryza02 200 in 1515ms (next.js: 48ms, proxy.ts: 19ms, application-code: 1448ms)
+ GET /bryza02 200 in 417ms (next.js: 25ms, proxy.ts: 16ms, application-code: 376ms)
+[?25h

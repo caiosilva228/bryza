@@ -293,7 +293,7 @@ export default function EditarEmbaixadorPage({ params }: Context) {
           state,
           pix_type: pixType,
           // Se pixKey contiver asteriscos, não enviar (deixar null na action para manter o valor original, ou enviar undefined)
-          pix_key: isPixKeyMasked ? undefined : pixKey,
+          pix_key: isPixKeyMasked ? null : pixKey,
           notes,
           photo_path: finalPhotoPath,
           cep,

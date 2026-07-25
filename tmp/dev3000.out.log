@@ -1,0 +1,130 @@
+
+> bryza@0.1.0 dev
+> next dev --hostname 127.0.0.1 --port 3000
+
+▲ Next.js 16.2.11 (Turbopack)
+- Local:         http://127.0.0.1:3000
+- Network:       http://127.0.0.1:3000
+- Environments: .env.local
+✓ Ready in 2.4s
+○ Compiling proxy ...
+
+○ Compiling /login ...
+ GET /login 200 in 5.0s (next.js: 3.1s, proxy.ts: 21ms, application-code: 1950ms)
+ GET /manifest.webmanifest 200 in 1819ms (next.js: 1669ms, application-code: 150ms)
+ GET /embaixador/dashboard 200 in 3.7s (next.js: 3.2s, proxy.ts: 257ms, application-code: 171ms)
+ POST /login 303 in 4.9s (next.js: 18ms, proxy.ts: 16ms, application-code: 4.9s)
+  └─ ƒ login({}) in 1147ms src/app/login/actions.ts
+ GET /manifest.webmanifest 200 in 31ms (next.js: 10ms, application-code: 21ms)
+ POST /embaixador/dashboard 200 in 437ms (next.js: 7ms, proxy.ts: 185ms, application-code: 245ms)
+  └─ ƒ getPortalDashboardData() in 229ms src/app/embaixador/actions.ts
+ POST /embaixador/dashboard 200 in 301ms (next.js: 44ms, proxy.ts: 119ms, application-code: 138ms)
+  └─ ƒ getPortalDashboardData() in 116ms src/app/embaixador/actions.ts
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 1363ms (next.js: 1124ms, proxy.ts: 143ms, application-code: 95ms)
+ GET /api/auth/profile 200 in 1410ms (next.js: 986ms, proxy.ts: 198ms, application-code: 226ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 220ms (next.js: 12ms, proxy.ts: 112ms, application-code: 96ms)
+ GET /api/auth/profile 200 in 260ms (next.js: 14ms, proxy.ts: 136ms, application-code: 110ms)
+ GET /api/auth/profile 200 in 220ms (next.js: 8ms, proxy.ts: 113ms, application-code: 100ms)
+ GET /api/auth/profile 200 in 256ms (next.js: 10ms, proxy.ts: 112ms, application-code: 134ms)
+ GET /api/auth/profile 200 in 228ms (next.js: 7ms, proxy.ts: 112ms, application-code: 109ms)
+ GET /api/auth/profile 200 in 189ms (next.js: 7ms, proxy.ts: 95ms, application-code: 87ms)
+ GET /api/auth/profile 200 in 200ms (next.js: 7ms, proxy.ts: 106ms, application-code: 87ms)
+ GET /api/auth/profile 200 in 206ms (next.js: 6ms, proxy.ts: 106ms, application-code: 94ms)
+ GET /api/auth/profile 200 in 194ms (next.js: 6ms, proxy.ts: 87ms, application-code: 101ms)
+ GET /embaixador/perfil 200 in 2.0s (next.js: 1776ms, proxy.ts: 109ms, application-code: 145ms)
+ GET /api/auth/profile 200 in 358ms (next.js: 12ms, proxy.ts: 222ms, application-code: 124ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 460ms (next.js: 7ms, proxy.ts: 386ms, application-code: 67ms)
+ POST /embaixador/perfil 200 in 489ms (next.js: 15ms, proxy.ts: 313ms, application-code: 161ms)
+  └─ ƒ getMeuPerfilData() in 140ms src/app/embaixador/actions.ts
+ GET /api/auth/profile 200 in 712ms (next.js: 71ms, proxy.ts: 297ms, application-code: 343ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 603ms (next.js: 13ms, proxy.ts: 366ms, application-code: 224ms)
+ GET /manifest.webmanifest 200 in 69ms (next.js: 44ms, application-code: 26ms)
+ POST /embaixador/perfil 200 in 851ms (next.js: 289ms, proxy.ts: 290ms, application-code: 272ms)
+  └─ ƒ getMeuPerfilData() in 169ms src/app/embaixador/actions.ts
+ GET /api/auth/profile 200 in 296ms (next.js: 13ms, proxy.ts: 192ms, application-code: 91ms)
+ GET /api/auth/profile 200 in 186ms (next.js: 5ms, proxy.ts: 80ms, application-code: 101ms)
+ POST /embaixador/perfil 200 in 489ms (next.js: 14ms, proxy.ts: 118ms, application-code: 357ms)
+  └─ ƒ getSignedProfilePhotoUrl("72701922-24b5-4b6b-bef2-b06b1f6f563e/942138ec-edee-43bb-845a-50b79c554ded.png") in 340ms src/app/embaixador/actions.ts
+ GET /api/auth/profile 200 in 243ms (next.js: 8ms, proxy.ts: 117ms, application-code: 118ms)
+ GET /api/auth/profile 200 in 233ms (next.js: 10ms, proxy.ts: 111ms, application-code: 111ms)
+ POST /embaixador/perfil 200 in 319ms (next.js: 21ms, proxy.ts: 113ms, application-code: 185ms)
+  └─ ƒ getSignedProfilePhotoUrl("72701922-24b5-4b6b-bef2-b06b1f6f563e/942138ec-edee-43bb-845a-50b79c554ded.png") in 159ms src/app/embaixador/actions.ts
+ GET /embaixador/calculadora-de-ganhos 200 in 1579ms (next.js: 869ms, proxy.ts: 406ms, application-code: 304ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 269ms (next.js: 6ms, proxy.ts: 201ms, application-code: 62ms)
+ GET /api/auth/profile 200 in 366ms (next.js: 8ms, proxy.ts: 171ms, application-code: 187ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 172ms (next.js: 13ms, proxy.ts: 98ms, application-code: 60ms)
+ GET /manifest.webmanifest 200 in 16ms (next.js: 5ms, application-code: 11ms)
+ GET /api/auth/profile 200 in 222ms (next.js: 7ms, proxy.ts: 115ms, application-code: 100ms)
+ GET /api/auth/profile 200 in 191ms (next.js: 7ms, proxy.ts: 90ms, application-code: 93ms)
+ GET /api/auth/profile 200 in 226ms (next.js: 9ms, proxy.ts: 95ms, application-code: 122ms)
+ GET /api/auth/profile 200 in 211ms (next.js: 10ms, proxy.ts: 99ms, application-code: 101ms)
+ GET /api/auth/profile 200 in 192ms (next.js: 6ms, proxy.ts: 88ms, application-code: 98ms)
+ GET /manifest.webmanifest 200 in 196ms (next.js: 124ms, application-code: 72ms)
+ GET /calculadora-de-ganhos 200 in 3.1s (next.js: 1464ms, proxy.ts: 15ms, application-code: 1584ms)
+ GET /api/auth/profile 200 in 915ms (next.js: 10ms, proxy.ts: 660ms, application-code: 245ms)
+ GET /api/auth/profile 200 in 284ms (next.js: 15ms, proxy.ts: 142ms, application-code: 128ms)
+ GET /api/auth/profile 200 in 263ms (next.js: 7ms, proxy.ts: 155ms, application-code: 101ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 502ms (next.js: 6ms, proxy.ts: 336ms, application-code: 160ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 430ms (next.js: 5ms, proxy.ts: 345ms, application-code: 79ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 408ms (next.js: 13ms, proxy.ts: 283ms, application-code: 111ms)
+ GET /api/auth/profile 200 in 1236ms (next.js: 9ms, proxy.ts: 945ms, application-code: 282ms)
+ GET /api/auth/profile 200 in 258ms (next.js: 5ms, proxy.ts: 94ms, application-code: 159ms)
+ GET /api/auth/profile 200 in 212ms (next.js: 4ms, proxy.ts: 94ms, application-code: 114ms)
+ GET /api/auth/profile 200 in 240ms (next.js: 7ms, proxy.ts: 115ms, application-code: 118ms)
+ GET /api/auth/profile 200 in 229ms (next.js: 6ms, proxy.ts: 96ms, application-code: 128ms)
+ GET /api/auth/profile 200 in 209ms (next.js: 4ms, proxy.ts: 109ms, application-code: 96ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 903ms (next.js: 5ms, proxy.ts: 790ms, application-code: 108ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 369ms (next.js: 6ms, proxy.ts: 261ms, application-code: 102ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 447ms (next.js: 4ms, proxy.ts: 383ms, application-code: 60ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 469ms (next.js: 5ms, proxy.ts: 383ms, application-code: 80ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 363ms (next.js: 6ms, proxy.ts: 280ms, application-code: 77ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 335ms (next.js: 9ms, proxy.ts: 236ms, application-code: 90ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 540ms (next.js: 6ms, proxy.ts: 433ms, application-code: 101ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 439ms (next.js: 7ms, proxy.ts: 339ms, application-code: 93ms)
+ GET /api/auth/profile 200 in 486ms (next.js: 9ms, proxy.ts: 345ms, application-code: 132ms)
+ GET /api/auth/profile 200 in 229ms (next.js: 7ms, proxy.ts: 106ms, application-code: 116ms)
+ GET /api/auth/profile 200 in 215ms (next.js: 15ms, proxy.ts: 102ms, application-code: 98ms)
+ GET /embaixador/calculadora-de-ganhos 200 in 733ms (next.js: 44ms, proxy.ts: 215ms, application-code: 474ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 266ms (next.js: 5ms, proxy.ts: 124ms, application-code: 137ms)
+ GET /api/auth/profile 200 in 305ms (next.js: 10ms, proxy.ts: 187ms, application-code: 108ms)
+ GET /api/auth/profile 200 in 232ms (next.js: 6ms, proxy.ts: 120ms, application-code: 105ms)
+ GET /api/auth/profile 200 in 208ms (next.js: 6ms, proxy.ts: 91ms, application-code: 110ms)
+ GET /api/auth/profile 200 in 206ms (next.js: 5ms, proxy.ts: 104ms, application-code: 97ms)
+ GET /api/auth/profile 200 in 199ms (next.js: 9ms, proxy.ts: 100ms, application-code: 90ms)
+ GET /api/auth/profile 200 in 226ms (next.js: 7ms, proxy.ts: 117ms, application-code: 102ms)
+ GET /api/auth/profile 200 in 317ms (next.js: 103ms, proxy.ts: 110ms, application-code: 104ms)
+ GET /api/auth/profile 200 in 216ms (next.js: 9ms, proxy.ts: 97ms, application-code: 110ms)
+ GET /api/auth/profile 200 in 191ms (next.js: 6ms, proxy.ts: 89ms, application-code: 96ms)
+ GET /api/auth/profile 200 in 194ms (next.js: 6ms, proxy.ts: 91ms, application-code: 98ms)
+ GET /api/auth/profile 200 in 214ms (next.js: 9ms, proxy.ts: 103ms, application-code: 101ms)
+ GET /api/auth/profile 200 in 221ms (next.js: 8ms, proxy.ts: 103ms, application-code: 109ms)
+ GET /api/auth/profile 200 in 577ms (next.js: 10ms, proxy.ts: 296ms, application-code: 271ms)
+ GET /api/auth/profile 200 in 202ms (next.js: 7ms, proxy.ts: 101ms, application-code: 94ms)
+ GET /api/auth/profile 200 in 283ms (next.js: 5ms, proxy.ts: 147ms, application-code: 131ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 932ms (next.js: 8ms, proxy.ts: 850ms, application-code: 75ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 606ms (next.js: 8ms, proxy.ts: 534ms, application-code: 64ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 1144ms (next.js: 5ms, proxy.ts: 1006ms, application-code: 133ms)
+ GET /api/auth/profile 200 in 356ms (next.js: 16ms, proxy.ts: 118ms, application-code: 222ms)
+ GET /api/auth/profile 200 in 263ms (next.js: 7ms, proxy.ts: 154ms, application-code: 103ms)
+ GET /api/auth/profile 200 in 213ms (next.js: 6ms, proxy.ts: 86ms, application-code: 120ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 269ms (next.js: 6ms, proxy.ts: 210ms, application-code: 53ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 303ms (next.js: 8ms, proxy.ts: 229ms, application-code: 67ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 350ms (next.js: 6ms, proxy.ts: 271ms, application-code: 73ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 438ms (next.js: 7ms, proxy.ts: 341ms, application-code: 90ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 485ms (next.js: 7ms, proxy.ts: 371ms, application-code: 107ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 430ms (next.js: 8ms, proxy.ts: 293ms, application-code: 129ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 466ms (next.js: 8ms, proxy.ts: 360ms, application-code: 97ms)
+ GET /api/agendamentos/notificacoes?date=2026-07-24 200 in 725ms (next.js: 13ms, proxy.ts: 588ms, application-code: 125ms)
+ POST /login 200 in 95ms (next.js: 35ms, proxy.ts: 16ms, application-code: 44ms)
+✓ Compiled in 533ms
+✓ Compiled in 861ms
+✓ Compiled in 4.5s
+✓ Compiled in 293ms
+✓ Finished filesystem cache database compaction in 44s
+✓ Finished writing to filesystem cache in 14.2s
+✓ Compiled in 79ms
+✓ Finished writing to filesystem cache in 10.5s
+ GET /login 200 in 851ms (next.js: 329ms, proxy.ts: 28ms, application-code: 495ms)
+ GET /calculadora-de-ganhos 200 in 1420ms (next.js: 124ms, proxy.ts: 16ms, application-code: 1279ms)
+ GET /programa/embaixadores/aceitar 200 in 2.4s (next.js: 2.3s, proxy.ts: 9ms, application-code: 155ms)
+✓ Finished filesystem cache database compaction in 10.5s

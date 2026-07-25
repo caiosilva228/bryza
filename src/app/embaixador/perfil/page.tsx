@@ -285,9 +285,9 @@ export default function MeuPerfilPage() {
           neighborhood,
           latitude,
           longitude,
-          pix_type: pixType !== data?.pix_type ? pixType : undefined,
-          pix_key: isPixKeyMasked ? undefined : pixKey,
-          photo_path: finalPhotoPath || undefined
+          pix_type: pixType !== data?.pix_type ? pixType : null,
+          pix_key: isPixKeyMasked ? null : pixKey,
+          photo_path: finalPhotoPath || null
         });
 
         toast.success('Perfil atualizado com sucesso!');

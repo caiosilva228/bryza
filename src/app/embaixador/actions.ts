@@ -347,9 +347,9 @@ export async function atualizarMeuPerfil(payload: {
   neighborhood?: string;
   latitude?: string;
   longitude?: string;
-  pix_type?: string;
-  pix_key?: string;
-  photo_path?: string;
+  pix_type?: string | null;
+  pix_key?: string | null;
+  photo_path?: string | null;
 }) {
   const { supabase, user } = await getAuthenticatedUser();
   const admin = createAdminClient();
