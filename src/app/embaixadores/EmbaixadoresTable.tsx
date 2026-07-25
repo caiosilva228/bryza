@@ -38,9 +38,12 @@ interface NetworkStat {
 interface TableProps {
   lista: EmbaixadorItem[];
   onRefresh: () => void;
+  sortBy?: string | null;
+  sortOrder?: 'asc' | 'desc' | null;
+  onSort?: (key: string) => void;
 }
 
-export default function EmbaixadoresTable({ lista, onRefresh }: TableProps) {
+export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder, onSort }: TableProps) {
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
   const [networkStats, setNetworkStats] = useState<Record<string, NetworkStat>>({});
 
@@ -110,6 +113,46 @@ export default function EmbaixadoresTable({ lista, onRefresh }: TableProps) {
     );
   };
 
+  const renderTh = (label: string, key?: string, align: 'left' | 'center' | 'right' = 'left') => {
+    if (!key || !onSort) {
+      return (
+        <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)', textAlign: align, whiteSpace: 'nowrap' }}>
+          {label}
+        </th>
+      );
+    }
+
+    const isSorted = sortBy === key;
+    return (
+      <th
+        onClick={() => onSort(key)}
+        style={{
+          padding: '16px 20px',
+          fontWeight: 600,
+          color: isSorted ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
+          cursor: 'pointer',
+          userSelect: 'none',
+          textAlign: align,
+          whiteSpace: 'nowrap',
+        }}
+        title={`Clique para ordenar (1º Maior→Menor, 2º Menor→Maior, 3º Zera)`}
+      >
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', justifyContent: align === 'right' ? 'flex-end' : align === 'center' ? 'center' : 'flex-start' }}>
+          <span>{label}</span>
+          {isSorted ? (
+            <span className="material-symbols-outlined" style={{ fontSize: '16px', color: 'var(--color-primary)', fontWeight: 700 }}>
+              {sortOrder === 'desc' ? 'arrow_downward' : 'arrow_upward'}
+            </span>
+          ) : (
+            <span className="material-symbols-outlined" style={{ fontSize: '16px', color: 'var(--color-outline-variant)', opacity: 0.4 }}>
+              unfold_more
+            </span>
+          )}
+        </div>
+      </th>
+    );
+  };
+
   return (
     <div style={{ overflowX: 'auto' }}>
       <table style={{
@@ -123,20 +166,20 @@ export default function EmbaixadoresTable({ lista, onRefresh }: TableProps) {
             borderBottom: '1px solid var(--color-outline-variant)',
             backgroundColor: 'var(--color-surface-container-low)'
           }}>
-            <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>Foto</th>
-            <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>Nome / Exibição</th>
-            <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>Usuário/Código</th>
-            <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>Telefone</th>
-            <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>Instagram</th>
-            <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>Cidade</th>
-            <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>Plano</th>
-            <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>Vendas</th>
-            <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)', textAlign: 'right' }}>C. Liberada</th>
-            <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)', textAlign: 'right' }}>Total Pago</th>
-            <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>Rede</th>
-            <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>Status</th>
-            <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>Cadastro</th>
-            <th style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>Ações</th>
+            {renderTh('Foto')}
+            {renderTh('Nome / Exibição', 'nome')}
+            {renderTh('Usuário/Código', 'username')}
+            {renderTh('Telefone', 'telefone')}
+            {renderTh('Instagram')}
+            {renderTh('Cidade', 'cidade')}
+            {renderTh('Plano', 'plano')}
+            {renderTh('Vendas', 'vendas', 'center')}
+            {renderTh('C. Liberada', 'comissao_liberada', 'right')}
+            {renderTh('Total Pago', 'total_recebido', 'right')}
+            {renderTh('Rede')}
+            {renderTh('Status', 'status')}
+            {renderTh('Cadastro', 'created_at')}
+            {renderTh('Ações', undefined, 'center')}
           </tr>
         </thead>
         <tbody>

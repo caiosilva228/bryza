@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useTransition } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -6,6 +6,7 @@ import Link from 'next/link';
 import EmbaixadoresFilter from './EmbaixadoresFilter';
 import EmbaixadoresTable from './EmbaixadoresTable';
 import ClientesIndicadosTab from './ClientesIndicadosTab';
+import Pagination from '@/components/ui/Pagination';
 import { getEmbaixadoresPaginados } from './actions';
 
 type ActiveTab = 'embaixadores' | 'clientes_indicados';
@@ -14,8 +15,11 @@ export default function EmbaixadoresPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('embaixadores');
   const [items, setItems] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
-  const [limit] = useState(10);
-  const [offset, setOffset] = useState(0);
+  const [limit, setLimit] = useState(10);
+  const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
+
   const [filters, setFilters] = useState({
     search: '',
     cpf: '',
@@ -26,6 +30,8 @@ export default function EmbaixadoresPage() {
     endDate: ''
   });
   const [isPending, startTransition] = useTransition();
+
+  const offset = (page - 1) * limit;
 
   const loadData = () => {
     startTransition(async () => {
@@ -39,7 +45,9 @@ export default function EmbaixadoresPage() {
           status: filters.status,
           planId: filters.planId,
           startDate: filters.startDate ? new Date(filters.startDate).toISOString() : undefined,
-          endDate: filters.endDate ? new Date(filters.endDate).toISOString() : undefined
+          endDate: filters.endDate ? new Date(filters.endDate).toISOString() : undefined,
+          sortBy: sortBy || undefined,
+          sortOrder: sortOrder || undefined,
         });
         setItems(result.items);
         setTotal(result.total);
@@ -51,23 +59,29 @@ export default function EmbaixadoresPage() {
 
   useEffect(() => {
     if (activeTab === 'embaixadores') loadData();
-  }, [offset, filters, activeTab]);
+  }, [page, limit, filters, sortBy, sortOrder, activeTab]);
 
   const handleFilterChange = (newFilters: typeof filters) => {
     setFilters(newFilters);
-    setOffset(0);
+    setPage(1);
   };
 
-  const handlePageChange = (direction: 'next' | 'prev') => {
-    if (direction === 'next' && offset + limit < total) {
-      setOffset(prev => prev + limit);
-    } else if (direction === 'prev' && offset - limit >= 0) {
-      setOffset(prev => prev - limit);
+  // 3-Click Sort Handler
+  const handleSort = (key: string) => {
+    if (sortBy !== key) {
+      // 1º Clique: Maior para Menor (DESC)
+      setSortBy(key);
+      setSortOrder('desc');
+    } else if (sortOrder === 'desc') {
+      // 2º Clique: Menor para Maior (ASC)
+      setSortOrder('asc');
+    } else {
+      // 3º Clique: Zera o filtro de ordenação
+      setSortBy(null);
+      setSortOrder(null);
     }
+    setPage(1);
   };
-
-  const currentPage = Math.floor(offset / limit) + 1;
-  const totalPages = Math.ceil(total / limit) || 1;
 
   const tabStyle = (isActive: boolean) => ({
     padding: '12px 22px',
@@ -140,16 +154,24 @@ export default function EmbaixadoresPage() {
                 </div>
               ) : (
                 <>
-                  <EmbaixadoresTable lista={items} onRefresh={loadData} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', backgroundColor: 'var(--color-surface-container-low)', borderTop: '1px solid var(--color-outline-variant)' }}>
-                    <span style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
-                      Página {currentPage} de {totalPages} (Total: {total} embaixadores)
-                    </span>
-                    <div style={{ display: 'flex', gap: '12px' }}>
-                      <button onClick={() => handlePageChange('prev')} disabled={offset === 0 || isPending} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid var(--color-outline)', background: 'transparent', color: 'var(--color-on-surface)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', opacity: offset === 0 ? 0.5 : 1 }}>Anterior</button>
-                      <button onClick={() => handlePageChange('next')} disabled={offset + limit >= total || isPending} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid var(--color-outline)', background: 'transparent', color: 'var(--color-on-surface)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', opacity: offset + limit >= total ? 0.5 : 1 }}>Próxima</button>
-                    </div>
-                  </div>
+                  <EmbaixadoresTable
+                    lista={items}
+                    onRefresh={loadData}
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    onSort={handleSort}
+                  />
+                  <Pagination
+                    total={total}
+                    page={page}
+                    pageSize={limit}
+                    onPageChange={(p) => setPage(p)}
+                    onPageSizeChange={(s) => {
+                      setLimit(s);
+                      setPage(1);
+                    }}
+                    pageSizeOptions={[10, 20, 30, 50, 100]}
+                  />
                 </>
               )}
             </div>

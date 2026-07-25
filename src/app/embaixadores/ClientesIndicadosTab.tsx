@@ -8,6 +8,7 @@ import {
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toast } from 'sonner';
 import { createClient } from '@/utils/supabase/client';
+import Pagination from '@/components/ui/Pagination';
 
 interface ClienteIndicado {
   id: string;
@@ -50,8 +51,11 @@ const STATUS_LABELS: Record<string, { label: string; bg: string; text: string }>
 export default function ClientesIndicadosTab() {
   const [items, setItems] = useState<ClienteIndicado[]>([]);
   const [total, setTotal] = useState(0);
-  const [limit] = useState(10);
-  const [offset, setOffset] = useState(0);
+  const [limit, setLimit] = useState(10);
+  const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
+
   const [search, setSearch] = useState('');
   const [ambassadorFilter, setAmbassadorFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -62,8 +66,7 @@ export default function ClientesIndicadosTab() {
   const [isPending, startTransition] = useTransition();
   const [loadingData, setLoadingData] = useState(true);
 
-  const currentPage = Math.floor(offset / limit) + 1;
-  const totalPages = Math.ceil(total / limit) || 1;
+  const offset = (page - 1) * limit;
 
   const loadData = () => {
     setLoadingData(true);
@@ -75,6 +78,8 @@ export default function ClientesIndicadosTab() {
           search: search || undefined,
           ambassadorId: ambassadorFilter || undefined,
           status: statusFilter || undefined,
+          sortBy: sortBy || undefined,
+          sortOrder: sortOrder || undefined,
         });
         setItems(result.items);
         setTotal(result.total);
@@ -106,7 +111,23 @@ export default function ClientesIndicadosTab() {
       });
   }, []);
 
-  useEffect(() => { loadData(); }, [offset, search, ambassadorFilter, statusFilter]);
+  useEffect(() => { loadData(); }, [page, limit, search, ambassadorFilter, statusFilter, sortBy, sortOrder]);
+
+  const handleSort = (key: string) => {
+    if (sortBy !== key) {
+      // 1º Clique: Maior para Menor (DESC)
+      setSortBy(key);
+      setSortOrder('desc');
+    } else if (sortOrder === 'desc') {
+      // 2º Clique: Menor para Maior (ASC)
+      setSortOrder('asc');
+    } else {
+      // 3º Clique: Zera o filtro de ordenação
+      setSortBy(null);
+      setSortOrder(null);
+    }
+    setPage(1);
+  };
 
   const handlePromote = () => {
     if (!modalCliente) return;
@@ -118,9 +139,9 @@ export default function ClientesIndicadosTab() {
           planId: selectedPlanId || undefined,
           initialStatus: 'pendente',
         });
-        toast.success(`✅ ${modalCliente.nome} promovido(a)! Código: ${result.referral_code}`);
+        toast.success(`Cliente promovido com sucesso! Código: ${result.referral_code}`);
         setModalCliente(null);
-        setOffset(0);
+        setPage(1);
         loadData();
       } catch (e: any) {
         toast.error(e.message || 'Erro ao promover cliente.');
@@ -137,6 +158,47 @@ export default function ClientesIndicadosTab() {
     );
   };
 
+  const renderTh = (label: string, key?: string, align: 'left' | 'center' | 'right' = 'left') => {
+    if (!key) {
+      return (
+        <th style={{ padding: '14px 16px', fontWeight: 700, fontSize: '12px', color: 'var(--color-on-surface-variant)', whiteSpace: 'nowrap', textAlign: align }}>
+          {label}
+        </th>
+      );
+    }
+
+    const isSorted = sortBy === key;
+    return (
+      <th
+        onClick={() => handleSort(key)}
+        style={{
+          padding: '14px 16px',
+          fontWeight: 700,
+          fontSize: '12px',
+          color: isSorted ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
+          cursor: 'pointer',
+          userSelect: 'none',
+          textAlign: align,
+          whiteSpace: 'nowrap',
+        }}
+        title={`Clique para ordenar por ${label} (1º Maior→Menor, 2º Menor→Maior, 3º Zera)`}
+      >
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', justifyContent: align === 'right' ? 'flex-end' : align === 'center' ? 'center' : 'flex-start' }}>
+          <span>{label}</span>
+          {isSorted ? (
+            <span className="material-symbols-outlined" style={{ fontSize: '16px', color: 'var(--color-primary)', fontWeight: 700 }}>
+              {sortOrder === 'desc' ? 'arrow_downward' : 'arrow_upward'}
+            </span>
+          ) : (
+            <span className="material-symbols-outlined" style={{ fontSize: '16px', color: 'var(--color-outline-variant)', opacity: 0.4 }}>
+              unfold_more
+            </span>
+          )}
+        </div>
+      </th>
+    );
+  };
+
   return (
     <>
       {/* Filtros */}
@@ -145,13 +207,13 @@ export default function ClientesIndicadosTab() {
           <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>BUSCAR CLIENTE</label>
           <div style={{ position: 'relative' }}>
             <span className="material-symbols-outlined" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', fontSize: '18px', color: 'var(--color-outline)' }}>search</span>
-            <input type="text" value={search} onChange={(e) => { setSearch(e.target.value); setOffset(0); }} placeholder="Nome, telefone ou e-mail..." style={{ width: '100%', padding: '9px 12px 9px 36px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)', fontSize: '13px' }} />
+            <input type="text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Nome, telefone ou e-mail..." style={{ width: '100%', padding: '9px 12px 9px 36px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)', fontSize: '13px' }} />
           </div>
         </div>
 
         <div style={{ flex: '1 1 200px' }}>
           <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>FILTRAR POR EMBAIXADOR</label>
-          <select value={ambassadorFilter} onChange={(e) => { setAmbassadorFilter(e.target.value); setOffset(0); }} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)', fontSize: '13px' }}>
+          <select value={ambassadorFilter} onChange={(e) => { setAmbassadorFilter(e.target.value); setPage(1); }} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)', fontSize: '13px' }}>
             <option value="">Todos os embaixadores</option>
             {ambassadors.map((a) => (
               <option key={a.id} value={a.id}>{a.full_name} (@{a.username})</option>
@@ -161,7 +223,7 @@ export default function ClientesIndicadosTab() {
 
         <div style={{ flex: '0 1 160px' }}>
           <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>STATUS DO CLIENTE</label>
-          <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setOffset(0); }} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)', fontSize: '13px' }}>
+          <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)', fontSize: '13px' }}>
             <option value="">Todos</option>
             <option value="lead">Lead</option>
             <option value="cliente">Cliente</option>
@@ -170,8 +232,8 @@ export default function ClientesIndicadosTab() {
           </select>
         </div>
 
-        {(search || ambassadorFilter || statusFilter) && (
-          <button onClick={() => { setSearch(''); setAmbassadorFilter(''); setStatusFilter(''); setOffset(0); }} style={{ padding: '9px 16px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'transparent', color: 'var(--color-on-surface-variant)', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', alignSelf: 'flex-end' }}>
+        {(search || ambassadorFilter || statusFilter || sortBy) && (
+          <button onClick={() => { setSearch(''); setAmbassadorFilter(''); setStatusFilter(''); setSortBy(null); setSortOrder(null); setPage(1); }} style={{ padding: '9px 16px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'transparent', color: 'var(--color-on-surface-variant)', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', alignSelf: 'flex-end' }}>
             <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>filter_alt_off</span>
             Limpar
           </button>
@@ -196,9 +258,15 @@ export default function ClientesIndicadosTab() {
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface-container-low)' }}>
-                    {['Cliente', 'Telefone', 'Cidade', 'Status', 'Embaixador Indicador', 'Cadastro', 'Compras', 'Total Gasto', 'Ações'].map((h) => (
-                      <th key={h} style={{ padding: '14px 16px', fontWeight: 700, fontSize: '12px', color: 'var(--color-on-surface-variant)', whiteSpace: 'nowrap', textAlign: h === 'Compras' || h === 'Total Gasto' ? 'right' : 'left' }}>{h}</th>
-                    ))}
+                    {renderTh('Cliente', 'nome')}
+                    {renderTh('Telefone', 'telefone')}
+                    {renderTh('Cidade', 'cidade')}
+                    {renderTh('Status', 'status')}
+                    {renderTh('Embaixador Indicador', 'ambassador_name')}
+                    {renderTh('Cadastro', 'data_cadastro')}
+                    {renderTh('Compras', 'compras', 'right')}
+                    {renderTh('Total Gasto', 'total_gasto', 'right')}
+                    {renderTh('Ações', undefined, 'left')}
                   </tr>
                 </thead>
                 <tbody>
@@ -209,7 +277,7 @@ export default function ClientesIndicadosTab() {
                         {item.email && <div style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>{item.email}</div>}
                       </td>
                       <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', color: 'var(--color-on-surface-variant)', fontSize: '13px' }}>{item.telefone || '—'}</td>
-                      <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>{item.cidade ? `${item.cidade} - ${item.estado || ''}` : '—'}</td>
+                      <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>{item.cidade ? `${item.cidade}${item.estado ? ` - ${item.estado}` : ''}` : '—'}</td>
                       <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{getStatusBadge(item.status_cliente)}</td>
                       <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
                         <div style={{ fontWeight: 600, color: 'var(--color-on-surface)', fontSize: '13px' }}>{item.ambassador_name}</div>
@@ -230,16 +298,17 @@ export default function ClientesIndicadosTab() {
               </table>
             </div>
 
-            {/* Paginação */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', backgroundColor: 'var(--color-surface-container-low)', borderTop: '1px solid var(--color-outline-variant)' }}>
-              <span style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
-                Página {currentPage} de {totalPages} · {total} cliente{total !== 1 ? 's' : ''} indicado{total !== 1 ? 's' : ''}
-              </span>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button onClick={() => setOffset((p) => p - limit)} disabled={offset === 0 || isPending} style={{ padding: '7px 14px', borderRadius: '6px', border: '1px solid var(--color-outline)', background: 'transparent', color: 'var(--color-on-surface)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', opacity: offset === 0 ? 0.5 : 1 }}>Anterior</button>
-                <button onClick={() => setOffset((p) => p + limit)} disabled={offset + limit >= total || isPending} style={{ padding: '7px 14px', borderRadius: '6px', border: '1px solid var(--color-outline)', background: 'transparent', color: 'var(--color-on-surface)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', opacity: offset + limit >= total ? 0.5 : 1 }}>Próxima</button>
-              </div>
-            </div>
+            <Pagination
+              total={total}
+              page={page}
+              pageSize={limit}
+              onPageChange={(p) => setPage(p)}
+              onPageSizeChange={(s) => {
+                setLimit(s);
+                setPage(1);
+              }}
+              pageSizeOptions={[10, 20, 30, 50, 100]}
+            />
           </>
         )}
       </div>

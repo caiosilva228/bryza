@@ -82,6 +82,8 @@ export async function getEmbaixadoresPaginados(params: {
   planId?: string;
   startDate?: string;
   endDate?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }) {
   const admin = await checkAdminAccess();
   const adminClient = createAdminClient();
@@ -98,7 +100,9 @@ export async function getEmbaixadoresPaginados(params: {
     p_status: params.status || null,
     p_plan_id: params.planId || null,
     p_start_date: params.startDate || null,
-    p_end_date: params.endDate || null
+    p_end_date: params.endDate || null,
+    p_sort_by: params.sortBy || null,
+    p_sort_order: params.sortOrder || 'desc',
   });
 
   if (error) {
@@ -551,6 +555,8 @@ export async function getClientesIndicadosPaginados(params: {
   search?: string;
   ambassadorId?: string;
   status?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }) {
   await checkAdminAccess();
   const adminClient = createAdminClient();
@@ -561,6 +567,8 @@ export async function getClientesIndicadosPaginados(params: {
     p_search: params.search || null,
     p_ambassador_id: params.ambassadorId || null,
     p_status: params.status || null,
+    p_sort_by: params.sortBy || null,
+    p_sort_order: params.sortOrder || 'desc',
   });
 
   if (error) {
