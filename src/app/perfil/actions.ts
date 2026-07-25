@@ -19,17 +19,18 @@ export async function updateProfile(formData: FormData) {
     return { success: false, error: 'O nome é obrigatório.' }
   }
 
-  const { error } = await supabase
-    .from('profiles')
-    .update({ 
-      nome: nome.trim(), 
-      telefone: telefone.trim() || null
-    })
-    .eq('id', user.id)
+  const { data, error } = await supabase.rpc('fn_update_my_profile_canonical', {
+    p_full_name: nome.trim(),
+    p_phone: telefone.trim() || null,
+  })
 
   if (error) {
     console.error('Erro ao atualizar perfil:', error)
     return { success: false, error: 'Falha ao atualizar perfil no banco de dados.' }
+  }
+  const result = data as { status?: string }
+  if (result?.status === 'manual_review_required') {
+    return { success: false, error: 'Os dados informados exigem revisão administrativa.' }
   }
 
   revalidatePath('/perfil')

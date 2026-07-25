@@ -189,6 +189,36 @@ export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onCl
               </div>
             </div>
 
+            {/* Bloco de atribuição oficial congelada no pedido */}
+            <div style={{ flex: '1 1 300px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--color-outline-variant)', paddingBottom: '8px', marginBottom: '16px' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '16px', color: 'var(--color-outline)' }}>loyalty</span>
+                <h3 style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>INDICAÇÃO DO PEDIDO</h3>
+              </div>
+              {pedido.referral_commissionable_snapshot && pedido.ambassador ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
+                    <span style={{ color: 'var(--color-on-surface-variant)' }}>Embaixador:</span>
+                    <span style={{ fontWeight: 600 }}>{pedido.ambassador.full_name}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
+                    <span style={{ color: 'var(--color-on-surface-variant)' }}>Código:</span>
+                    <span style={{ fontWeight: 600 }}>{pedido.ambassador.referral_code}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
+                    <span style={{ color: 'var(--color-on-surface-variant)' }}>Situação congelada:</span>
+                    <span style={{ fontWeight: 600 }}>
+                      {pedido.ambassador_qualified_snapshot ? 'Qualificado' : 'Não qualificado'}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <p style={{ margin: 0, color: 'var(--color-on-surface-variant)', fontSize: '14px' }}>
+                  Pedido sem indicação comissionável validada.
+                </p>
+              )}
+            </div>
+
             {/* Bloco Financeiro */}
             <div style={{ flex: '1 1 300px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--color-outline-variant)', paddingBottom: '8px', marginBottom: '16px' }}>

@@ -40,27 +40,6 @@ async function getProfileByUserId(userId: string) {
   return data as { id: string; role: 'admin' | 'vendedor' | 'logistica' };
 }
 
-async function hasDuplicateClient(nome: string, telefone: string, ignoreId?: string) {
-  const supabase = createServiceClient();
-  let query = supabase
-    .from('clientes')
-    .select('id')
-    .eq('nome', nome)
-    .eq('telefone', telefone);
-
-  if (ignoreId) {
-    query = query.neq('id', ignoreId);
-  }
-
-  const { data, error } = await query.limit(1);
-
-  if (error) {
-    throw error;
-  }
-
-  return (data?.length || 0) > 0;
-}
-
 function buildPayload(formData: FormData, profileRole: 'admin' | 'vendedor' | 'logistica', userId: string) {
   const vendedorResponsavelId = profileRole === 'vendedor'
     ? userId
@@ -79,8 +58,12 @@ function buildPayload(formData: FormData, profileRole: 'admin' | 'vendedor' | 'l
     status_cliente: formData.get('status_cliente')?.toString() || 'lead',
     vendedor_responsavel_id: vendedorResponsavelId,
     cpf: formData.get('cpf')?.toString().replace(/\D/g, '') || null,
+    email: formData.get('email')?.toString().trim().toLowerCase() || null,
     latitude: formData.get('latitude') ? Number(formData.get('latitude')) : null,
     longitude: formData.get('longitude') ? Number(formData.get('longitude')) : null,
+    ambassador_id: formData.get('ambassador_id')?.toString() || null,
+    assignment_reason: formData.get('assignment_reason')?.toString() || null,
+    idempotency_key: formData.get('idempotency_key')?.toString() || crypto.randomUUID(),
   };
 }
 
@@ -100,46 +83,100 @@ export async function POST(request: NextRequest) {
     const clienteId = formData.get('cliente_id')?.toString() || '';
     const payload = buildPayload(formData, profile.role, userId);
 
-    const duplicate = await hasDuplicateClient(payload.nome, payload.telefone, clienteId || undefined);
-    if (duplicate) {
+    const authClient = await createAuthClient();
+    const { data, error } = await authClient.rpc('fn_upsert_customer_canonical', {
+      p_customer_id: clienteId || null,
+      p_full_name: payload.nome,
+      p_phone: payload.telefone,
+      p_email: payload.email,
+      p_cpf: payload.cpf,
+      p_cep: payload.cep,
+      p_address: payload.endereco,
+      p_number: payload.numero,
+      p_neighborhood: payload.bairro,
+      p_city: payload.cidade,
+      p_state: payload.estado,
+      p_origin: payload.origem,
+      p_customer_status: payload.status_cliente,
+      p_commercial_profile_id: payload.vendedor_responsavel_id,
+      p_latitude: Number.isFinite(payload.latitude) ? payload.latitude : null,
+      p_longitude: Number.isFinite(payload.longitude) ? payload.longitude : null,
+      p_ambassador_id: profile.role === 'admin' ? payload.ambassador_id : null,
+      p_assignment_reason: payload.assignment_reason,
+      p_idempotency_key: payload.idempotency_key,
+    });
+
+    if (error) {
+      console.error('Erro na escrita canônica do cliente:', {
+        code: error.code,
+        message: error.message,
+      });
       return NextResponse.json(
-        { success: false, message: 'Já existe um cliente com esse nome e telefone.' },
+        { success: false, message: error.message || 'Falha ao salvar o cliente.' },
+        { status: error.code === '42501' ? 403 : 500 }
+      );
+    }
+
+    const result = data as {
+      status?: string;
+      entity_id?: string;
+      review_id?: string;
+      replayed?: boolean;
+    } | null;
+
+    if (result?.status === 'manual_review_required') {
+      return NextResponse.json(
+        {
+          success: false,
+          status: result.status,
+          reviewId: result.review_id,
+          message: 'Os identificadores informados entram em conflito com outro cadastro. O caso foi encaminhado para revisão administrativa e nenhum cadastro foi alterado.',
+        },
         { status: 409 }
       );
     }
 
-    const supabase = createServiceClient();
-
-    if (clienteId) {
-      const { error } = await supabase
-        .from('clientes')
-        .update(payload)
-        .eq('id', clienteId);
-
-      if (error) {
-        console.error('Erro ao atualizar cliente:', error);
-        return NextResponse.json({ success: false, message: error.message || 'Falha ao atualizar o cliente.' }, { status: 500 });
-      }
-
-      revalidatePath('/clientes');
-      revalidatePath('/');
-
-      return NextResponse.json({ success: true, message: 'Cliente atualizado com sucesso.' });
+    if (result?.status === 'existing_customer') {
+      return NextResponse.json(
+        {
+          success: false,
+          status: result.status,
+          customerId: result.entity_id,
+          message: 'Esta pessoa já possui um cadastro de cliente. Abra o cadastro existente em vez de criar outro.',
+        },
+        { status: 409 }
+      );
     }
 
-    const { error } = await supabase
-      .from('clientes')
-      .insert(payload);
+    if (result?.status === 'idempotency_conflict') {
+      return NextResponse.json(
+        {
+          success: false,
+          status: result.status,
+          message: 'A chave desta operação foi reutilizada com dados diferentes. Recarregue o formulário e tente novamente.',
+        },
+        { status: 409 }
+      );
+    }
 
-    if (error) {
-      console.error('Erro ao cadastrar cliente:', error);
-      return NextResponse.json({ success: false, message: error.message || 'Falha ao cadastrar o cliente.' }, { status: 500 });
+    if (!result || !['created', 'updated'].includes(result.status || '')) {
+      return NextResponse.json(
+        { success: false, message: 'O banco não confirmou a gravação do cliente.' },
+        { status: 500 }
+      );
     }
 
     revalidatePath('/clientes');
     revalidatePath('/');
 
-    return NextResponse.json({ success: true, message: 'Cliente cadastrado com sucesso.' });
+    return NextResponse.json({
+      success: true,
+      customerId: result.entity_id,
+      replayed: Boolean(result.replayed),
+      message: result.status === 'updated'
+        ? 'Cliente atualizado com sucesso.'
+        : 'Cliente cadastrado com sucesso.',
+    });
   } catch (error) {
     console.error('Erro inesperado ao processar cliente:', error);
     return NextResponse.json(
@@ -158,7 +195,7 @@ export async function DELETE(request: NextRequest) {
 
     const profile = await getProfileByUserId(userId);
     if (!profile || profile.role !== 'admin') {
-      return NextResponse.json({ success: false, message: 'Apenas administradores podem excluir clientes.' }, { status: 403 });
+      return NextResponse.json({ success: false, message: 'Apenas administradores podem arquivar clientes.' }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -168,75 +205,40 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'ID do cliente não fornecido.' }, { status: 400 });
     }
 
-    const supabase = createServiceClient();
-
-    // 1. Verificar se possui vendas vinculadas
-    const { count: vendasCount, error: vendasError } = await supabase
-      .from('vendas')
-      .select('*', { count: 'exact', head: true })
-      .eq('cliente_id', clienteId);
-
-    if (vendasError) {
-      console.error('Erro ao verificar vendas:', vendasError);
-      return NextResponse.json({ success: false, message: 'Erro ao verificar vínculos do cliente.' }, { status: 500 });
-    }
-
-    if ((vendasCount || 0) > 0) {
-      return NextResponse.json({ success: false, message: 'Este cliente possui vendas vinculadas e não pode ser excluído.' }, { status: 400 });
-    }
-
-    // 2. Obter dados do cliente antes de excluir para salvar o backup
-    const { data: clienteToDelete, error: getError } = await supabase
-      .from('clientes')
-      .select('*')
-      .eq('id', clienteId)
-      .single();
-
-    if (getError || !clienteToDelete) {
-      console.error('Erro ao buscar cliente para backup:', getError);
-      return NextResponse.json({ success: false, message: 'Erro ao localizar dados do cliente.' }, { status: 404 });
-    }
-
-    // 3. Inserir na tabela de excluídos (backup de segurança)
-    const { error: backupError } = await supabase
-      .from('clientes_excluidos')
-      .insert({
-        cliente_id: clienteToDelete.id,
-        nome: clienteToDelete.nome,
-        telefone: clienteToDelete.telefone || null,
-        dados_completos: clienteToDelete,
-        excluido_por: userId
-      });
-
-    if (backupError) {
-      console.warn('Aviso ao fazer backup na tabela clientes_excluidos:', backupError);
-    }
-
-    // 4. Excluir de tabelas auxiliares de indicação e funil de leads sem CASCADE
-    await supabase.from('funil_leads').delete().eq('cliente_id', clienteId);
-    await supabase.from('referral_attributions').delete().eq('customer_id', clienteId);
-
-    // 5. Excluir cliente do banco
-    const { error } = await supabase
-      .from('clientes')
-      .delete()
-      .eq('id', clienteId);
+    const authClient = await createAuthClient();
+    const { data, error } = await authClient.rpc('fn_archive_customer', {
+      p_customer_id: clienteId,
+      p_reason: 'Arquivamento confirmado no cadastro administrativo',
+    });
 
     if (error) {
-      console.error('Erro ao excluir cliente:', error);
-      return NextResponse.json({ success: false, message: 'Erro ao excluir o cliente do banco de dados.' }, { status: 500 });
+      console.error('Erro ao arquivar cliente:', {
+        code: error.code,
+        message: error.message,
+      });
+      return NextResponse.json({ success: false, message: 'Erro ao arquivar o cliente.' }, { status: 500 });
+    }
+
+    const result = data as { status?: string } | null;
+    if (!result || !['archived'].includes(result.status || '')) {
+      return NextResponse.json(
+        { success: false, message: 'Cliente não encontrado para arquivamento.' },
+        { status: 404 }
+      );
     }
 
     revalidatePath('/clientes');
     revalidatePath('/');
 
-    return NextResponse.json({ success: true, message: 'Cliente excluído com sucesso.' });
+    return NextResponse.json({
+      success: true,
+      message: 'Cliente arquivado com sucesso. Pedidos, atribuições e auditorias foram preservados.',
+    });
   } catch (error) {
-    console.error('Erro inesperado ao excluir cliente:', error);
+    console.error('Erro inesperado ao arquivar cliente:', error);
     return NextResponse.json(
-      { success: false, message: error instanceof Error ? error.message : 'Erro inesperado ao excluir o cliente.' },
+      { success: false, message: error instanceof Error ? error.message : 'Erro inesperado ao arquivar o cliente.' },
       { status: 500 }
     );
   }
 }
-

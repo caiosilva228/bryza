@@ -57,14 +57,17 @@ export async function salvarVendedor(formData: FormData) {
   };
 
   if (isEditing) {
-    const { error } = await supabase
-      .from('profiles')
-      .update(profileData)
-      .eq('id', id);
+    const { data, error } = await supabase.rpc('fn_admin_upsert_profile_canonical', {
+      p_auth_user_id: id,
+      p_data: profileData,
+    });
 
     if (error) {
       console.error('Erro ao atualizar vendedor:', error);
       return { success: false, error: error.message };
+    }
+    if ((data as { status?: string })?.status === 'manual_review_required') {
+      return { success: false, error: 'Os identificadores informados exigem revisão administrativa.' };
     }
   } else {
     // Modo Inserção (Cria Auth + Profile)
@@ -95,13 +98,21 @@ export async function salvarVendedor(formData: FormData) {
 
     // Com usuário inserido, a tabela profiles já recebe um gatilho de criação vazio lá no Supabase (se houver handle_new_user), 
     // portanto faremos um UPDATE ou upsert para preencher os dados de vendedor
-    const { error: profileError } = await adminAuthClient
-      .from('profiles')
-      .upsert({ ...profileData, id: authData.user.id });
+    const { data: profileResult, error: profileError } = await supabase.rpc(
+      'fn_admin_upsert_profile_canonical',
+      {
+        p_auth_user_id: authData.user.id,
+        p_data: profileData,
+      }
+    );
 
-    if (profileError) {
+    if (profileError || (profileResult as { status?: string })?.status === 'manual_review_required') {
       console.error('Erro ao salvar profile do vendedor:', profileError);
-      return { success: false, error: profileError.message };
+      await adminAuthClient.auth.admin.updateUserById(authData.user.id, { ban_duration: '876000h' });
+      return {
+        success: false,
+        error: profileError?.message || 'A identidade exige revisão administrativa; a nova conta foi bloqueada.',
+      };
     }
   }
 

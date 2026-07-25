@@ -42,7 +42,7 @@ export interface PublicSchedulingResult {
   numero_agendamento: string;
   data_agendamento: string;
   valor_total: number;
-  novo_referral_code: string;
+  program_invitation_available: boolean;
 }
 
 export type PublicSchedulingActionResult =
@@ -90,12 +90,13 @@ function normalizeRpcResult(value: unknown): PublicSchedulingResult | null {
   const agendamentoId = String(data.agendamento_id ?? data.id ?? '');
   const numeroAgendamento = String(data.numero_agendamento ?? data.codigo_agendamento ?? '');
   const dataAgendamento = String(data.data_agendamento ?? '');
-  const novoReferralCode = String(
-    data.novo_referral_code ?? data.ambassador_code ?? data.referral_code ?? ''
-  );
   const valorTotal = Number(data.valor_total ?? 0);
+  const status = String(data.status ?? '');
 
-  if (!agendamentoId || !numeroAgendamento || !dataAgendamento || !novoReferralCode || !Number.isFinite(valorTotal)) {
+  if (status === 'manual_review_required' || status === 'idempotency_conflict') {
+    return null;
+  }
+  if (!agendamentoId || !numeroAgendamento || !dataAgendamento || !Number.isFinite(valorTotal)) {
     return null;
   }
 
@@ -104,7 +105,7 @@ function normalizeRpcResult(value: unknown): PublicSchedulingResult | null {
     numero_agendamento: numeroAgendamento,
     data_agendamento: dataAgendamento,
     valor_total: valorTotal,
-    novo_referral_code: novoReferralCode,
+    program_invitation_available: data.program_invitation_available === true,
   };
 }
 
@@ -226,6 +227,20 @@ export async function createPublicSchedulingAction(
         message: error.message,
       });
       return { success: false, error: 'Não foi possível agendar agora. Revise os dados e tente novamente.' };
+    }
+
+    const rawResult = (Array.isArray(rpcData) ? rpcData[0] : rpcData) as Record<string, unknown> | null;
+    if (rawResult?.status === 'manual_review_required') {
+      return {
+        success: false,
+        error: 'Seus dados precisam de uma revisão administrativa antes do agendamento. A equipe Bryza dará continuidade ao atendimento.',
+      };
+    }
+    if (rawResult?.status === 'idempotency_conflict') {
+      return {
+        success: false,
+        error: 'Esta tentativa já foi utilizada com dados diferentes. Feche o formulário e tente novamente.',
+      };
     }
 
     const normalizedResult = normalizeRpcResult(rpcData);

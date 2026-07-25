@@ -1,14 +1,17 @@
 import { MainLayout } from '@/components/layout/MainLayout';
 import { getVendedores, getCurrentProfile } from '@/services/profiles';
-import { salvarCliente } from '../actions';
 import Link from 'next/link';
 import { ClienteForm } from './ClienteForm';
+import { getActiveAmbassadorsForCustomerAssignment } from '@/services/clientes';
 
 export const revalidate = 0;
 
 export default async function NovoClientePage() {
   const profile = await getCurrentProfile();
-  const vendedores = await getVendedores();
+  const [vendedores, ambassadors] = await Promise.all([
+    getVendedores(),
+    getActiveAmbassadorsForCustomerAssignment(),
+  ]);
 
   const isVendedor = profile?.role === 'vendedor';
 
@@ -58,7 +61,12 @@ export default async function NovoClientePage() {
           borderRadius: '16px', 
           border: '1px solid var(--color-outline-variant)' 
         }}>
-          <ClienteForm profile={profile} vendedores={vendedores} isVendedor={isVendedor} />
+          <ClienteForm
+            profile={profile}
+            vendedores={vendedores}
+            ambassadors={ambassadors}
+            isVendedor={isVendedor}
+          />
         </div>
       </div>
     </MainLayout>

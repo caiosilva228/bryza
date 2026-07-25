@@ -3,23 +3,26 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Cliente } from '@/models/types';
+import { AmbassadorAssignmentOption, Cliente } from '@/models/types';
 import { toast } from 'sonner';
 
 export function ClienteForm({ 
   profile, 
   vendedores, 
+  ambassadors,
   isVendedor,
   initialData 
 }: { 
   profile: any, 
   vendedores: any[], 
+  ambassadors: AmbassadorAssignmentOption[],
   isVendedor: boolean,
   initialData?: Cliente
 }) {
   const [formData, setFormData] = useState({
     nome: initialData?.nome || '',
     telefone: initialData?.telefone || '',
+    email: initialData?.email || '',
     cpf: initialData?.cpf ? initialData.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : '',
     cep: initialData?.cep || '',
     endereco: initialData?.endereco || '',
@@ -30,6 +33,14 @@ export function ClienteForm({
     latitude: initialData?.latitude?.toString() || '',
     longitude: initialData?.longitude?.toString() || ''
   });
+  const [ambassadorQuery, setAmbassadorQuery] = useState(() => {
+    if (!initialData?.indicated_by) return '';
+    return `${initialData.indicated_by.referral_code} — ${initialData.indicated_by.full_name}`;
+  });
+  const [selectedAmbassadorId, setSelectedAmbassadorId] = useState(
+    initialData?.commissionable_ambassador_id || ''
+  );
+  const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
   
   const [cidades, setCidades] = useState<string[]>([]);
   const [isLoadingCep, setIsLoadingCep] = useState(false);
@@ -295,6 +306,8 @@ export function ClienteForm({
       if (initialData?.id) {
         formData.set('cliente_id', initialData.id);
       }
+      formData.set('ambassador_id', selectedAmbassadorId);
+      formData.set('idempotency_key', idempotencyKeyRef.current);
 
       const response = await fetch('/api/clientes', {
         method: 'POST',
@@ -308,6 +321,7 @@ export function ClienteForm({
       }
 
       toast.success(result.message || 'Cliente cadastrado com sucesso.');
+      idempotencyKeyRef.current = crypto.randomUUID();
       router.replace('/clientes');
     } catch (error) {
       console.error('Erro ao salvar cliente:', error);
@@ -368,6 +382,18 @@ export function ClienteForm({
         </div>
 
         <div>
+          <label style={labelStyle}>E-mail</label>
+          <input
+            type="email"
+            name="email"
+            placeholder="cliente@exemplo.com"
+            style={{ ...inputStyle, textTransform: 'none' }}
+            value={formData.email}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div>
           <label style={labelStyle}>Origem</label>
           <select name="origem" style={{...inputStyle, textTransform: 'none'}} defaultValue={initialData?.origem || 'indicacao'}>
             <option value="indicacao">Indicação</option>
@@ -379,6 +405,53 @@ export function ClienteForm({
             <option value="outro">Outro</option>
           </select>
         </div>
+
+        {!isVendedor && (
+          <div style={{ gridColumn: '1 / -1' }}>
+            <label style={labelStyle}>Indicado por (Embaixador)</label>
+            <input
+              type="text"
+              list="active-ambassadors"
+              value={ambassadorQuery}
+              onChange={(event) => {
+                const value = event.target.value;
+                setAmbassadorQuery(value);
+                const normalized = value.trim().toLowerCase();
+                const match = ambassadors.find((ambassador) => {
+                  const option = `${ambassador.referral_code} — ${ambassador.full_name}`.toLowerCase();
+                  return option === normalized
+                    || ambassador.referral_code.toLowerCase() === normalized
+                    || ambassador.full_name.toLowerCase() === normalized;
+                });
+                setSelectedAmbassadorId(match?.id || '');
+              }}
+              placeholder="Pesquise pelo nome ou código; deixe vazio para nenhum"
+              style={{ ...inputStyle, textTransform: 'none' }}
+            />
+            <datalist id="active-ambassadors">
+              {ambassadors.map((ambassador) => (
+                <option
+                  key={ambassador.id}
+                  value={`${ambassador.referral_code} — ${ambassador.full_name}`}
+                />
+              ))}
+            </datalist>
+            <input type="hidden" name="ambassador_id" value={selectedAmbassadorId} />
+            {selectedAmbassadorId ? (
+              <input
+                type="hidden"
+                name="assignment_reason"
+                value={initialData?.commissionable_ambassador_id
+                  && initialData.commissionable_ambassador_id !== selectedAmbassadorId
+                  ? 'Reatribuição validada individualmente no cadastro do cliente'
+                  : 'Indicação validada individualmente no cadastro do cliente'}
+              />
+            ) : null}
+            <p style={{ margin: '-8px 0 16px', fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
+              Somente embaixadores ativos aparecem. O responsável comercial é registrado separadamente.
+            </p>
+          </div>
+        )}
 
         {initialData && (
           <div>

@@ -58,6 +58,12 @@ export default async function ClientesPage({
             <p>Gerencie sua carteira de clientes, histórico de vendas e métricas LTV.</p>
           </div>
           <div className="page-header-actions">
+            {profile?.role === 'admin' && (
+              <Link href="/configuracoes/identidade" className="btn-secondary">
+                <span className="material-symbols-outlined">manage_accounts</span>
+                Revisões de identidade
+              </Link>
+            )}
             <Link href="/clientes/novo" className="btn-primary">
               <span className="material-symbols-outlined">add</span>
               Novo Cliente
@@ -123,4 +129,3 @@ export default async function ClientesPage({
     </MainLayout>
   );
 }
-

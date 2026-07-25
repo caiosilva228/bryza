@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Pedido, PedidoStats as PedidoStatsType, Cliente, Produto, Usuario } from '@/models/types';
+import { Pedido, PedidoStats as PedidoStatsType, Cliente, Produto, Usuario, AmbassadorAssignmentOption } from '@/models/types';
 import PedidoStats from './PedidoStats';
 import PedidoTable from './PedidoTable';
 import PedidoFormModal from './PedidoFormModal';
@@ -16,6 +16,7 @@ interface Props {
   clientes: Cliente[];
   produtos: Produto[];
   vendedores: Usuario[];
+  ambassadors: AmbassadorAssignmentOption[];
 }
 
 type SortKey = 'pedido' | 'cliente' | 'destino' | 'responsavel' | 'status' | 'valor';
@@ -37,7 +38,8 @@ export default function PedidoClientPage({
   initialStats,
   clientes,
   produtos,
-  vendedores
+  vendedores,
+  ambassadors
 }: Props) {
   const [pedidos, setPedidos] = useState<Pedido[]>(initialPedidos);
   const [stats, setStats] = useState<PedidoStatsType>(initialStats);
@@ -523,6 +525,7 @@ export default function PedidoClientPage({
           clientes={clientes}
           produtos={localProdutos}
           vendedores={vendedores}
+          ambassadors={ambassadors}
           pedidoToEdit={pedidoToEdit}
         />
       )}
