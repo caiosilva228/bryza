@@ -88,7 +88,6 @@ export default function VendasPage() {
                       <th style={{ padding: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Pedido</th>
                       <th style={{ padding: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Data</th>
                       <th style={{ padding: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Cliente</th>
-                      <th style={{ padding: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600, textAlign: 'right' }}>Valor Total</th>
                       <th style={{ padding: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Status Venda</th>
                       <th style={{ padding: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600, textAlign: 'center' }}>% Comis.</th>
                       <th style={{ padding: '12px', color: 'var(--color-on-surface-variant)', fontWeight: 600, textAlign: 'right' }}>Comissão (R$)</th>
@@ -101,7 +100,6 @@ export default function VendasPage() {
                         <td style={{ padding: '12px', fontWeight: 700, fontFamily: 'monospace' }}>{item.codigo_pedido}</td>
                         <td style={{ padding: '12px' }}>{formatDate(item.created_at)}</td>
                         <td style={{ padding: '12px', fontWeight: 600 }}>{item.cliente_nome_mascarado}</td>
-                        <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700 }}>{formatCurrency(item.valor_total)}</td>
                         <td style={{ padding: '12px' }}>
                           <span style={{
                             padding: '4px 10px',

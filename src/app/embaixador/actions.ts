@@ -3,6 +3,10 @@
 import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
+import {
+  normalizeCommissionChart,
+  removeGrossOrderValues,
+} from '@/lib/ambassadors/portal-financial-data';
 
 // Helper de validação do usuário logado
 async function getAuthenticatedUser() {
@@ -36,7 +40,6 @@ export type AmbassadorDashboardMetrics = {
   display_name: string | null;
   photo_path: string | null;
   vendas_mes_qtd: number;
-  vendas_mes_valor: number | string;
   comissao_aguardando: number | string;
   comissao_disponivel: number | string;
   total_recebido: number | string;
@@ -57,7 +60,8 @@ export type AmbassadorDashboardMetrics = {
   clientes_indicados: number;
   grafico_mensal: Array<{
     mes: string;
-    vendas_valor: number | string;
+    vendas_qtd: number;
+    comissao_valor: number;
   }>;
 };
 
@@ -156,7 +160,22 @@ export async function getPortalDashboardData() {
     throw new Error(error.message || 'Erro ao carregar métricas do painel');
   }
 
-  return data as AmbassadorDashboardMetrics;
+  const raw = data as AmbassadorDashboardMetrics & {
+    vendas_mes_valor?: number | string;
+    grafico_mensal?: Array<{
+      mes: string;
+      vendas_qtd?: number | string;
+      vendas_valor?: number | string;
+      comissao_valor: number | string;
+    }>;
+  };
+  const safeData = { ...raw };
+  Reflect.deleteProperty(safeData, 'vendas_mes_valor');
+
+  return {
+    ...safeData,
+    grafico_mensal: normalizeCommissionChart(raw.grafico_mensal),
+  } as AmbassadorDashboardMetrics;
 }
 
 function maskOwnPix(value: string | null) {
@@ -267,7 +286,11 @@ export async function getMinhasVendas(params?: { page?: number; limit?: number; 
     throw new Error(error.message || 'Erro ao carregar vendas');
   }
 
-  return data as { items: any[]; total: number };
+  const result = data as { items: Record<string, unknown>[]; total: number };
+  return {
+    ...result,
+    items: removeGrossOrderValues(result.items),
+  };
 }
 
 // 4. Minhas Comissões Paginadas

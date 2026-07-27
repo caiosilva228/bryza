@@ -8,6 +8,10 @@ import { formatCurrency } from '@/utils/format';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { InstallAppButton } from '@/components/pwa/InstallAppButton';
+import {
+  getCommissionChartMaximum,
+  getCurrentCommission,
+} from '@/lib/ambassadors/portal-financial-data';
 
 export default function EmbaixadorDashboardPage() {
   const [data, setData] = useState<AmbassadorDashboardMetrics | null>(null);
@@ -73,7 +77,6 @@ export default function EmbaixadorDashboardPage() {
     referral_code,
     display_name,
     vendas_mes_qtd,
-    vendas_mes_valor,
     comissao_aguardando,
     comissao_disponivel,
     total_recebido,
@@ -98,8 +101,8 @@ export default function EmbaixadorDashboardPage() {
         ? `Hoje é o último dia: faça uma compra de ${formatCurrency(Number(activation.minimum_amount))} ou mais para ativar suas comissões neste mês.`
         : `Faça uma compra de ${formatCurrency(Number(activation.minimum_amount))} ou mais em até ${activation.days_remaining} ${activation.days_remaining === 1 ? 'dia' : 'dias'}, até ${activationDeadline}, para ativar suas comissões.`;
 
-  // Calcular valor máximo para escala do gráfico
-  const maxGrafico = Math.max(...(grafico_mensal || []).map((g: any) => parseFloat(g.vendas_valor || 0)), 100);
+  const comissaoMes = getCurrentCommission(grafico_mensal);
+  const maxGrafico = getCommissionChartMaximum(grafico_mensal);
 
   return (
     <MainLayout>
@@ -225,9 +228,9 @@ export default function EmbaixadorDashboardPage() {
               <span className="material-symbols-outlined">attach_money</span>
             </div>
             <div className="summary-card-content">
-              <p className="summary-card-label">Valor Vendido</p>
-              <p className="summary-card-value">{formatCurrency(vendas_mes_valor)}</p>
-              <p className="summary-card-sub">Neste mês</p>
+              <p className="summary-card-label">Comissão no Mês</p>
+              <p className="summary-card-value">{formatCurrency(comissaoMes)}</p>
+              <p className="summary-card-sub">Gerada neste mês</p>
             </div>
           </div>
           <div className="summary-card">
@@ -293,12 +296,12 @@ export default function EmbaixadorDashboardPage() {
           marginBottom: '32px'
         }}>
           <h3 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
-            Evolução dos Últimos 6 Meses
+            Evolução das Comissões — Últimos 6 Meses
           </h3>
 
           <div style={{ display: 'flex', alignItems: 'flex-end', height: '180px', gap: '16px', padding: '10px 0 0', borderBottom: '1px solid var(--color-outline-variant)' }}>
             {(grafico_mensal || []).map((g: any, idx: number) => {
-              const valor = parseFloat(g.vendas_valor || 0);
+              const valor = Number(g.comissao_valor || 0);
               const heightPct = Math.max(Math.min((valor / maxGrafico) * 100, 100), 8);
               return (
                 <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}>
