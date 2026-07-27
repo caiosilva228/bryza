@@ -139,6 +139,10 @@ export default function ClientesIndicadosTab() {
           planId: selectedPlanId || undefined,
           initialStatus: 'pendente',
         });
+        if (!result.success) {
+          toast.error(result.message);
+          return;
+        }
         toast.success(`Cliente promovido com sucesso! Código: ${result.referral_code}`);
         setModalCliente(null);
         setPage(1);

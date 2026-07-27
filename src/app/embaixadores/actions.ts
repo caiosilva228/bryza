@@ -684,11 +684,32 @@ export async function promoverClienteParaEmbaixador(params: {
   clienteId: string;
   planId?: string;
   initialStatus?: 'pendente' | 'ativo';
-}) {
-  await checkAdminAccess();
-  const adminClient = createAdminClient();
+}): Promise<
+  | {
+      success: true;
+      status: string;
+      ambassador_id?: string;
+      referral_code?: string;
+      username?: string;
+    }
+  | { success: false; message: string }
+> {
+  try {
+    await checkAdminAccess();
+  } catch {
+    return {
+      success: false,
+      message: 'Sua sessão administrativa não é válida. Entre novamente.',
+    };
+  }
 
-  const { data, error } = await adminClient.rpc('fn_admin_promote_client_to_ambassador', {
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!uuidPattern.test(params.clienteId) || (params.planId && !uuidPattern.test(params.planId))) {
+    return { success: false, message: 'Cliente ou plano de comissão inválido.' };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc('fn_admin_promote_client_to_ambassador', {
     p_customer_id: params.clienteId,
     p_plan_id: params.planId || null,
     p_initial_status: params.initialStatus || 'pendente',
@@ -696,16 +717,25 @@ export async function promoverClienteParaEmbaixador(params: {
 
   if (error) {
     console.error('Erro ao promover cliente para embaixador:', error);
-    throw new Error(error.message || 'Falha ao promover o cliente para embaixador');
+    return {
+      success: false,
+      message: error.code === '42501'
+        ? 'Sua sessão não possui permissão para realizar esta promoção.'
+        : 'Não foi possível promover o cliente. Tente novamente.',
+    };
   }
 
   const result = data as { status: string; ambassador_id?: string; referral_code?: string; username?: string };
 
-  if (result.status === 'customer_not_found') throw new Error('Cliente não encontrado.');
-  if (result.status === 'already_ambassador') throw new Error('Este cliente já é um embaixador.');
+  if (result.status === 'customer_not_found') {
+    return { success: false, message: 'Cliente não encontrado.' };
+  }
+  if (result.status === 'already_ambassador') {
+    return { success: false, message: 'Este cliente já é um embaixador.' };
+  }
 
   revalidatePath('/embaixadores');
   revalidatePath('/clientes');
-  return result;
+  return { success: true, ...result };
 }
 

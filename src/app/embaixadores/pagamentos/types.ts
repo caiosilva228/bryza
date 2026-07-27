@@ -26,6 +26,12 @@ export interface AmbassadorCommissionGroup {
   minimumPaymentAmount: number;
   meetsMinimum: boolean;
   commissions: ReleasedCommission[];
+  withdrawalRequest: {
+    id: string;
+    amount: number;
+    createdAt: string | null;
+    commissionIds: string[];
+  } | null;
 }
 
 export interface ReleasedCommissionsData {

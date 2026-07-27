@@ -18,7 +18,7 @@ interface Route {
 
 export const Sidebar = () => {
   const pathname = usePathname();
-  const [openMenus, setOpenMenus] = useState<string[]>(['Vendas', 'Minhas indicações', 'Programa de Embaixadores']);
+  const [openMenus, setOpenMenus] = useState<string[]>(['Vendas', 'Minhas indicações', 'Minhas comissões', 'Programa de Embaixadores']);
   const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
@@ -71,8 +71,14 @@ export const Sidebar = () => {
           ],
         },
         { label: 'Minhas vendas', path: '/embaixador/vendas', icon: 'shopping_bag' },
-        { label: 'Minhas comissões', path: '/embaixador/comissoes', icon: 'payments' },
-        { label: 'Meus pagamentos', path: '/embaixador/pagamentos', icon: 'account_balance_wallet' },
+        {
+          label: 'Minhas comissões',
+          icon: 'payments',
+          subItems: [
+            { label: 'Extrato de comissões', path: '/embaixador/comissoes', icon: 'receipt_long' },
+            { label: 'Meus pagamentos', path: '/embaixador/pagamentos', icon: 'account_balance_wallet' },
+          ],
+        },
         { label: 'Calculadora de ganhos', path: '/embaixador/calculadora-de-ganhos', icon: 'calculate' },
         { label: 'Materiais', path: '/embaixador/materiais', icon: 'folder_zip' },
         { label: 'Meu perfil', path: '/embaixador/perfil', icon: 'account_circle' },

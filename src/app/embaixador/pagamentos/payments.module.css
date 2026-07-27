@@ -1,0 +1,71 @@
+.page { max-width: 1080px; margin: 0 auto 48px; }
+.header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 24px; }
+.header h1 { margin: 4px 0 6px; color: var(--color-on-surface); font-family: var(--font-headline); font-size: clamp(26px, 4vw, 34px); }
+.header p { margin: 0; color: var(--color-on-surface-variant); font-size: 14px; }
+.eyebrow { color: var(--color-primary); font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.refreshButton, .actionRow button, .pendingBox button, .receiptButton, .pagination button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--color-outline-variant); border-radius: 10px; background: var(--color-surface); color: var(--color-on-surface); padding: 10px 16px; cursor: pointer; font-weight: 700; }
+.refreshButton:disabled, .actionRow button:disabled, .pendingBox button:disabled, .receiptButton:disabled, .pagination button:disabled { cursor: not-allowed; opacity: .5; }
+.summaryGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
+.summaryCard { display: flex; align-items: center; gap: 14px; min-height: 104px; padding: 18px; border: 1px solid var(--color-outline-variant); border-radius: 16px; background: var(--color-surface); }
+.summaryCard > span { display: grid; place-items: center; width: 44px; height: 44px; flex: 0 0 44px; border-radius: 12px; background: var(--color-secondary-container); color: var(--color-on-secondary-container); }
+.summaryCard div { display: flex; min-width: 0; flex-direction: column; gap: 3px; }
+.summaryCard small { color: var(--color-on-surface-variant); font-size: 11px; }
+.summaryCard strong { overflow: hidden; color: var(--color-on-surface); font-size: 20px; text-overflow: ellipsis; white-space: nowrap; }
+.summaryEmphasis { border-color: var(--color-primary); background: var(--color-primary); }
+.summaryEmphasis > span { background: rgba(255, 255, 255, .16); color: #fff; }
+.summaryEmphasis small, .summaryEmphasis strong { color: #fff; }
+.withdrawalCard, .historyCard { margin-bottom: 20px; border: 1px solid var(--color-outline-variant); border-radius: 18px; background: var(--color-surface); padding: 22px; }
+.withdrawalInfo { display: flex; align-items: center; gap: 13px; }
+.withdrawalInfo > span { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 13px; background: var(--color-secondary-container); color: var(--color-on-secondary-container); }
+.withdrawalInfo h2, .sectionTitle h2 { margin: 0 0 4px; color: var(--color-on-surface); font-size: 19px; }
+.withdrawalInfo p { margin: 0; color: var(--color-on-surface-variant); font-size: 13px; }
+.progressTrack { height: 8px; margin: 20px 0 16px; overflow: hidden; border-radius: 999px; background: var(--color-surface-container-high); }
+.progressTrack span { display: block; height: 100%; border-radius: inherit; background: var(--color-primary); transition: width .25s ease; }
+.pixRow { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 12px; background: var(--color-surface-container-low); }
+.pixRow > span { color: var(--color-primary); }
+.pixRow div { display: flex; min-width: 0; flex: 1; flex-direction: column; }
+.pixRow small { color: var(--color-on-surface-variant); font-size: 11px; }
+.pixRow strong { overflow: hidden; color: var(--color-on-surface); font-family: monospace; text-overflow: ellipsis; white-space: nowrap; }
+.pixRow a { color: var(--color-primary); font-size: 12px; font-weight: 800; text-decoration: none; }
+.actionRow { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 18px; }
+.actionRow p { margin: 0; color: var(--color-on-surface-variant); font-size: 13px; }
+.actionRow button { border-color: var(--color-primary); background: var(--color-primary); color: var(--color-on-primary); }
+.pendingBox { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 18px; border: 1px solid #e7b14c; border-radius: 12px; background: #fff8e8; padding: 14px; }
+.pendingBox > div { display: flex; align-items: center; gap: 10px; color: #755000; }
+.pendingBox > div > span { font-size: 28px; }
+.pendingBox div div { display: flex; flex-direction: column; }
+.pendingBox small { margin-top: 3px; }
+.pendingBox button { border-color: #b3261e; color: #b3261e; }
+.sectionTitle { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.sectionTitle > span { color: var(--color-on-surface-variant); font-size: 12px; }
+.emptyState { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; min-height: 180px; color: var(--color-on-surface-variant); text-align: center; }
+.emptyState > span { color: var(--color-primary); font-size: 40px; }
+.emptyState p { margin: 0; font-size: 13px; }
+.tableWrap { overflow-x: auto; }
+.tableWrap table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tableWrap th, .tableWrap td { padding: 13px 12px; border-top: 1px solid var(--color-outline-variant); text-align: left; }
+.tableWrap th { color: var(--color-on-surface-variant); font-size: 11px; text-transform: uppercase; }
+.tableWrap th:nth-child(4), .tableWrap td:nth-child(4) { text-align: right; }
+.tableWrap th:last-child, .tableWrap td:last-child { text-align: center; }
+.statusBadge { display: inline-flex; border-radius: 999px; padding: 5px 9px; font-size: 11px; font-weight: 800; }
+.status_pendente, .status_processando { background: #fff1c7; color: #795700; }
+.status_paga { background: #d9f8e7; color: #087b4b; }
+.status_cancelada, .status_estornada { background: #fde2e1; color: #a8241d; }
+.receiptButton { padding: 6px 10px; color: var(--color-primary); font-size: 11px; }
+.muted { color: var(--color-on-surface-variant); }
+.pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--color-outline-variant); }
+.pagination > span { color: var(--color-on-surface-variant); font-size: 12px; }
+.pagination div { display: flex; gap: 8px; }
+.pagination button { padding: 7px 12px; font-size: 12px; }
+
+@media (max-width: 760px) {
+  .header, .actionRow, .pendingBox { align-items: stretch; flex-direction: column; }
+  .refreshButton, .actionRow button, .pendingBox button { width: 100%; }
+  .summaryGrid { grid-template-columns: 1fr; }
+  .summaryCard { min-height: 88px; }
+  .withdrawalCard, .historyCard { padding: 17px; }
+  .tableWrap table { min-width: 680px; }
+  .pixRow { align-items: flex-start; }
+  .pagination { align-items: stretch; flex-direction: column; }
+  .pagination div { display: grid; grid-template-columns: 1fr 1fr; }
+}

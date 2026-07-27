@@ -314,8 +314,54 @@ export async function getMinhasComissoes(params?: { page?: number; limit?: numbe
   return data as { items: any[]; total: number };
 }
 
-// 5. Meus Pagamentos Paginados
-export async function getMeusPagamentos(params?: { page?: number; limit?: number }) {
+export type WithdrawalRequestSummary = {
+  id: string;
+  amount: number | string;
+  created_at: string;
+  commission_count: number;
+};
+
+export type WithdrawalOverview = {
+  available_amount: number | string;
+  available_commission_count: number;
+  minimum_payment_amount: number | string;
+  payment_frequency: 'semanal' | 'quinzenal' | 'mensal';
+  program_status: string;
+  pix_key_type: string | null;
+  pix_key_masked: string | null;
+  can_request: boolean;
+  blocked_reason:
+    | 'program_inactive'
+    | 'pending_request'
+    | 'pix_missing'
+    | 'below_minimum'
+    | 'no_available_commissions'
+    | null;
+  pending_request: WithdrawalRequestSummary | null;
+};
+
+export type AmbassadorPayment = {
+  id: string;
+  created_at: string;
+  paid_at: string | null;
+  amount: number | string;
+  payment_method: string;
+  status: 'pendente' | 'processando' | 'paga' | 'cancelada' | 'estornada';
+  notes: string | null;
+  is_withdrawal_request: boolean;
+  has_receipt: boolean;
+};
+
+export type AmbassadorPaymentsData = {
+  items: AmbassadorPayment[];
+  total: number;
+  withdrawal: WithdrawalOverview;
+};
+
+// 5. Meus Pagamentos e Solicitações de Saque
+export async function getMeusPagamentos(
+  params?: { page?: number; limit?: number },
+): Promise<AmbassadorPaymentsData> {
   const { supabase } = await getAuthenticatedUser();
   const limit = Math.min(Math.max(params?.limit || 10, 1), 50);
   const page = Math.max(params?.page || 1, 1);
@@ -331,7 +377,47 @@ export async function getMeusPagamentos(params?: { page?: number; limit?: number
     throw new Error(error.message || 'Erro ao carregar pagamentos');
   }
 
-  return data as { items: any[]; total: number };
+  return data as AmbassadorPaymentsData;
+}
+
+export async function solicitarSaqueComissoes() {
+  const { supabase } = await getAuthenticatedUser();
+  const { data, error } = await supabase.rpc('fn_solicitar_saque_comissoes');
+
+  if (error) {
+    console.error('Erro ao solicitar saque:', error.code);
+    throw new Error(error.message || 'Não foi possível solicitar o saque.');
+  }
+
+  revalidatePath('/embaixador/pagamentos');
+  revalidatePath('/embaixador/dashboard');
+  return data as {
+    success: boolean;
+    request_id: string;
+    amount: number | string;
+    message: string;
+    idempotent?: boolean;
+  };
+}
+
+export async function cancelarSolicitacaoSaque(requestId: string) {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId)) {
+    throw new Error('Solicitação inválida.');
+  }
+
+  const { supabase } = await getAuthenticatedUser();
+  const { data, error } = await supabase.rpc('fn_cancelar_solicitacao_saque', {
+    p_request_id: requestId,
+  });
+
+  if (error) {
+    console.error('Erro ao cancelar solicitação de saque:', error.code);
+    throw new Error(error.message || 'Não foi possível cancelar a solicitação.');
+  }
+
+  revalidatePath('/embaixador/pagamentos');
+  revalidatePath('/embaixador/dashboard');
+  return data as { success: boolean; message: string };
 }
 
 // 6. Signed URL de Comprovante de Pagamento (Com Validação Estrita em Cascata no Banco)

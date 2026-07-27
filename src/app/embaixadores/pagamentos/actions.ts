@@ -84,6 +84,7 @@ function normalizeCommission(value: unknown): ReleasedCommission | null {
 function normalizeGroup(value: unknown, globalMinimum: number): AmbassadorCommissionGroup | null {
   const group = record(value);
   const ambassador = record(group.ambassador || group.embaixador);
+  const withdrawal = record(group.withdrawal_request || group.solicitacao_saque);
   const ambassadorId = text(group.ambassador_id || ambassador.id || group.id);
 
   if (!UUID_PATTERN.test(ambassadorId)) {
@@ -100,6 +101,10 @@ function normalizeGroup(value: unknown, globalMinimum: number): AmbassadorCommis
     0,
     numberValue(group.minimum_payment_amount || group.valor_minimo_pagamento) || globalMinimum,
   );
+  const withdrawalId = text(withdrawal.id || withdrawal.request_id);
+  const withdrawalCommissionIds = array(withdrawal.commission_ids)
+    .map((id) => text(id))
+    .filter((id) => UUID_PATTERN.test(id));
 
   return {
     ambassadorId,
@@ -114,6 +119,12 @@ function normalizeGroup(value: unknown, globalMinimum: number): AmbassadorCommis
       releasedAmount >= minimumPaymentAmount,
     ),
     commissions,
+    withdrawalRequest: UUID_PATTERN.test(withdrawalId) ? {
+      id: withdrawalId,
+      amount: Math.max(0, numberValue(withdrawal.amount)),
+      createdAt: text(withdrawal.created_at) || null,
+      commissionIds: withdrawalCommissionIds,
+    } : null,
   };
 }
 

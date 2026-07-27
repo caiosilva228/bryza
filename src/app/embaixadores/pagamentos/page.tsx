@@ -46,7 +46,14 @@ export default function AdminCommissionPaymentsPage() {
     try {
       const result = await listReleasedCommissionsAction();
       setData(result);
-      setSelected({});
+      setSelected(Object.fromEntries(
+        result.groups
+          .filter((group) => group.withdrawalRequest)
+          .map((group) => [
+            group.ambassadorId,
+            group.withdrawalRequest?.commissionIds || [],
+          ]),
+      ));
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : 'Não foi possível carregar os pagamentos.';
       setError(message);
@@ -70,6 +77,7 @@ export default function AdminCommissionPaymentsPage() {
   const belowMinimum = Boolean(modalGroup && selectedAmount < modalGroup.minimumPaymentAmount);
 
   const toggleCommission = (group: AmbassadorCommissionGroup, commissionId: string) => {
+    if (group.withdrawalRequest) return;
     setSelected((current) => {
       const currentIds = current[group.ambassadorId] || [];
       const nextIds = currentIds.includes(commissionId)
@@ -80,6 +88,7 @@ export default function AdminCommissionPaymentsPage() {
   };
 
   const toggleAll = (group: AmbassadorCommissionGroup) => {
+    if (group.withdrawalRequest) return;
     setSelected((current) => {
       const currentIds = current[group.ambassadorId] || [];
       const allSelected = currentIds.length === group.commissions.length;
@@ -213,13 +222,27 @@ export default function AdminCommissionPaymentsPage() {
                     <span className={styles.privacyBadge}>mascarada</span>
                   </div>
 
+                  {group.withdrawalRequest && (
+                    <div className={styles.requestBanner}>
+                      <span className="material-symbols-outlined">outbox</span>
+                      <div>
+                        <strong>Saque solicitado pelo embaixador</strong>
+                        <small>
+                          {formatCurrency(group.withdrawalRequest.amount)}
+                          {' · '}
+                          {formatDate(group.withdrawalRequest.createdAt)}
+                        </small>
+                      </div>
+                    </div>
+                  )}
+
                   <div className={styles.tableWrap}>
                     <table>
-                      <thead><tr><th><input type="checkbox" checked={allSelected} onChange={() => toggleAll(group)} aria-label={`Selecionar todas as comissões de ${group.name}`} /></th><th>Pedido</th><th>Disponível em</th><th>Tipo / nível</th><th>Valor</th></tr></thead>
+                      <thead><tr><th><input type="checkbox" checked={allSelected} disabled={Boolean(group.withdrawalRequest)} onChange={() => toggleAll(group)} aria-label={`Selecionar todas as comissões de ${group.name}`} /></th><th>Pedido</th><th>Disponível em</th><th>Tipo / nível</th><th>Valor</th></tr></thead>
                       <tbody>
                         {group.commissions.map((commission) => (
                           <tr key={commission.id}>
-                            <td><input type="checkbox" checked={selectedIds.includes(commission.id)} onChange={() => toggleCommission(group, commission.id)} aria-label={`Selecionar comissão do pedido ${commission.orderNumber}`} /></td>
+                            <td><input type="checkbox" checked={selectedIds.includes(commission.id)} disabled={Boolean(group.withdrawalRequest)} onChange={() => toggleCommission(group, commission.id)} aria-label={`Selecionar comissão do pedido ${commission.orderNumber}`} /></td>
                             <td><strong>{commission.orderNumber}</strong></td>
                             <td>{formatDate(commission.createdAt)}</td>
                             <td><span className={styles.levelBadge}>{commissionLabel(commission)}</span></td>
@@ -233,7 +256,7 @@ export default function AdminCommissionPaymentsPage() {
                   <div className={styles.mobileCommissions}>
                     {group.commissions.map((commission) => (
                       <label className={styles.mobileCommission} key={commission.id}>
-                        <input type="checkbox" checked={selectedIds.includes(commission.id)} onChange={() => toggleCommission(group, commission.id)} />
+                        <input type="checkbox" checked={selectedIds.includes(commission.id)} disabled={Boolean(group.withdrawalRequest)} onChange={() => toggleCommission(group, commission.id)} />
                         <span><strong>{commission.orderNumber}</strong><small>{formatDate(commission.createdAt)} · {commissionLabel(commission)}</small></span>
                         <b>{formatCurrency(commission.amount)}</b>
                       </label>
@@ -243,7 +266,7 @@ export default function AdminCommissionPaymentsPage() {
                   <footer className={styles.groupFooter}>
                     <div><span>{selectedIds.length} selecionada(s)</span><strong>{formatCurrency(selectionAmount)}</strong></div>
                     <button onClick={() => openConfirmation(group)} disabled={selectedIds.length === 0 || isPending}>
-                      Registrar pagamento
+                      {group.withdrawalRequest ? 'Processar saque solicitado' : 'Registrar pagamento'}
                       <span className="material-symbols-outlined">arrow_forward</span>
                     </button>
                   </footer>
