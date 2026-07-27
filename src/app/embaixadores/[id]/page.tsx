@@ -186,8 +186,17 @@ export default function EmbaixadorDetailsPage({ params }: Context) {
     if (!confirm('Deseja realmente redefinir o acesso deste embaixador? A senha temporária será o número de telefone cadastrado (apenas números), e ele precisará alterá-la no primeiro acesso.')) return;
     startTransition(async () => {
       try {
-        await redefinirAcesso(amb.id);
-        toast.success('Acesso redefinido! A senha temporária é o telefone cadastrado, apenas números.');
+        const result = await redefinirAcesso(amb.id);
+        if (!result.success) {
+          toast.error(result.message);
+          return;
+        }
+        toast.success(
+          result.accountCreated
+            ? 'Conta de primeiro acesso criada! A senha temporária é o telefone cadastrado, apenas números.'
+            : 'Acesso redefinido! A senha temporária é o telefone cadastrado, apenas números.',
+        );
+        loadGeneralData();
       } catch (e: any) {
         toast.error(e.message || 'Erro ao redefinir acesso.');
       }

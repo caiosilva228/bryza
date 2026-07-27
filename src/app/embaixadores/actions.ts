@@ -219,35 +219,105 @@ export async function revelarDadosSensiveis(ambassadorId: string, campo: 'cpf' |
 }
 
 // 4. Redefinir Acesso (Auditado)
-export async function redefinirAcesso(ambassadorId: string) {
-  const admin = await checkAdminAccess();
+export async function redefinirAcesso(ambassadorId: string): Promise<
+  | { success: true; accountCreated: boolean }
+  | { success: false; message: string }
+> {
+  let admin;
+  try {
+    admin = await checkAdminAccess();
+  } catch {
+    return {
+      success: false,
+      message: 'Sua sessão administrativa não é válida. Entre novamente.',
+    };
+  }
+
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(ambassadorId)) {
+    return { success: false, message: 'Cadastro de embaixador inválido.' };
+  }
+
   const adminClient = createAdminClient();
 
   const { data: amb, error } = await adminClient
     .from('ambassadors')
-    .select('user_id, phone, username')
+    .select('user_id, phone, username, full_name')
     .eq('id', ambassadorId)
     .single();
 
-  if (error || !amb || !amb.user_id) throw new Error('Embaixador não possui usuário auth ativo');
+  if (error || !amb) {
+    return { success: false, message: 'Embaixador não encontrado.' };
+  }
 
   const cleanPhone = amb.phone ? amb.phone.replace(/\D/g, '') : '';
   if (!/^\d{10,11}$/.test(cleanPhone)) {
-    throw new Error('Cadastre um telefone válido com DDD antes de redefinir o acesso.');
+    return {
+      success: false,
+      message: 'Cadastre um telefone válido com DDD antes de redefinir o acesso.',
+    };
   }
   const syntheticEmail = getSyntheticEmail(amb.username);
 
   const reqHeaders = await headers();
   const ipHash = getIpHash(reqHeaders);
+  let userId = amb.user_id;
+  let accountCreated = false;
+
+  if (!userId) {
+    const { data: authData, error: createAuthError } = await adminClient.auth.admin.createUser({
+      email: syntheticEmail,
+      password: cleanPhone,
+      email_confirm: true,
+      user_metadata: { nome: amb.full_name },
+    });
+
+    if (createAuthError || !authData.user) {
+      console.error('Erro ao criar acesso Auth do embaixador:', createAuthError);
+      return {
+        success: false,
+        message: createAuthError?.code === 'email_exists'
+          ? 'O e-mail interno deste embaixador já está vinculado a outra conta.'
+          : 'Não foi possível criar a conta de primeiro acesso.',
+      };
+    }
+
+    userId = authData.user.id;
+    const { data: provisionData, error: provisionError } = await adminClient.rpc(
+      'fn_service_provision_ambassador_access',
+      {
+        p_ambassador_id: ambassadorId,
+        p_auth_user_id: userId,
+        p_actor_id: admin.id,
+      },
+    );
+
+    const provisionResult = provisionData as { status?: string; code?: string } | null;
+    if (provisionError || provisionResult?.status !== 'linked') {
+      console.error('Erro ao vincular acesso canônico do embaixador:', {
+        provisionError,
+        provisionResult,
+      });
+      await adminClient.auth.admin.deleteUser(userId);
+      return {
+        success: false,
+        message: 'A identidade do embaixador não pôde ser vinculada automaticamente.',
+      };
+    }
+
+    accountCreated = true;
+  }
 
   const { data: currentProfile, error: currentProfileError } = await adminClient
     .from('profiles')
     .select('must_change_password, ativo, username, email, telefone')
-    .eq('id', amb.user_id)
+    .eq('id', userId)
     .single();
 
   if (currentProfileError || !currentProfile) {
-    throw new Error('Perfil do embaixador não encontrado para redefinir o acesso.');
+    return {
+      success: false,
+      message: 'Perfil do embaixador não encontrado para redefinir o acesso.',
+    };
   }
 
   // 1. Sincronizar o perfil usado pelos resolvedores de login.
@@ -260,12 +330,17 @@ export async function redefinirAcesso(ambassadorId: string) {
       must_change_password: true,
       ativo: true
     })
-    .eq('id', amb.user_id);
+    .eq('id', userId);
 
-  if (profileError) throw new Error('Falha ao restaurar status de primeiro acesso no perfil');
+  if (profileError) {
+    return {
+      success: false,
+      message: 'Falha ao restaurar o status de primeiro acesso no perfil.',
+    };
+  }
 
   // 2. Sincronizar o identificador Auth e usar o telefone como senha temporária.
-  const { error: authError } = await adminClient.auth.admin.updateUserById(amb.user_id, {
+  const { error: authError } = await adminClient.auth.admin.updateUserById(userId, {
     email: syntheticEmail,
     password: cleanPhone,
     email_confirm: true
@@ -282,9 +357,12 @@ export async function redefinirAcesso(ambassadorId: string) {
         must_change_password: currentProfile.must_change_password,
         ativo: currentProfile.ativo
       })
-      .eq('id', amb.user_id);
+      .eq('id', userId);
 
-    throw new Error(`Falha ao redefinir credenciais: ${authError.message}`);
+    return {
+      success: false,
+      message: 'O provedor de autenticação não aceitou a redefinição das credenciais.',
+    };
   }
 
   // 3. Registrar log de auditoria completo (sem expor a senha ou CPF)
@@ -293,7 +371,7 @@ export async function redefinirAcesso(ambassadorId: string) {
     actor_role: 'admin',
     action: 'reset_ambassador_access',
     entity_type: 'profiles',
-    entity_id: amb.user_id,
+    entity_id: userId,
     ip_hash: ipHash,
     metadata: {
       target_username: amb.username,
@@ -304,7 +382,7 @@ export async function redefinirAcesso(ambassadorId: string) {
 
   revalidatePath('/embaixadores');
   revalidatePath(`/embaixadores/${ambassadorId}`);
-  return { success: true };
+  return { success: true, accountCreated };
 }
 
 // 5. Alterar Plano (Sem alterar histórico)
