@@ -32,6 +32,7 @@ export type ProgramSettingsData = {
   monthlyActivationEnabled: boolean;
   monthlyActivationAmount: number;
   activationGraceDays: number;
+  activationDeadlineDay: number;
   activationBasis: 'vendas_pessoais' | 'compras_pessoais';
   firstPurchaseBonusEnabled: boolean;
   firstPurchaseMinimumAmount: number;
@@ -154,6 +155,7 @@ function normalizeInput(input: ProgramSettingsInput): ProgramSettingsInput {
     monthlyActivationEnabled,
     monthlyActivationAmount,
     activationGraceDays: Math.round(numberInRange(input.activationGraceDays, 'Carência da ativação', 0, 90)),
+    activationDeadlineDay: Math.round(numberInRange(input.activationDeadlineDay, 'Dia limite da ativação', 1, 28)),
     activationBasis: input.activationBasis,
     firstPurchaseBonusEnabled,
     firstPurchaseMinimumAmount,
@@ -232,6 +234,7 @@ export async function getAmbassadorProgramSettings(): Promise<ProgramSettingsDat
     monthlyActivationEnabled: Boolean(settings.monthly_activation_enabled),
     monthlyActivationAmount: Number(settings.monthly_activation_amount),
     activationGraceDays: Number(settings.activation_grace_days),
+    activationDeadlineDay: Number(settings.activation_deadline_day ?? 15),
     activationBasis: settings.activation_basis,
     firstPurchaseBonusEnabled: Boolean(settings.first_purchase_bonus_enabled),
     firstPurchaseMinimumAmount: Number(settings.first_purchase_minimum_amount),
@@ -252,6 +255,16 @@ export async function saveAmbassadorProgramSettings(input: ProgramSettingsInput)
   if (error) {
     console.error('Erro ao salvar configurações do programa:', error);
     throw new Error(error.message || 'Não foi possível salvar as configurações.');
+  }
+
+  const { error: deadlineError } = await admin
+    .from('ambassador_program_settings')
+    .update({ activation_deadline_day: normalized.activationDeadlineDay })
+    .eq('singleton', true);
+
+  if (deadlineError) {
+    console.error('Erro ao salvar o dia limite da ativação:', deadlineError);
+    throw new Error('As configurações foram salvas, mas o dia limite da ativação não pôde ser atualizado.');
   }
 
   revalidatePath('/embaixadores/configuracoes');

@@ -78,9 +78,25 @@ export default function EmbaixadorDashboardPage() {
     comissao_disponivel,
     total_recebido,
     first_purchase_bonus_total,
+    lost_commission_total,
+    lost_commission_month,
+    activation,
     clientes_indicados,
     grafico_mensal
   } = data;
+
+  const activationDeadline = new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+  }).format(new Date(`${activation.deadline}T12:00:00`));
+
+  const activationMessage = activation.qualified
+    ? 'Você está ativo para receber comissões durante o mês atual.'
+    : activation.deadline_passed
+      ? `O prazo de ativação deste mês encerrou em ${activationDeadline}. Faça sua compra no próximo ciclo para voltar a receber comissões.`
+      : activation.days_remaining === 0
+        ? `Hoje é o último dia: faça uma compra de ${formatCurrency(Number(activation.minimum_amount))} ou mais para ativar suas comissões neste mês.`
+        : `Faça uma compra de ${formatCurrency(Number(activation.minimum_amount))} ou mais em até ${activation.days_remaining} ${activation.days_remaining === 1 ? 'dia' : 'dias'}, até ${activationDeadline}, para ativar suas comissões.`;
 
   // Calcular valor máximo para escala do gráfico
   const maxGrafico = Math.max(...(grafico_mensal || []).map((g: any) => parseFloat(g.vendas_valor || 0)), 100);
@@ -130,6 +146,28 @@ export default function EmbaixadorDashboardPage() {
             </Link>
           </div>
         </header>
+
+        <section style={{
+          backgroundColor: activation.qualified ? 'rgba(36, 145, 74, 0.1)' : 'rgba(164, 114, 0, 0.1)',
+          border: `1px solid ${activation.qualified ? 'rgba(36, 145, 74, 0.35)' : 'rgba(164, 114, 0, 0.35)'}`,
+          color: activation.qualified ? '#176b35' : '#7a5500',
+          padding: '18px 22px',
+          borderRadius: '16px',
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+        }}>
+          <span className="material-symbols-outlined" aria-hidden="true">
+            {activation.qualified ? 'verified' : 'hourglass_top'}
+          </span>
+          <div>
+            <strong style={{ display: 'block', marginBottom: '3px' }}>
+              {activation.qualified ? 'Comissões ativas' : 'Ative suas comissões'}
+            </strong>
+            <span style={{ fontSize: '14px' }}>{activationMessage}</span>
+          </div>
+        </section>
 
         {/* Card Principal: Comissão Disponível */}
         <div style={{
@@ -220,6 +258,18 @@ export default function EmbaixadorDashboardPage() {
               <p className="summary-card-label">Bônus Acum.</p>
               <p className="summary-card-value">{formatCurrency(first_purchase_bonus_total ?? 0)}</p>
               <p className="summary-card-sub">Primeira compra</p>
+            </div>
+          </div>
+          <div className="summary-card">
+            <div className="summary-card-icon-wrapper" style={{ backgroundColor: 'rgba(186, 26, 26, 0.1)', color: 'var(--color-error)' }}>
+              <span className="material-symbols-outlined">money_off</span>
+            </div>
+            <div className="summary-card-content">
+              <p className="summary-card-label" style={{ color: 'var(--color-error)' }}>Comissões Perdidas</p>
+              <p className="summary-card-value">{formatCurrency(Number(lost_commission_total ?? 0))}</p>
+              <p className="summary-card-sub">
+                {formatCurrency(Number(lost_commission_month ?? 0))} neste mês enquanto inativo
+              </p>
             </div>
           </div>
           <div className="summary-card">

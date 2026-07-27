@@ -41,6 +41,19 @@ export type AmbassadorDashboardMetrics = {
   comissao_disponivel: number | string;
   total_recebido: number | string;
   first_purchase_bonus_total: number | string;
+  lost_commission_total: number | string;
+  lost_commission_month: number | string;
+  activation: {
+    status: 'qualified' | 'exception' | 'not_qualified';
+    qualified: boolean;
+    period_start: string;
+    period_end: string;
+    deadline: string;
+    days_remaining: number;
+    minimum_amount: number | string;
+    personal_purchase_amount: number | string;
+    deadline_passed: boolean;
+  };
   clientes_indicados: number;
   grafico_mensal: Array<{
     mes: string;

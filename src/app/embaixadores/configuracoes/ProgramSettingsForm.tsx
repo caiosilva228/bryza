@@ -29,6 +29,9 @@ function validate(settings: ProgramSettingsInput): FieldError | null {
   if (settings.activationGraceDays < 0 || settings.activationGraceDays > 90) {
     return { field: 'activationGraceDays', message: 'A tolerância deve ficar entre 0 e 90 dias.' };
   }
+  if (settings.activationDeadlineDay < 1 || settings.activationDeadlineDay > 28) {
+    return { field: 'activationDeadlineDay', message: 'O dia limite deve ficar entre 1 e 28.' };
+  }
   if (settings.firstPurchaseBonusEnabled && settings.firstPurchaseMinimumAmount <= 0) {
     return { field: 'firstPurchaseMinimumAmount', message: 'Informe um valor mínimo maior que zero para a primeira compra.' };
   }
@@ -117,6 +120,7 @@ export function ProgramSettingsForm({ initialSettings }: Props) {
       referralAttributionDays: normalizeNumber(settings.referralAttributionDays),
       monthlyActivationAmount: normalizeNumber(settings.monthlyActivationAmount),
       activationGraceDays: normalizeNumber(settings.activationGraceDays),
+      activationDeadlineDay: normalizeNumber(settings.activationDeadlineDay),
       firstPurchaseMinimumAmount: normalizeNumber(settings.firstPurchaseMinimumAmount),
       firstPurchaseBonusAmount: normalizeNumber(settings.firstPurchaseBonusAmount),
       minimumPaymentAmount: normalizeNumber(settings.minimumPaymentAmount),
@@ -187,7 +191,7 @@ export function ProgramSettingsForm({ initialSettings }: Props) {
           <div className={`${styles.gridThree} ${!settings.monthlyActivationEnabled ? styles.disabledArea : ''}`} aria-disabled={!settings.monthlyActivationEnabled}>
             <Field label="Valor mínimo mensal" hint="Movimentação mínima exigida no ciclo."><div className={styles.prefixedInput}><span>R$</span><input data-field="monthlyActivationAmount" type="number" min={0} step="0.01" disabled={!settings.monthlyActivationEnabled} value={settings.monthlyActivationAmount} onChange={(event) => update('monthlyActivationAmount', inputNumber(event.currentTarget))} /></div></Field>
             <Field label="Base da ativação" hint="Origem usada para validar o requisito."><select disabled={!settings.monthlyActivationEnabled} value={settings.activationBasis} onChange={(event) => update('activationBasis', event.target.value as ProgramSettingsInput['activationBasis'])}><option value="vendas_pessoais">Vendas pessoais</option><option value="compras_pessoais">Compras pessoais</option></select></Field>
-            <Field label="Período de tolerância" hint="Dias adicionais após o fechamento do ciclo."><div className={styles.suffixedInput}><input data-field="activationGraceDays" type="number" min={0} max={90} disabled={!settings.monthlyActivationEnabled} value={settings.activationGraceDays} onChange={(event) => update('activationGraceDays', inputNumber(event.currentTarget))} /><span>dias</span></div></Field>
+            <Field label="Dia limite do mês" hint="A compra deve ser confirmada até este dia, inclusive."><div className={styles.suffixedInput}><input data-field="activationDeadlineDay" type="number" min={1} max={28} disabled={!settings.monthlyActivationEnabled} value={settings.activationDeadlineDay} onChange={(event) => update('activationDeadlineDay', inputNumber(event.currentTarget))} /><span>dia</span></div></Field>
           </div>
           <div className={styles.infoStrip}><span className="material-symbols-outlined">info</span><p>A regra fica cadastrada para aplicação operacional. Comissões já registradas não são recalculadas.</p></div>
         </section>
