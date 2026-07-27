@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { Pedido } from '@/models/types';
 import { formatCurrency } from '@/utils/format';
+import { canRecognizeOrderPayment } from '@/lib/logistica/payment-check';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: string }> = {
   pronto_para_entrega: { label: 'Pronto para Entrega', color: '#3b82f6', bg: 'rgba(59,130,246,0.12)', icon: 'inventory' },
@@ -190,7 +191,7 @@ export default function LogisticaTable({
 
               const canEmRota = pedido.status_pedido === 'pronto_para_entrega';
               const canEntregue = pedido.status_pedido === 'em_rota';
-              const canConferir = pedido.status_pedido === 'entregue';
+              const canConferir = canRecognizeOrderPayment(pedido);
               const canProblema = ['pronto_para_entrega', 'em_rota', 'entregue'].includes(pedido.status_pedido);
 
               return (
@@ -313,7 +314,9 @@ export default function LogisticaTable({
                       {canConferir && (
                         <ActionBtn
                           icon="payments"
-                          title="Conferir Pagamento e Finalizar"
+                          title={pedido.status_pedido === 'finalizado'
+                            ? 'Reconhecer pagamento pendente'
+                            : 'Conferir Pagamento e Finalizar'}
                           color="#047857"
                           onClick={() => onConferirPagamento(pedido)}
                           disabled={isLoading}
