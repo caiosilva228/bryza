@@ -200,7 +200,7 @@ export default function EmbaixadorDashboardPage() {
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--color-primary-container)' }}>account_balance_wallet</span>
-            <span style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-primary-container)' }}>
+            <span style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#fff' }}>
               Comissão Disponível
             </span>
           </div>
@@ -208,7 +208,7 @@ export default function EmbaixadorDashboardPage() {
             <span style={{ fontSize: '20px', fontWeight: 600 }}>R$</span>
             <span style={{ fontSize: '42px', fontWeight: 800, lineHeight: 1 }}>{formatCurrency(comissao_disponivel).replace('R$', '').trim()}</span>
           </div>
-          <span style={{ fontSize: '12px', color: 'var(--color-primary-container)', zIndex: 1 }}>Liberado para saque imediato</span>
+          <span style={{ fontSize: '12px', color: '#fff', zIndex: 1 }}>Liberado para saque imediato</span>
         </div>
 
         {/* Demais Métricas */}
