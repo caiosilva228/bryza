@@ -626,7 +626,7 @@ export async function getEmbaixadorNetwork(ambassadorId: string) {
   };
 }
 
-// 10. Listar Clientes Indicados por Embaixadores (ainda não embaixadores)
+// 10. Listar o histórico completo de clientes indicados por embaixadores
 export async function getClientesIndicadosPaginados(params: {
   limit: number;
   offset: number;

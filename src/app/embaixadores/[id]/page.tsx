@@ -122,7 +122,7 @@ export default function EmbaixadorDetailsPage({ params }: Context) {
         const [v, a, cRes] = await Promise.all([
           supabase.from('referral_visits').select('*').eq('ambassador_id', amb.id).order('created_at', { ascending: false }),
           supabase.from('referral_attributions').select('*, clientes(nome)').eq('ambassador_id', amb.id).order('created_at', { ascending: false }),
-          supabase.from('clientes').select('*, vendedor:profiles!vendedor_responsavel_id(nome, codigo_vendedor)').eq('ambassador_id', amb.id).order('data_cadastro', { ascending: false })
+          supabase.from('clientes').select('*, vendedor:profiles!vendedor_responsavel_id(nome, codigo_vendedor)').eq('commissionable_ambassador_id', amb.id).order('data_cadastro', { ascending: false })
         ]);
         if (v.data) setVisits(v.data);
         if (a.data) setAttributions(a.data);
