@@ -817,3 +817,155 @@ export async function promoverClienteParaEmbaixador(params: {
   return { success: true, ...result };
 }
 
+export type NovoEmbaixadorOptions = {
+  plans: Array<{ id: string; name: string }>;
+  sponsors: Array<{ id: string; full_name: string; referral_code: string }>;
+  commercialProfiles: Array<{ id: string; nome: string; role: string }>;
+};
+
+export async function getNovoEmbaixadorOptions(): Promise<NovoEmbaixadorOptions> {
+  await checkAdminAccess();
+  const admin = createAdminClient();
+  const [plans, sponsors, profiles] = await Promise.all([
+    admin.from('commission_plans').select('id, name').eq('status', 'ativo').order('created_at'),
+    admin.from('ambassadors').select('id, full_name, referral_code').eq('status', 'ativo').eq('lifecycle_status', 'active').order('full_name'),
+    admin.from('profiles').select('id, nome, role').eq('ativo', true).in('role', ['admin', 'vendedor']).order('nome'),
+  ]);
+
+  const error = plans.error || sponsors.error || profiles.error;
+  if (error) {
+    console.error('Erro ao carregar opções do novo embaixador:', error);
+    throw new Error('Não foi possível carregar as opções do cadastro.');
+  }
+
+  return {
+    plans: plans.data || [],
+    sponsors: sponsors.data || [],
+    commercialProfiles: profiles.data || [],
+  };
+}
+
+export type CriarEmbaixadorParams = {
+  fullName: string;
+  phone: string;
+  email?: string;
+  cpf: string;
+  cep?: string;
+  address?: string;
+  number?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
+  commercialProfileId: string;
+  sponsorAmbassadorId?: string;
+  planId: string;
+  initialStatus: 'pendente' | 'ativo';
+  latitude?: number | null;
+  longitude?: number | null;
+  idempotencyKey: string;
+};
+
+export async function criarEmbaixadorComCliente(params: CriarEmbaixadorParams): Promise<
+  | { success: true; customerCreated: boolean; customerCode: string; ambassadorId: string; username: string }
+  | { success: false; message: string }
+> {
+  try {
+    await checkAdminAccess();
+  } catch {
+    return { success: false, message: 'Sua sessão administrativa não é válida. Entre novamente.' };
+  }
+
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const phone = params.phone.replace(/\D/g, '');
+  const cpf = params.cpf.replace(/\D/g, '');
+  const email = params.email?.trim().toLowerCase() || '';
+  const state = params.state?.trim().toUpperCase() || '';
+
+  if (params.fullName.trim().length < 2 || params.fullName.trim().length > 200) {
+    return { success: false, message: 'Informe o nome completo.' };
+  }
+  if (!/^\d{10,15}$/.test(phone) || !/^\d{11}$/.test(cpf)) {
+    return { success: false, message: 'Telefone ou CPF inválido.' };
+  }
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { success: false, message: 'E-mail inválido.' };
+  }
+  if (state && !/^[A-Z]{2}$/.test(state)) {
+    return { success: false, message: 'Estado inválido. Use a sigla com duas letras.' };
+  }
+  if (
+    !uuidPattern.test(params.commercialProfileId)
+    || !uuidPattern.test(params.planId)
+    || !uuidPattern.test(params.idempotencyKey)
+    || (params.sponsorAmbassadorId && !uuidPattern.test(params.sponsorAmbassadorId))
+  ) {
+    return { success: false, message: 'Plano, responsável, patrocinador ou chave da operação inválido.' };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc('fn_admin_create_or_promote_ambassador', {
+    p_customer_id: null,
+    p_full_name: params.fullName.trim(),
+    p_phone: phone,
+    p_email: email || null,
+    p_cpf: cpf,
+    p_cep: params.cep?.trim() || null,
+    p_address: params.address?.trim() || null,
+    p_number: params.number?.trim() || null,
+    p_neighborhood: params.neighborhood?.trim() || null,
+    p_city: params.city?.trim() || null,
+    p_state: state || null,
+    p_commercial_profile_id: params.commercialProfileId,
+    p_sponsor_ambassador_id: params.sponsorAmbassadorId || null,
+    p_plan_id: params.planId,
+    p_initial_status: params.initialStatus,
+    p_latitude: params.latitude ?? null,
+    p_longitude: params.longitude ?? null,
+    p_idempotency_key: params.idempotencyKey,
+  });
+
+  if (error) {
+    console.error('Erro ao criar embaixador com cliente canônico:', error);
+    return {
+      success: false,
+      message: error.message.includes('ambassador_cannot_refer_self')
+        ? 'O embaixador não pode indicar a si próprio.'
+        : error.message.includes('active_sponsor_required')
+          ? 'O patrocinador selecionado não está ativo.'
+          : error.code === '42501'
+            ? 'Sua sessão não possui permissão para realizar este cadastro.'
+            : 'Não foi possível concluir o cadastro. Revise os dados e tente novamente.',
+    };
+  }
+
+  const result = data as {
+    status?: string;
+    customer_created?: boolean;
+    customer_code?: string;
+    ambassador_id?: string;
+    username?: string;
+    referral_code?: string;
+  };
+
+  if (result.status === 'manual_review_required') {
+    return { success: false, message: 'Encontramos mais de um cliente com estes dados. O cadastro não foi duplicado e precisa de revisão de identidade.' };
+  }
+  if (result.status === 'idempotency_conflict') {
+    return { success: false, message: 'Esta operação já foi enviada com outros dados. Atualize a página e tente novamente.' };
+  }
+  if (!result.ambassador_id || !result.customer_code) {
+    return { success: false, message: 'O sistema não confirmou o vínculo entre cliente e embaixador.' };
+  }
+
+  revalidatePath('/embaixadores');
+  revalidatePath('/clientes');
+  revalidatePath('/embaixadores/novo');
+  return {
+    success: true,
+    customerCreated: result.customer_created === true,
+    customerCode: result.customer_code,
+    ambassadorId: result.ambassador_id,
+    username: result.username || result.referral_code || '',
+  };
+}
+
