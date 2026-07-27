@@ -607,6 +607,78 @@ export async function getEmbaixadoresNetworkStats(ambassadorIds: string[]) {
   }[];
 }
 
+export type AmbassadorActivationStatus = {
+  ambassador_id: string;
+  status: 'qualified' | 'exception' | 'not_qualified';
+  qualified: boolean;
+  code?: string;
+  period_start?: string;
+  period_end?: string;
+  deadline?: string;
+  minimum_amount?: number | string;
+  personal_purchase_amount?: number | string;
+};
+
+export async function getEmbaixadoresActivationStatus(ambassadorIds: string[]) {
+  await checkAdminAccess();
+  if (!ambassadorIds.length) return [];
+  if (ambassadorIds.length > 100) {
+    throw new Error('Consulte no máximo 100 embaixadores por vez.');
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc('fn_admin_get_ambassador_activation_status', {
+    p_ambassador_ids: ambassadorIds,
+  });
+
+  if (error) {
+    console.error('Erro ao consultar ativação mensal:', error);
+    throw new Error('Não foi possível consultar a ativação mensal.');
+  }
+
+  return (data || []) as AmbassadorActivationStatus[];
+}
+
+export async function ativarComissoesMensais(
+  ambassadorId: string,
+  reason: string
+) {
+  await checkAdminAccess();
+
+  const normalizedReason = reason.trim();
+  if (normalizedReason.length < 5 || normalizedReason.length > 500) {
+    throw new Error('Informe um motivo entre 5 e 500 caracteres.');
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc(
+    'fn_admin_activate_current_month_commissions',
+    {
+      p_ambassador_id: ambassadorId,
+      p_reason: normalizedReason,
+    }
+  );
+
+  if (error) {
+    console.error('Erro ao ativar comissões administrativamente:', error);
+    throw new Error('Não foi possível ativar as comissões deste mês.');
+  }
+
+  const result = data as {
+    activation_result?: 'activated' | 'already_active';
+    qualified?: boolean;
+    valid_until?: string;
+  };
+
+  if (!result?.qualified) {
+    throw new Error('A ativação não foi confirmada pelo sistema.');
+  }
+
+  revalidatePath('/embaixadores');
+  revalidatePath('/embaixador/dashboard');
+  return result;
+}
+
 // 12. Promover Cliente para Embaixador (Admin)
 export async function promoverClienteParaEmbaixador(params: {
   clienteId: string;

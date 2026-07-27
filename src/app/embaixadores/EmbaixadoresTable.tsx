@@ -1,8 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import Link from 'next/link';
-import { getSignedPhotoUrl, alterarStatus, getEmbaixadoresNetworkStats } from './actions';
+import {
+  getSignedPhotoUrl,
+  alterarStatus,
+  getEmbaixadoresNetworkStats,
+  getEmbaixadoresActivationStatus,
+  ativarComissoesMensais,
+  type AmbassadorActivationStatus,
+} from './actions';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toast } from 'sonner';
 
@@ -46,6 +53,10 @@ interface TableProps {
 export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder, onSort }: TableProps) {
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
   const [networkStats, setNetworkStats] = useState<Record<string, NetworkStat>>({});
+  const [activationStats, setActivationStats] = useState<Record<string, AmbassadorActivationStatus>>({});
+  const [activationTarget, setActivationTarget] = useState<EmbaixadorItem | null>(null);
+  const [activationReason, setActivationReason] = useState('');
+  const [isActivationPending, startActivationTransition] = useTransition();
 
   useEffect(() => {
     const fetchPhotos = async () => {
@@ -77,8 +88,22 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
       }
     };
 
+    const fetchActivationStats = async () => {
+      if (!lista.length) return;
+      try {
+        const ids = lista.map((item) => item.id);
+        const statuses = await getEmbaixadoresActivationStatus(ids);
+        const map: Record<string, AmbassadorActivationStatus> = {};
+        statuses.forEach((status) => { map[status.ambassador_id] = status; });
+        setActivationStats(map);
+      } catch (e) {
+        console.error('Erro ao buscar ativações mensais:', e);
+      }
+    };
+
     fetchPhotos();
     fetchNetworkStats();
+    fetchActivationStats();
   }, [lista]);
 
   const handleStatusChange = async (id: string, newStatus: string, name: string) => {
@@ -111,6 +136,59 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
         {badge.label}
       </span>
     );
+  };
+
+  const getActivationBadge = (activation?: AmbassadorActivationStatus) => {
+    if (!activation) {
+      return <span style={{ color: 'var(--color-outline)', fontSize: '12px' }}>Carregando...</span>;
+    }
+
+    if (activation.qualified) {
+      const isAdministrative = activation.status === 'exception';
+      return (
+        <span style={{
+          backgroundColor: isAdministrative ? '#EDE9FE' : '#D1FAE5',
+          color: isAdministrative ? '#6D28D9' : '#047857',
+          padding: '4px 10px',
+          borderRadius: '20px',
+          fontSize: '11px',
+          fontWeight: 700,
+          whiteSpace: 'nowrap',
+        }}>
+          {isAdministrative ? 'Ativação administrativa' : 'Comissões ativas'}
+        </span>
+      );
+    }
+
+    return (
+      <span style={{
+        backgroundColor: '#FEF3C7',
+        color: '#B45309',
+        padding: '4px 10px',
+        borderRadius: '20px',
+        fontSize: '11px',
+        fontWeight: 700,
+        whiteSpace: 'nowrap',
+      }}>
+        Comissões inativas
+      </span>
+    );
+  };
+
+  const handleCommissionActivation = () => {
+    if (!activationTarget) return;
+
+    startActivationTransition(async () => {
+      try {
+        await ativarComissoesMensais(activationTarget.id, activationReason);
+        toast.success(`Comissões de ${activationTarget.full_name} ativadas até o fim do mês.`);
+        setActivationTarget(null);
+        setActivationReason('');
+        onRefresh();
+      } catch (e: any) {
+        toast.error(e.message || 'Erro ao ativar comissões.');
+      }
+    });
   };
 
   const renderTh = (label: string, key?: string, align: 'left' | 'center' | 'right' = 'left') => {
@@ -154,6 +232,7 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
   };
 
   return (
+    <>
     <div style={{ overflowX: 'auto' }}>
       <table style={{
         width: '100%',
@@ -177,6 +256,7 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
             {renderTh('C. Liberada', 'comissao_liberada', 'right')}
             {renderTh('Total Pago', 'total_recebido', 'right')}
             {renderTh('Rede')}
+            {renderTh('Comissões')}
             {renderTh('Status', 'status')}
             {renderTh('Cadastro', 'created_at')}
             {renderTh('Ações', undefined, 'center')}
@@ -289,6 +369,11 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
                   )}
                 </td>
 
+                {/* Ativação mensal de comissões */}
+                <td style={{ padding: '12px 20px', whiteSpace: 'nowrap' }}>
+                  {getActivationBadge(activationStats[item.id])}
+                </td>
+
                 {/* Status */}
                 <td style={{ padding: '12px 20px', whiteSpace: 'nowrap' }}>
                   {getStatusBadge(item.status)}
@@ -372,6 +457,29 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
                       </button>
                     )}
 
+                    {item.status === 'ativo' && activationStats[item.id] && !activationStats[item.id].qualified && (
+                      <button
+                        onClick={() => {
+                          setActivationTarget(item);
+                          setActivationReason('');
+                        }}
+                        aria-label={`Ativar comissões de ${item.full_name}`}
+                        style={{
+                          padding: '6px',
+                          borderRadius: '6px',
+                          color: '#6D28D9',
+                          border: '1px solid rgba(109, 40, 217, 0.25)',
+                          backgroundColor: '#F5F3FF',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center'
+                        }}
+                        title="Ativar comissões até o fim do mês"
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>paid</span>
+                      </button>
+                    )}
+
                     {item.status !== 'bloqueado' && (
                       <button
                         onClick={() => handleStatusChange(item.id, 'bloqueado', item.full_name)}
@@ -398,5 +506,129 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
         </tbody>
       </table>
     </div>
+    {activationTarget && (
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="activation-dialog-title"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9999,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px',
+        }}
+        onClick={(event) => {
+          if (event.target === event.currentTarget && !isActivationPending) {
+            setActivationTarget(null);
+            setActivationReason('');
+          }
+        }}
+      >
+        <div style={{
+          width: '100%',
+          maxWidth: '500px',
+          borderRadius: '18px',
+          backgroundColor: 'var(--color-surface)',
+          padding: '28px',
+          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.25)',
+        }}>
+          <div style={{
+            width: '52px',
+            height: '52px',
+            borderRadius: '50%',
+            backgroundColor: '#EDE9FE',
+            color: '#6D28D9',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '18px',
+          }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '28px' }}>paid</span>
+          </div>
+          <h2 id="activation-dialog-title" style={{ margin: '0 0 8px', fontSize: '21px' }}>
+            Ativar comissões
+          </h2>
+          <p style={{ margin: '0 0 20px', color: 'var(--color-on-surface-variant)', fontSize: '14px', lineHeight: 1.5 }}>
+            <strong>{activationTarget.full_name}</strong> ficará ativo para receber novas comissões até o último dia deste mês. Comissões anteriores não serão pagas retroativamente.
+          </p>
+          <label htmlFor="activation-reason" style={{
+            display: 'block',
+            marginBottom: '7px',
+            fontSize: '12px',
+            fontWeight: 700,
+            color: 'var(--color-on-surface-variant)',
+          }}>
+            MOTIVO DA ATIVAÇÃO
+          </label>
+          <textarea
+            id="activation-reason"
+            value={activationReason}
+            onChange={(event) => setActivationReason(event.target.value)}
+            minLength={5}
+            maxLength={500}
+            rows={4}
+            disabled={isActivationPending}
+            autoFocus
+            placeholder="Ex.: ativação administrativa autorizada pela gestão"
+            style={{
+              width: '100%',
+              resize: 'vertical',
+              borderRadius: '10px',
+              border: '1px solid var(--color-outline-variant)',
+              backgroundColor: 'var(--color-surface)',
+              color: 'var(--color-on-surface)',
+              padding: '12px',
+              font: 'inherit',
+            }}
+          />
+          <p style={{ margin: '6px 0 22px', fontSize: '11px', color: 'var(--color-outline)' }}>
+            O motivo e o administrador responsável ficarão registrados na auditoria.
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <button
+              type="button"
+              disabled={isActivationPending}
+              onClick={() => {
+                setActivationTarget(null);
+                setActivationReason('');
+              }}
+              style={{
+                padding: '10px 18px',
+                borderRadius: '9px',
+                border: '1px solid var(--color-outline-variant)',
+                backgroundColor: 'transparent',
+                color: 'var(--color-on-surface)',
+                cursor: isActivationPending ? 'not-allowed' : 'pointer',
+                fontWeight: 600,
+              }}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              disabled={isActivationPending || activationReason.trim().length < 5}
+              onClick={handleCommissionActivation}
+              style={{
+                padding: '10px 20px',
+                borderRadius: '9px',
+                border: 'none',
+                backgroundColor: '#6D28D9',
+                color: '#FFFFFF',
+                cursor: isActivationPending || activationReason.trim().length < 5 ? 'not-allowed' : 'pointer',
+                opacity: isActivationPending || activationReason.trim().length < 5 ? 0.55 : 1,
+                fontWeight: 700,
+              }}
+            >
+              {isActivationPending ? 'Ativando...' : 'Confirmar ativação'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
