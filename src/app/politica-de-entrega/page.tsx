@@ -35,10 +35,10 @@ export default function PoliticaEntregaPage() {
         </p>
 
         <h2 style={{ fontSize: '20px', fontWeight: '700', marginTop: '28px', marginBottom: '12px', color: '#a6ce39' }}>
-          3. Pagamento no Ato da Entrega
+          3. Opções de Pagamento
         </h2>
         <p style={{ color: 'rgba(255,255,255,0.8)', lineHeight: '1.6', marginBottom: '24px' }}>
-          Você só realiza o pagamento quando o Kit Bryza for fisicamente entregue nas suas mãos. Aceitamos Pix, dinheiro ou cartão na maquininha do entregador.
+          Você pode pagar antecipadamente pelo checkout seguro do Mercado Pago ou optar pelo pagamento no ato da entrega. Na entrega, aceitamos Pix, dinheiro ou cartão, conforme disponibilidade operacional.
         </p>
 
         <div style={{ marginTop: '40px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>

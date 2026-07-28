@@ -294,6 +294,60 @@ export async function getMinhasVendas(params?: { page?: number; limit?: number; 
 }
 
 // 4. Minhas Comissões Paginadas
+export type AmbassadorOwnOrder = {
+  entity_type: 'pedido' | 'agendamento';
+  entity_id: string;
+  numero: string;
+  created_at: string;
+  valor_total: number | string;
+  fulfillment_status: string;
+  payment_timing: 'agora' | 'na_entrega';
+  payment_status:
+    | 'pendente'
+    | 'processando'
+    | 'aprovado'
+    | 'recusado'
+    | 'cancelado'
+    | 'expirado'
+    | 'reembolsado'
+    | 'chargeback'
+    | 'em_analise';
+  payment_source: 'mercado_pago' | 'entrega' | 'manual';
+  paid_at: string | null;
+  can_pay_now: boolean;
+};
+
+export type AmbassadorOwnOrdersData = {
+  items: AmbassadorOwnOrder[];
+  total: number;
+};
+
+export async function getMeusPedidos(
+  params?: { page?: number; limit?: number; status?: string },
+): Promise<AmbassadorOwnOrdersData> {
+  const { supabase } = await getAuthenticatedUser();
+  const limit = Math.min(Math.max(params?.limit || 10, 1), 50);
+  const page = Math.max(params?.page || 1, 1);
+  const offset = (page - 1) * limit;
+
+  const { data, error } = await supabase.rpc('fn_embaixador_meus_pedidos', {
+    p_limit: limit,
+    p_offset: offset,
+    p_status: params?.status || null,
+  });
+
+  if (error) {
+    console.error('Erro na RPC de pedidos próprios do embaixador:', error.code);
+    throw new Error(error.message || 'Erro ao carregar seus pedidos');
+  }
+
+  const result = data as AmbassadorOwnOrdersData | null;
+  return {
+    items: Array.isArray(result?.items) ? result.items : [],
+    total: Number(result?.total || 0),
+  };
+}
+
 export async function getMinhasComissoes(params?: { page?: number; limit?: number; status?: string }) {
   const { supabase } = await getAuthenticatedUser();
   const limit = Math.min(Math.max(params?.limit || 10, 1), 50);

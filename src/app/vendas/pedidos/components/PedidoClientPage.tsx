@@ -74,6 +74,10 @@ export default function PedidoClientPage({
     setPaymentLoading(true);
     try {
       const res = await confirmarPagamentoAction(params);
+      if (!res.success) {
+        toast.error(res.error || 'Erro ao confirmar pagamento.');
+        return;
+      }
       if (res.divergent) {
         toast.warning('Pagamento divergente registrado.');
       } else {

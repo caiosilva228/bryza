@@ -29,6 +29,21 @@ const MONTHS = [
 ];
 const WEEK_DAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
+function SchedulingPaymentBadges({ agendamento }: { agendamento: Agendamento }) {
+  const status = agendamento.payment_status || 'pendente';
+  const approved = ['aprovado', 'confirmado', 'pago'].includes(status);
+  return (
+    <span style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: '5px' }}>
+      <span style={{ padding: '3px 7px', borderRadius: '999px', fontSize: '9px', fontWeight: 800, background: '#e0f2fe', color: '#0369a1' }}>
+        {agendamento.payment_timing === 'agora' ? 'Pagamento online' : 'Pagamento na entrega'}
+      </span>
+      <span style={{ padding: '3px 7px', borderRadius: '999px', fontSize: '9px', fontWeight: 800, background: approved ? '#dcfce7' : '#fef3c7', color: approved ? '#166534' : '#92400e' }}>
+        {approved ? 'Pago' : status === 'processando' ? 'Processando' : status === 'recusado' ? 'Recusado' : 'Não pago'}
+      </span>
+    </span>
+  );
+}
+
 // ── DayModal ─────────────────────────────────────────────────────────────────
 function DayModal({
   date,
@@ -223,6 +238,7 @@ function DayModal({
                         </div>
                         <div style={{ fontSize: '12px', color: 'var(--color-outline)', marginTop: '2px' }}>
                           {hora} · {ag.forma_pagamento.toUpperCase()}
+                          <SchedulingPaymentBadges agendamento={ag} />
                         </div>
                       </div>
                     </div>
@@ -641,6 +657,7 @@ function StatusListModal({
                         </div>
                         <div style={{ fontSize: '12px', color: 'var(--color-outline)', marginTop: '2px' }}>
                           {displayDate} às {hora} · {ag.forma_pagamento.toUpperCase()}
+                          <SchedulingPaymentBadges agendamento={ag} />
                         </div>
                       </div>
                     </div>
@@ -853,6 +870,7 @@ function AgendamentoDetailsModal({
             <div>
               <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Pagamento</span>
               <span style={{ fontSize: '13px', fontWeight: 700 }}>{agendamento.forma_pagamento.toUpperCase()}</span>
+              <SchedulingPaymentBadges agendamento={agendamento} />
             </div>
           </div>
 

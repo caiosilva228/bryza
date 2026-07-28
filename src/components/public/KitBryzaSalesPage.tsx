@@ -42,6 +42,7 @@ interface SchedulingForm {
   data: string;
   hora: string;
   formaPagamento: 'dinheiro' | 'pix' | 'cartao';
+  paymentTiming: 'agora' | 'na_entrega';
 }
 
 const initialForm = (city?: string | null): SchedulingForm => ({
@@ -58,6 +59,7 @@ const initialForm = (city?: string | null): SchedulingForm => ({
   data: '',
   hora: '',
   formaPagamento: 'pix',
+  paymentTiming: 'na_entrega',
 });
 
 const fieldStyle: React.CSSProperties = {
@@ -197,7 +199,7 @@ export function KitBryzaSalesPage({ ambassador, products }: KitBryzaSalesPagePro
     setLoading(true);
     setError('');
 
-    const response = await createPublicSchedulingAction({
+    const schedulingPayload = {
       nome: form.nome,
       cpf: form.cpf,
       telefone: form.telefone,
@@ -211,16 +213,37 @@ export function KitBryzaSalesPage({ ambassador, products }: KitBryzaSalesPagePro
       data: form.data,
       hora: form.hora,
       forma_pagamento: form.formaPagamento,
+      payment_timing: form.paymentTiming,
       idempotency_key: idempotencyKeyRef.current,
       itens: [{ produto_id: product.id, quantidade: 1 }],
-    });
+    };
+    const response = await createPublicSchedulingAction(schedulingPayload);
 
-    setLoading(false);
     if (response.success) {
+      const paymentData = response.data as PublicSchedulingResult & { checkout_token?: string | null };
+      if (form.paymentTiming === 'agora' && paymentData.checkout_token) {
+        try {
+          const checkoutResponse = await fetch('/api/payments/mercado-pago/preference', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ checkoutToken: paymentData.checkout_token }),
+          });
+          const checkout = await checkoutResponse.json() as { checkoutUrl?: string; error?: string };
+          if (!checkoutResponse.ok || !checkout.checkoutUrl) throw new Error(checkout.error || 'Não foi possível abrir o pagamento.');
+          window.location.assign(checkout.checkoutUrl);
+          return;
+        } catch (checkoutError) {
+          setError(checkoutError instanceof Error ? checkoutError.message : 'Não foi possível abrir o pagamento.');
+        } finally {
+          setLoading(false);
+        }
+        return;
+      }
       setResult(response.data);
     } else {
       setError(response.error);
     }
+    setLoading(false);
   };
 
   const whatsappMessage = encodeURIComponent(
@@ -258,7 +281,7 @@ export function KitBryzaSalesPage({ ambassador, products }: KitBryzaSalesPagePro
                 </div>
               </div>
               <button type="button" onClick={openSchedulingModal} className={styles.primaryCta}>Agendar meu pedido agora <ChevronRight size={21} /></button>
-              <div className={styles.noRisk}><LockKeyhole size={15} /> Nenhum pagamento antecipado. Você só paga na entrega.</div>
+              <div className={styles.noRisk}><LockKeyhole size={15} /> Escolha pagar agora com Mercado Pago ou na entrega.</div>
               <div className={styles.heroTrust}>
                 <span><Truck size={18} /> Frete grátis*</span><span><ShieldCheck size={18} /> Compra segura</span><span><PackageCheck size={18} /> Pague ao receber</span>
               </div>
@@ -294,7 +317,7 @@ export function KitBryzaSalesPage({ ambassador, products }: KitBryzaSalesPagePro
               <div><span>Sabão Líquido Bryza 5L</span><strong>R$ 39,90</strong></div><div><span>Amaciante Bryza 5L</span><strong>R$ 39,90</strong></div><div><span>2 Panos Premium</span><s>R$ 25,98</s></div><div><span>Entrega nas regiões atendidas</span><b>Grátis</b></div>
               <div className={styles.receiptTotal}><span>Você paga hoje</span><strong>R$ 79,80</strong></div>
               <button type="button" onClick={openSchedulingModal} className={styles.primaryCta}>Quero garantir meu kit <ChevronRight size={21} /></button>
-              <small><LockKeyhole size={14} /> Pagamento somente quando receber</small>
+              <small><LockKeyhole size={14} /> Pagamento seguro agora ou na entrega</small>
             </div>
           </section>
 
@@ -303,7 +326,7 @@ export function KitBryzaSalesPage({ ambassador, products }: KitBryzaSalesPagePro
             <div className={styles.steps}>
               <article><b>1</b><Clock3 /><h3>Agende o pedido</h3><p>Preencha seus dados e escolha o melhor período para receber.</p></article>
               <article><b>2</b><MapPin /><h3>Confirme a região</h3><p>A equipe Bryza confirma a disponibilidade da rota no seu endereço.</p></article>
-              <article><b>3</b><Truck /><h3>Receba em casa</h3><p>Seu kit chega completo e você paga somente na entrega.</p></article>
+              <article><b>3</b><Truck /><h3>Receba em casa</h3><p>Seu kit chega completo e você escolhe pagar agora ou na entrega.</p></article>
             </div>
           </section>
 
@@ -312,13 +335,13 @@ export function KitBryzaSalesPage({ ambassador, products }: KitBryzaSalesPagePro
             <div className={styles.faqList}>
               <details><summary>Quantos litros vêm no kit?</summary><p>São 10 litros: 5L de Sabão Líquido Concentrado e 5L de Amaciante Microencapsulado Bryza.</p></details>
               <details><summary>Os dois panos são realmente grátis?</summary><p>Sim. Você recebe dois Panos Premium Xadrez sem custo adicional, enquanto houver unidades reservadas para a campanha.</p></details>
-              <details><summary>Preciso pagar antecipadamente?</summary><p>Não. Você paga o pedido somente quando receber em casa.</p></details>
+              <details><summary>Preciso pagar antecipadamente?</summary><p>Não. Você pode pagar agora pelo Mercado Pago ou escolher pagar somente quando receber.</p></details>
               <details><summary>A entrega é grátis?</summary><p>Sim, nas regiões participantes atendidas pelas rotas Bryza. A equipe confirma a cobertura após o agendamento.</p></details>
             </div>
           </section>
 
           <section className={styles.finalCta}>
-            <div><span><Gift size={17} /> Últimas unidades de brindes por rota</span><h2>Garanta 10 litros + 2 Panos Premium por R$ 79,80</h2><p>Frete grátis nas regiões atendidas e pagamento somente na entrega.</p></div>
+            <div><span><Gift size={17} /> Últimas unidades de brindes por rota</span><h2>Garanta 10 litros + 2 Panos Premium por R$ 79,80</h2><p>Frete grátis nas regiões atendidas e pagamento agora ou na entrega.</p></div>
             <button type="button" onClick={openSchedulingModal} className={styles.lightCta}>Agendar meu pedido <ChevronRight size={21} /></button>
           </section>
         </> : <section className={styles.unavailable} role="status"><PackageCheck size={42} /><h1 id="offer-title">Oferta temporariamente indisponível</h1><p>Não encontramos o kit ativo para esta página. Fale com a equipe Bryza para receber ajuda.</p><a href={`https://wa.me/?text=${whatsappMessage}`} target="_blank" rel="noopener noreferrer">Falar com a Bryza</a></section>}
@@ -443,20 +466,33 @@ export function KitBryzaSalesPage({ ambassador, products }: KitBryzaSalesPagePro
                     <input id="public-time" type="time" required value={form.hora} onChange={(event) => setField('hora', event.target.value)} style={fieldStyle} />
                   </div>
                   <div style={{ gridColumn: '1 / -1' }}>
-                    <label htmlFor="public-payment" style={labelStyle}>Forma de pagamento *</label>
+                    <span style={labelStyle}>Quando deseja pagar? *</span>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px' }}>
+                      {([
+                        { value: 'agora', label: 'Pagar agora', detail: 'Mercado Pago' },
+                        { value: 'na_entrega', label: 'Pagar na entrega', detail: 'Pix, cartão ou dinheiro' },
+                      ] as const).map(option => (
+                        <button key={option.value} type="button" onClick={() => setField('paymentTiming', option.value)} aria-pressed={form.paymentTiming === option.value} style={{ ...fieldStyle, textAlign: 'left', cursor: 'pointer', borderColor: form.paymentTiming === option.value ? '#38bdf8' : '#475569', background: form.paymentTiming === option.value ? '#0c4a6e' : '#0f172a' }}>
+                          <strong style={{ display: 'block' }}>{option.label}</strong><small>{option.detail}</small>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {form.paymentTiming === 'na_entrega' && <div style={{ gridColumn: '1 / -1' }}>
+                    <label htmlFor="public-payment" style={labelStyle}>Forma de pagamento na entrega *</label>
                     <select id="public-payment" required value={form.formaPagamento} onChange={(event) => setField('formaPagamento', event.target.value as SchedulingForm['formaPagamento'])} style={fieldStyle}>
                       <option value="pix">PIX</option>
                       <option value="dinheiro">Dinheiro</option>
                       <option value="cartao">Cartão</option>
                     </select>
-                  </div>
+                  </div>}
                 </div>
 
                 <p style={{ margin: '18px 0', color: '#94a3b8', fontSize: '0.76rem', lineHeight: 1.5 }}>
                   Ao confirmar, seus dados serão usados para cadastro, agendamento e atendimento da entrega pela Bryza.
                 </p>
                 <button type="submit" disabled={loading} style={{ width: '100%', minHeight: '52px', border: 0, borderRadius: '12px', backgroundColor: '#2563eb', color: '#fff', fontSize: '1rem', fontWeight: 850, cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1 }}>
-                  {loading ? 'Confirmando agendamento…' : 'Confirmar agendamento'}
+                  {loading ? 'Processando…' : form.paymentTiming === 'agora' ? 'Continuar para pagamento' : 'Confirmar agendamento'}
                 </button>
               </form>
             )}

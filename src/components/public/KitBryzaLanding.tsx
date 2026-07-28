@@ -203,10 +203,10 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
     <div className={styles.page}>
       <a className={styles.skipLink} href="#inicio">Ir direto para a oferta</a>
       <div className={styles.announcement}>
-        <span className={styles.desktopAnnouncement}>Frete grátis nas regiões atendidas • Pagamento somente na entrega</span>
+        <span className={styles.desktopAnnouncement}>Frete grátis nas regiões atendidas • Pague agora ou na entrega</span>
         <span className={styles.mobileAnnouncement}>
           <Truck size={13} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px', color: '#FFFFFF' }} aria-hidden="true" />
-          <span style={{ verticalAlign: 'middle' }}>Frete grátis • Pague na entrega</span>
+          <span style={{ verticalAlign: 'middle' }}>Frete grátis • Pague agora ou na entrega</span>
         </span>
       </div>
 
@@ -285,7 +285,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
                 </button>
                 <div className={styles.heroSecurityNote}>
                   <LockKeyhole size={13} aria-hidden="true" />
-                  <span>Você não paga nada antecipadamente.</span>
+                  <span>Você escolhe quando pagar.</span>
                 </div>
               </div>
 
@@ -296,7 +296,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
                 </div>
                 <div className={styles.heroTrustItem}>
                   <WalletCards size={18} aria-hidden="true" />
-                  <span>Pagamento na entrega</span>
+                  <span>Pagamento agora ou na entrega</span>
                 </div>
                 <div className={styles.heroTrustItem}>
                   <MessageCircle size={18} aria-hidden="true" />
@@ -529,9 +529,9 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
               </div>
               <div className={styles.reasonContent}>
                 <span className={styles.reasonCategory}>MENOS RISCO</span>
-                <h3>Pagamento somente na entrega</h3>
+                <h3>Pagamento do seu jeito</h3>
                 <p>
-                  Você não precisa realizar nenhum pagamento antecipado. O pagamento acontece quando o pedido é entregue.
+                  Pague agora pelo Mercado Pago ou escolha pagar quando o pedido for entregue.
                 </p>
               </div>
             </article>
@@ -771,8 +771,8 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
                   <ArrowRight size={18} aria-hidden="true" />
                 </button>
 
-                <p className={styles.noPrepayNote}>Você não paga nada antecipadamente.</p>
-                <p className={styles.securityNote}>Frete grátis nas regiões atendidas • Pagamento somente na entrega</p>
+                <p className={styles.noPrepayNote}>Você escolhe pagar agora ou na entrega.</p>
+                <p className={styles.securityNote}>Frete grátis nas regiões atendidas • Pagamento seguro</p>
                 <p className={styles.scarcityNote}>
                   Os brindes estão disponíveis conforme a quantidade destinada a cada campanha e rota de entrega.
                 </p>
@@ -785,9 +785,9 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
         <section id="como-funciona" className={styles.stepsSection} aria-label="Como funciona o pedido">
           <header className={styles.sectionIntro}>
             <span className={styles.sectionEyebrow}>PEDIR É MUITO SIMPLES</span>
-            <h2>Agende agora e pague somente quando receber.</h2>
+            <h2>Agende agora e escolha quando pagar.</h2>
             <p>
-              Você informa seus dados, a Bryza confirma a disponibilidade da rota e o pagamento é realizado somente na entrega.
+              Você informa seus dados, escolhe pagar agora ou na entrega, e a Bryza confirma a disponibilidade da rota.
             </p>
           </header>
 
@@ -806,7 +806,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
                   Informe seu nome, WhatsApp e endereço para solicitar o Kit Bryza.
                 </p>
                 <small className={styles.stepAuxiliary}>
-                  O agendamento leva poucos minutos e não exige pagamento antecipado.
+                  O agendamento leva poucos minutos e você escolhe quando pagar.
                 </small>
               </article>
             </li>
@@ -841,10 +841,10 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
                 <span className={styles.stepCategory}>ENTREGA</span>
                 <h3>Receba e pague</h3>
                 <p className={styles.stepDescription}>
-                  Seu Kit Bryza é entregue no endereço confirmado e você realiza o pagamento somente quando receber.
+                  Seu Kit Bryza é entregue no endereço confirmado, com pagamento online ou no recebimento.
                 </p>
                 <small className={styles.stepAuxiliary}>
-                  Sem pagamento antecipado e sem cobrança antes da entrega.
+                  Pagamento seguro agora ou somente quando receber.
                 </small>
               </article>
             </li>
@@ -854,14 +854,14 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
             <div className={styles.stepsSecurityTextGroup}>
               <ShieldCheck size={28} className={styles.stepsSecurityIcon} aria-hidden="true" />
               <div>
-                <strong>Você não precisa pagar nada para solicitar o agendamento.</strong>
+                <strong>Você escolhe: pagar agora ou somente na entrega.</strong>
                 <p>A equipe Bryza confirmará sua rota e os detalhes da entrega pelo WhatsApp.</p>
               </div>
             </div>
             <ul className={styles.stepsSecurityBadges}>
               <li>
                 <Check size={16} className={styles.stepCheckIcon} aria-hidden="true" />
-                <span>Nenhum pagamento antecipado</span>
+                <span>Pagamento online seguro</span>
               </li>
               <li>
                 <Check size={16} className={styles.stepCheckIcon} aria-hidden="true" />
@@ -869,7 +869,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
               </li>
               <li>
                 <Check size={16} className={styles.stepCheckIcon} aria-hidden="true" />
-                <span>Pagamento somente na entrega</span>
+                <span>Ou pagamento na entrega</span>
               </li>
             </ul>
           </div>
@@ -889,9 +889,9 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
         <section id="seguranca" className={styles.securitySection} aria-label="Segurança e tranquilidade">
           <header className={styles.sectionIntro}>
             <span className={styles.sectionEyebrow}>PEÇA COM TRANQUILIDADE</span>
-            <h2>Seu pedido é simples, seguro e sem pagamento antecipado.</h2>
+            <h2>Seu pedido é simples, seguro e com pagamento flexível.</h2>
             <p>
-              Você solicita o agendamento, recebe a confirmação pelo WhatsApp e paga somente quando o Kit Bryza chegar.
+              Você solicita o agendamento, escolhe pagar agora ou na entrega e recebe a confirmação do pedido.
             </p>
           </header>
 
@@ -901,8 +901,8 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
                 <WalletCards size={22} className={styles.securityIcon} />
               </div>
               <div className={styles.securityContent}>
-                <h3>Nenhum pagamento antecipado</h3>
-                <p>Você não precisa pagar nada para solicitar o agendamento.</p>
+                <h3>Pague agora com segurança</h3>
+                <p>Finalize com segurança pelo checkout do Mercado Pago.</p>
               </div>
             </li>
 
@@ -911,7 +911,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
                 <PackageCheck size={22} className={styles.securityIcon} />
               </div>
               <div className={styles.securityContent}>
-                <h3>Pagamento somente na entrega</h3>
+                <h3>Ou pague na entrega</h3>
                 <p>Você realiza o pagamento apenas quando receber o Kit Bryza.</p>
               </div>
             </li>
@@ -958,7 +958,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
           </ul>
 
           <div className={styles.securityFooterBanner}>
-            <strong>Você solicita agora e só paga quando receber.</strong>
+            <strong>Você escolhe pagar agora ou somente quando receber.</strong>
             <p>A equipe Bryza confirmará a disponibilidade da rota e os detalhes da entrega pelo WhatsApp.</p>
             <a href="#duvidas" className={styles.faqAnchorLink}>
               <span>Ficou com alguma dúvida? Veja as respostas abaixo.</span>
@@ -1008,14 +1008,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
                     className={styles.faqAnswerWrapper}
                   >
                     <div className={styles.faqAnswerInner}>
-                      {index === 3 ? (
-                        <p>
-                          Não. Você não precisa realizar nenhum pagamento para solicitar o agendamento. O pagamento acontece{' '}
-                          <strong className={styles.faqHighlightText}>somente quando o Kit Bryza for entregue</strong>.
-                        </p>
-                      ) : (
-                        <p>{faq.answer}</p>
-                      )}
+                      <p>{faq.answer}</p>
                     </div>
                   </div>
                 </article>
@@ -1065,7 +1058,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
                 </li>
                 <li>
                   <Check size={18} className={styles.finalCheckIcon} aria-hidden="true" />
-                  <span>Pagamento somente na entrega</span>
+                  <span>Pagamento agora ou na entrega</span>
                 </li>
               </ul>
 
@@ -1104,7 +1097,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
 
                 <div className={styles.finalSecurityNote}>
                   <LockKeyhole size={14} aria-hidden="true" />
-                  <span>Você não paga nada antecipadamente.</span>
+                  <span>Você escolhe quando pagar.</span>
                 </div>
                 <p className={styles.finalTeamNote}>
                   A equipe Bryza verificará a disponibilidade da sua rota e confirmará os detalhes pelo WhatsApp.
@@ -1220,7 +1213,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
               <h3 className={styles.footerColTitle}>Bryza</h3>
               <address className={styles.footerAddressBlock}>
                 <p>Atendimento direto em Cidade Ocidental e regiões atendidas pelas rotas Bryza.</p>
-                <p style={{ marginTop: '8px', opacity: 0.8 }}>Pagamento somente no ato da entrega.</p>
+                <p style={{ marginTop: '8px', opacity: 0.8 }}>Pagamento online pelo Mercado Pago ou no ato da entrega.</p>
               </address>
             </div>
           </div>

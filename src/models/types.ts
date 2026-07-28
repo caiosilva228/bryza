@@ -20,6 +20,8 @@ export type DeliveryProblemType =
   | 'outro';
 
 export type PaymentCheckStatus = 'pendente' | 'confirmado' | 'divergente';
+export type PaymentTiming = 'agora' | 'na_entrega';
+export type OnlinePaymentStatus = 'pendente' | 'processando' | 'aprovado' | 'recusado' | 'cancelado' | 'estornado';
 
 export type DeliveryNextAction = 'keep' | 'back_to_ready' | 'cancel';
 
@@ -348,6 +350,8 @@ export interface Pedido {
   desconto_valor?: number;
   desconto_aplicado?: number;
   forma_pagamento: 'dinheiro' | 'pix' | 'cartao';
+  payment_timing?: PaymentTiming | null;
+  payment_status?: OnlinePaymentStatus | string | null;
   status_pedido: StatusPedido;
   observacoes?: string | null;
   created_at: string;
@@ -587,6 +591,8 @@ export interface Agendamento {
   desconto_valor?: number;
   desconto_aplicado?: number;
   forma_pagamento: 'dinheiro' | 'pix' | 'cartao';
+  payment_timing?: PaymentTiming | null;
+  payment_status?: OnlinePaymentStatus | string | null;
   observacoes?: string | null;
   created_at: string;
   updated_at: string;

@@ -27,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
     return {
       metadataBase: new URL('https://bryza.com.br'),
       title: 'Bryza | O perfume que anuncia a presença.',
-      description: 'Produtos de alta performance para sua casa. Compre direto da fábrica, pague na entrega e ganhe indicando a Bryza.',
+      description: 'Produtos de alta performance para sua casa. Compre direto da fábrica, pague agora ou na entrega e ganhe indicando a Bryza.',
       alternates: {
         canonical: 'https://bryza.com.br/',
       },
@@ -38,7 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
       },
       openGraph: {
         title: 'Bryza | O perfume que anuncia a presença.',
-        description: 'Produtos de alta performance para sua casa. Compre direto da fábrica, pague na entrega e ganhe indicando a Bryza.',
+        description: 'Produtos de alta performance para sua casa. Compre direto da fábrica, pague agora ou na entrega e ganhe indicando a Bryza.',
         url: 'https://bryza.com.br/',
         siteName: 'Bryza',
         locale: 'pt_BR',
@@ -55,7 +55,7 @@ export async function generateMetadata(): Promise<Metadata> {
       twitter: {
         card: 'summary_large_image',
         title: 'Bryza | O perfume que anuncia a presença.',
-        description: 'Produtos de alta performance para sua casa. Compre direto da fábrica, pague na entrega e ganhe indicando a Bryza.',
+        description: 'Produtos de alta performance para sua casa. Compre direto da fábrica, pague agora ou na entrega e ganhe indicando a Bryza.',
         images: ['https://bryza.com.br/images/og-bryza.jpg'],
       },
     };

@@ -63,6 +63,7 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
       return [
         { label: 'Visão geral', path: '/embaixador/dashboard', icon: 'space_dashboard' },
         { label: 'Fazer Pedido (Loja)', path: '/loja', icon: 'storefront' },
+        { label: 'Meus pedidos', path: '/embaixador/meus-pedidos', icon: 'package_2' },
         { label: 'Meu link', path: '/embaixador/meu-link', icon: 'link' },
         {
           label: 'Minhas indicações',

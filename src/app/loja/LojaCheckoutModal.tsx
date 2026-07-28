@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { CheckCircle2, XCircle, ArrowRight, ArrowLeft, Search, MapPin, MessageCircle, X, LockKeyhole } from 'lucide-react';
 import { StoreCartItem, StoreOrderPayload, createStoreOrderAction } from './actions';
 import { formatCurrency } from '@/utils/format';
+import styles from './checkout-mobile.module.css';
 
 interface LojaCheckoutModalProps {
   cartItems: StoreCartItem[];
@@ -167,11 +168,11 @@ export default function LojaCheckoutModal({
   const [dataAgendamento, setDataAgendamento] = useState(() => savedDraft?.dataAgendamento || nextDays[0]?.value || '');
   const [periodo, setPeriodo] = useState<'manhademanha' | 'tarde' | 'noite' | 'qualquer'>(() => savedDraft?.periodo || 'manhademanha');
   const [formaPagamento, setFormaPagamento] = useState(() => savedDraft?.formaPagamento || 'PIX');
-  const [pagamentoNaEntrega, setPagamentoNaEntrega] = useState(true);
+  const [paymentTiming, setPaymentTiming] = useState<'agora' | 'na_entrega'>(() => savedDraft?.paymentTiming || 'na_entrega');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [result, setResult] = useState<{ orderNumber: string; whatsappUrl: string } | null>(null);
+  const [result, setResult] = useState<{ orderNumber: string; whatsappUrl: string; paymentTiming?: string; paymentStatus?: string } | null>(null);
 
   // Auto-salvar rascunho a cada alteração
   useEffect(() => {
@@ -191,11 +192,12 @@ export default function LojaCheckoutModal({
         estado,
         dataAgendamento,
         periodo,
-        formaPagamento
+        formaPagamento,
+        paymentTiming,
       };
       localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData));
     }
-  }, [step, nome, telefone, email, cpf, cep, endereco, numero, complemento, bairro, cidade, estado, dataAgendamento, periodo, formaPagamento, result]);
+  }, [step, nome, telefone, email, cpf, cep, endereco, numero, complemento, bairro, cidade, estado, dataAgendamento, periodo, formaPagamento, paymentTiming, result]);
 
   // Formatador de Telefone
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -367,11 +369,6 @@ export default function LojaCheckoutModal({
     e.preventDefault();
     setError('');
 
-    if (!pagamentoNaEntrega) {
-      setError('Por favor, confirme que o pagamento será realizado na entrega.');
-      return;
-    }
-
     if (!nome.trim() || !telefone.trim() || !endereco.trim() || !bairro.trim()) {
       setError('Por favor, preencha seus dados de contato e endereço.');
       return;
@@ -392,6 +389,7 @@ export default function LojaCheckoutModal({
         scheduledDate: dataAgendamento,
         period: periodo,
         paymentMethod: formaPagamento,
+        paymentTiming,
         items: cartItems.map(item => ({
           produto_id: item.produto.id,
           quantidade: item.quantidade,
@@ -402,11 +400,34 @@ export default function LojaCheckoutModal({
       const res = await createStoreOrderAction(payload);
 
       setLoading(false);
-      if (res.success && res.whatsappUrl && res.orderNumber) {
+      if (res.success && res.orderNumber) {
+        const paymentResult = res as typeof res & {
+          checkoutToken?: string;
+          paymentTiming?: string;
+          paymentStatus?: string;
+        };
+        if (paymentTiming === 'agora' && paymentResult.checkoutToken) {
+          const checkoutResponse = await fetch('/api/payments/mercado-pago/preference', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ checkoutToken: paymentResult.checkoutToken }),
+          });
+          const checkout = await checkoutResponse.json() as { checkoutUrl?: string; error?: string };
+          if (!checkoutResponse.ok || !checkout.checkoutUrl) {
+            throw new Error(checkout.error || 'Não foi possível abrir o pagamento. Tente novamente.');
+          }
+          window.location.assign(checkout.checkoutUrl);
+          return;
+        }
         if (typeof window !== 'undefined') {
           localStorage.removeItem(DRAFT_KEY);
         }
-        const orderData = { orderNumber: res.orderNumber, whatsappUrl: res.whatsappUrl };
+        const orderData = {
+          orderNumber: res.orderNumber,
+          whatsappUrl: res.whatsappUrl || '',
+          paymentTiming: paymentResult.paymentTiming,
+          paymentStatus: paymentResult.paymentStatus,
+        };
         setResult(orderData);
         onSuccess(orderData);
       } else {
@@ -414,12 +435,12 @@ export default function LojaCheckoutModal({
       }
     } catch (err: any) {
       setLoading(false);
-      setError('Falha ao conectar com o servidor. Tente novamente.');
+      setError(err instanceof Error ? err.message : 'Falha ao conectar com o servidor. Tente novamente.');
     }
   };
 
   return (
-    <div style={{
+    <div className={styles.overlay} style={{
       position: 'fixed',
       inset: 0,
       backgroundColor: 'rgba(5, 15, 32, 0.75)',
@@ -431,7 +452,7 @@ export default function LojaCheckoutModal({
       padding: '16px'
     }} onClick={e => { if (e.target === e.currentTarget && !loading) onClose(); }}>
       
-      <div style={{
+      <div className={styles.modal} style={{
         backgroundColor: '#ffffff',
         borderRadius: '24px',
         width: '100%',
@@ -445,7 +466,7 @@ export default function LojaCheckoutModal({
       }} onClick={e => e.stopPropagation()}>
 
         {/* CABEÇALHO ESCURO TIPO BRYZA02 (#051329) */}
-        <div style={{
+        <div className={styles.header} style={{
           backgroundColor: '#051329',
           color: '#ffffff',
           padding: '24px 28px 20px',
@@ -453,8 +474,8 @@ export default function LojaCheckoutModal({
           borderTopRightRadius: '24px',
           position: 'relative'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-            <div>
+          <div className={styles.headerRow} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+            <div className={styles.headerCopy}>
               <span style={{ fontSize: '11px', fontWeight: 800, color: '#A6CE39', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                 Carrinho da Loja Bryza
               </span>
@@ -462,11 +483,12 @@ export default function LojaCheckoutModal({
                 {result ? 'Pedido Registrado!' : step === 1 ? 'Seus dados de contato' : step === 2 ? 'Validação de documento (CPF)' : step === 3 ? 'Endereço de entrega' : 'Confirmar agendamento'}
               </h2>
               <p style={{ margin: 0, fontSize: '13px', color: 'rgba(255,255,255,0.75)', fontWeight: 400 }}>
-                {result ? 'Confirme seu pedido pelo WhatsApp abaixo.' : 'Preencha os dados abaixo. Você não paga nada antecipadamente.'}
+                {result ? 'Seu agendamento foi registrado com sucesso.' : 'Escolha pagar agora com Mercado Pago ou somente quando receber.'}
               </p>
             </div>
             
             <button
+              className={styles.closeButton}
               onClick={onClose}
               disabled={loading}
               title="Fechar"
@@ -492,7 +514,7 @@ export default function LojaCheckoutModal({
 
           {/* BARRA DE PROGRESSO DE PASSOS (1 a 4) */}
           {!result && (
-            <div style={{
+            <div className={styles.progress} style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(4, 1fr)',
               gap: '6px',
@@ -531,7 +553,7 @@ export default function LojaCheckoutModal({
         </div>
 
         {/* CONTEÚDO DO CORPO DO MODAL */}
-        <div style={{ padding: '24px 28px', flex: 1, overflowY: 'auto' }}>
+        <div className={styles.body} style={{ padding: '24px 28px', flex: 1, overflowY: 'auto' }}>
           
           {error && (
             <div style={{
@@ -835,7 +857,7 @@ export default function LojaCheckoutModal({
                     </div>
                   )}
 
-                  <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div className={styles.actionRow} style={{ marginTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <button
                       type="button"
                       onClick={() => setStep(1)}
@@ -1083,7 +1105,7 @@ export default function LojaCheckoutModal({
                     </>
                   )}
 
-                  <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div className={styles.actionRow} style={{ marginTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <button
                       type="button"
                       onClick={() => setStep(2)}
@@ -1228,7 +1250,9 @@ export default function LojaCheckoutModal({
                     </div>
 
                     <div style={{ borderTop: '1px dashed #cbd5e1', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>Total a pagar na entrega</span>
+                      <span style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>
+                        {paymentTiming === 'agora' ? 'Total para pagar agora' : 'Total a pagar na entrega'}
+                      </span>
                       <strong style={{ fontSize: '20px', color: '#009845', fontWeight: 800 }}>
                         {formatCurrency(totalValue)}
                       </strong>
@@ -1287,10 +1311,42 @@ export default function LojaCheckoutModal({
                     </div>
                   </div>
 
-                  {/* Forma de Pagamento */}
+                  {/* Momento do Pagamento */}
                   <div>
                     <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '8px' }}>
-                      Forma de Pagamento (Na entrega)
+                      Quando deseja pagar?
+                    </label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px' }}>
+                      {[
+                        { id: 'agora', label: 'Pagar agora', detail: 'Checkout seguro do Mercado Pago' },
+                        { id: 'na_entrega', label: 'Pagar na entrega', detail: 'Pix, cartão ou dinheiro' },
+                      ].map(option => (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() => setPaymentTiming(option.id as 'agora' | 'na_entrega')}
+                          aria-pressed={paymentTiming === option.id}
+                          style={{
+                            padding: '13px 10px',
+                            borderRadius: '10px',
+                            border: paymentTiming === option.id ? '2px solid #009845' : '1px solid #cbd5e1',
+                            backgroundColor: paymentTiming === option.id ? '#f0fdf4' : '#ffffff',
+                            color: paymentTiming === option.id ? '#047857' : '#475569',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                          }}
+                        >
+                          <strong style={{ display: 'block', fontSize: '13px' }}>{option.label}</strong>
+                          <small>{option.detail}</small>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Forma de Pagamento na Entrega */}
+                  {paymentTiming === 'na_entrega' && <div>
+                    <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '8px' }}>
+                      Forma de pagamento na entrega
                     </label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                       {[
@@ -1317,21 +1373,17 @@ export default function LojaCheckoutModal({
                         </button>
                       ))}
                     </div>
+                  </div>}
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#475569', fontWeight: 500 }}>
+                    <span className="material-symbols-outlined" style={{ color: '#009845' }}>verified_user</span>
+                    <span>{paymentTiming === 'agora'
+                      ? 'Você será direcionado ao checkout seguro do Mercado Pago.'
+                      : 'O pagamento será feito no momento da entrega dos produtos.'}</span>
                   </div>
 
-                  {/* Checkbox Confirmação */}
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '13px', color: '#475569', fontWeight: 500 }}>
-                    <input
-                      type="checkbox"
-                      checked={pagamentoNaEntrega}
-                      onChange={e => setPagamentoNaEntrega(e.target.checked)}
-                      style={{ width: '18px', height: '18px', accentColor: '#009845' }}
-                    />
-                    <span>Confirmo que o pagamento será feito no momento da entrega dos produtos.</span>
-                  </label>
-
                   {/* Botões de Ação */}
-                  <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                  <div className={styles.actionRow} style={{ marginTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
                     <button
                       type="button"
                       onClick={() => setStep(3)}
@@ -1373,7 +1425,7 @@ export default function LojaCheckoutModal({
                         opacity: loading ? 0.7 : 1
                       }}
                     >
-                      <span>{loading ? 'ENVIANDO AGENDAMENTO…' : 'CONFIRMAR AGENDAMENTO'}</span>
+                      <span>{loading ? 'PROCESSANDO…' : paymentTiming === 'agora' ? 'CONTINUAR PARA PAGAMENTO' : 'CONFIRMAR AGENDAMENTO'}</span>
                       <LockKeyhole size={20} />
                     </button>
                   </div>
@@ -1390,7 +1442,7 @@ export default function LojaCheckoutModal({
 
       {/* SUB-MODAL BUSCA DE CEP POR ENDEREÇO */}
       {isCepModalOpen && (
-        <div style={{
+        <div className={styles.cepOverlay} style={{
           position: 'fixed',
           inset: 0,
           backgroundColor: 'rgba(0,0,0,0.6)',
@@ -1400,7 +1452,7 @@ export default function LojaCheckoutModal({
           justifyContent: 'center',
           padding: '16px'
         }} onClick={() => setIsCepModalOpen(false)}>
-          <div style={{
+          <div className={styles.cepModal} style={{
             backgroundColor: '#ffffff',
             borderRadius: '20px',
             padding: '24px',
@@ -1412,7 +1464,7 @@ export default function LojaCheckoutModal({
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>
                 Buscar CEP por Endereço
               </h3>
-              <button onClick={() => setIsCepModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
+              <button className={styles.closeButton} aria-label="Fechar busca de CEP" onClick={() => setIsCepModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
                 <X size={20} />
               </button>
             </div>

@@ -44,12 +44,25 @@ export async function updateSession(request: NextRequest) {
   const isPublicEarningsCalculator = pathname === '/calculadora-de-ganhos';
   const isPublicCadastroPage = pathname.startsWith('/cadastro');
   const isPublicLojaPage = pathname.startsWith('/loja');
+  const isPublicPaymentReturn = pathname === '/pagamento/retorno';
+  const isPublicPaymentEndpoint =
+    pathname === '/api/payments/mercado-pago/preference'
+    || pathname === '/api/payments/mercado-pago/webhook';
   const isAmbassadorAcceptance = pathname.startsWith('/programa/embaixadores/aceitar');
   
   // Ignorar assets estáticos comuns
   const isStaticAsset = pathname.match(/\.(svg|png|jpg|jpeg|gif|webp|ico|css|js)$/) || pathname.includes('_next/');
 
-  if (isStaticAsset || isPublicIndication || isPublicSalesPage || isPublicEarningsCalculator || isPublicCadastroPage || isPublicLojaPage) {
+  if (
+    isStaticAsset
+    || isPublicIndication
+    || isPublicSalesPage
+    || isPublicEarningsCalculator
+    || isPublicCadastroPage
+    || isPublicLojaPage
+    || isPublicPaymentReturn
+    || isPublicPaymentEndpoint
+  ) {
     return supabaseResponse;
   }
 

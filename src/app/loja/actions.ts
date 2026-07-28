@@ -6,6 +6,11 @@ import { createAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { Produto } from '@/models/types';
 import { createAgendamento } from '@/services/agendamentos';
+import {
+  configureSchedulingPayment,
+  type PaymentStatus,
+  type PaymentTiming,
+} from '@/lib/payments/payment-intents';
 
 export interface StoreCartItem {
   produto: Produto;
@@ -25,6 +30,7 @@ export interface StoreOrderPayload {
   scheduledDate: string;
   period: 'manhademanha' | 'tarde' | 'noite' | string;
   paymentMethod: string;
+  paymentTiming: PaymentTiming;
   notes?: string;
   items: Array<{
     produto_id: string;
@@ -193,6 +199,9 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
   orderNumber?: string;
   orderId?: string;
   whatsappUrl?: string;
+  checkoutToken?: string | null;
+  paymentTiming?: PaymentTiming;
+  paymentStatus?: PaymentStatus;
   error?: string;
 }> {
   try {
@@ -227,17 +236,26 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
     if (!payload.items || payload.items.length === 0) {
       return { success: false, error: 'O carrinho está vazio.' };
     }
+    if (!['agora', 'na_entrega'].includes(payload.paymentTiming)) {
+      return { success: false, error: 'Selecione quando deseja realizar o pagamento.' };
+    }
 
     // Criar ou atualizar cliente no cadastro público/loja
     let customerId: string | null = null;
     const { data: existingCustomer } = await admin
       .from('clientes')
-      .select('id')
+      .select('id, own_ambassador_id')
       .eq('telefone', clientPhone)
       .maybeSingle();
 
     if (existingCustomer) {
       customerId = existingCustomer.id;
+      if (ambassadorId && existingCustomer.own_ambassador_id !== ambassadorId) {
+        await admin
+          .from('clientes')
+          .update({ own_ambassador_id: ambassadorId })
+          .eq('id', existingCustomer.id);
+      }
     } else {
       const { data: newCustomer } = await admin
         .from('clientes')
@@ -251,7 +269,8 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
           estado: payload.state || 'DF',
           cep: payload.cep || null,
           origem: 'loja_virtual_publica',
-          status_cliente: 'lead'
+          status_cliente: 'lead',
+          own_ambassador_id: ambassadorId,
         })
         .select('id')
         .single();
@@ -314,7 +333,8 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
       cidade: payload.city || 'Brasília',
       estado: payload.state || 'DF',
       cep: payload.cep || '',
-      ambassador_id: ambassadorId,
+      // A compra do próprio embaixador não é uma autoindicação.
+      ambassador_id: null,
     };
 
     const itensAgendamento = payload.items.map(item => ({
@@ -326,6 +346,12 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
     }));
 
     const result = await createAgendamento(agendamentoData, itensAgendamento, admin);
+    const payment = await configureSchedulingPayment(
+      admin,
+      result.id,
+      valorTotal,
+      payload.paymentTiming,
+    );
 
     revalidatePath('/loja');
     revalidatePath('/vendas/agendamentos');
@@ -340,7 +366,7 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
       `• *Telefone:* ${clientPhone}\n` +
       `• *Endereço:* ${fullEndereco} - ${payload.neighborhood}, ${payload.city}\n` +
       `• *Data Agendada:* ${payload.scheduledDate} (${payload.period})\n` +
-      `• *Forma de Pagamento:* ${payload.paymentMethod}\n` +
+      `• *Pagamento:* ${payload.paymentTiming === 'agora' ? 'Agora pelo Mercado Pago' : `Na entrega (${payload.paymentMethod})`}\n` +
       `• *Valor Total:* R$ ${valorTotal.toFixed(2).replace('.', ',')}\n\n` +
       `Gostaria de confirmar o agendamento da minha entrega!`;
 
@@ -349,7 +375,11 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
     return {
       success: true,
       orderNumber: numAgendamento,
-      whatsappUrl
+      orderId: result.id,
+      whatsappUrl,
+      checkoutToken: payment.checkoutToken,
+      paymentTiming: payload.paymentTiming,
+      paymentStatus: payment.paymentStatus,
     };
   } catch (err: any) {
     console.error('Erro ao criar pedido na loja:', err);

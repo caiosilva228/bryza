@@ -31,7 +31,7 @@ export default function TermosPage() {
           2. Pagamento e Entrega
         </h2>
         <p style={{ color: 'rgba(255,255,255,0.8)', lineHeight: '1.6', marginBottom: '16px' }}>
-          Não há cobrança nem pagamento antecipado. O pagamento total do Kit Bryza (R$ 79,80) é realizado exclusivamente no momento em que o cliente recebe os produtos no seu endereço.
+          O cliente pode escolher pagar antecipadamente pelo checkout seguro do Mercado Pago ou realizar o pagamento no momento em que recebe os produtos no endereço informado.
         </p>
 
         <h2 style={{ fontSize: '20px', fontWeight: '700', marginTop: '28px', marginBottom: '12px', color: '#a6ce39' }}>

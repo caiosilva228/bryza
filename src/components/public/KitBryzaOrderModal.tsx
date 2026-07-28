@@ -27,7 +27,7 @@ interface OrderForm {
   data: string;
   periodo: 'manha' | 'tarde' | 'noite' | 'qualquer';
   formaPagamento: 'dinheiro' | 'pix' | 'cartao';
-  pagamentoNaEntrega: boolean;
+  paymentTiming: 'agora' | 'na_entrega';
 }
 
 const ESTADOS_BRASIL = [
@@ -130,7 +130,7 @@ const initialForm = (city?: string | null): OrderForm => ({
   data: tomorrowStr(),
   periodo: 'qualquer',
   formaPagamento: 'pix',
-  pagamentoNaEntrega: false,
+  paymentTiming: 'na_entrega',
 });
 
 export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalProps) {
@@ -377,14 +377,9 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
     e.preventDefault();
     setError('');
 
-    if (!form.pagamentoNaEntrega) {
-      setError('Por favor, confirme que o pagamento será realizado somente na entrega.');
-      return;
-    }
-
     setLoading(true);
     try {
-      const response = await createPublicSchedulingAction({
+      const schedulingPayload = {
         nome: form.nome,
         cpf: form.cpf,
         telefone: form.telefone,
@@ -398,23 +393,43 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
         data: form.data,
         hora: periodTimes[form.periodo],
         forma_pagamento: form.formaPagamento,
+        payment_timing: form.paymentTiming,
         idempotency_key: idempotencyKeyRef.current,
         itens: [
           { produto_id: '957cdbc9-fea6-466e-b6e8-050dfb2359f5', quantidade: 1, desconto_aplicado: 0 },
           { produto_id: '7cfdcdb0-ac5a-4421-812d-2de8e99fd28e', quantidade: 1, desconto_aplicado: 0 },
           { produto_id: '664d141e-e52c-43c9-bd1a-e5848c6490a6', quantidade: 2, desconto_aplicado: 25.98 },
         ],
-      });
+      };
+      const response = await createPublicSchedulingAction(schedulingPayload);
 
-      setLoading(false);
       if (response.success) {
+        const paymentData = response.data as PublicSchedulingResult & {
+          checkout_token?: string | null;
+          payment_timing?: 'agora' | 'na_entrega';
+          payment_status?: string;
+        };
+        if (form.paymentTiming === 'agora' && paymentData.checkout_token) {
+          const checkoutResponse = await fetch('/api/payments/mercado-pago/preference', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ checkoutToken: paymentData.checkout_token }),
+          });
+          const checkout = await checkoutResponse.json() as { checkoutUrl?: string; error?: string };
+          if (!checkoutResponse.ok || !checkout.checkoutUrl) {
+            throw new Error(checkout.error || 'Não foi possível abrir o pagamento. Tente novamente.');
+          }
+          window.location.assign(checkout.checkoutUrl);
+          return;
+        }
         setResult(response.data);
       } else {
         setError(response.error);
       }
-    } catch {
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Ocorreu um erro ao enviar seu agendamento. Tente novamente.');
+    } finally {
       setLoading(false);
-      setError('Ocorreu um erro ao enviar seu agendamento. Tente novamente.');
     }
   };
 
@@ -444,7 +459,7 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
             <p>
               {result
                 ? 'Sua solicitação de agendamento foi registrada com sucesso.'
-                : 'Preencha os dados abaixo. Você não paga nada antecipadamente.'}
+                : 'Escolha pagar agora com Mercado Pago ou somente quando receber.'}
             </p>
           </div>
           <button type="button" onClick={onClose} disabled={loading} aria-label="Fechar formulário">
@@ -557,7 +572,8 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
 • *Nome:* ${form.nome}
 • *Endereço:* ${fullAddressStr}
 • *Data do Agendamento:* ${formattedDate} (${periodoStr})
-• *Valor Total:* ${valorFormatted} (Pagamento na entrega)
+• *Valor Total:* ${valorFormatted}
+• *Pagamento:* ${(result as PublicSchedulingResult & { payment_timing?: string }).payment_timing === 'agora' ? 'Pago online / aguardando confirmação' : 'Na entrega'}
 
 Aguardo a confirmação da entrega!`;
 
@@ -981,7 +997,38 @@ Aguardo a confirmação da entrega!`;
                       <option value="qualquer">Qualquer horário</option>
                     </select>
                   </label>
-                  <label className={styles.fullField}>
+                  <div className={styles.fullField}>
+                    <span style={{ display: 'block', marginBottom: '8px', fontWeight: 700 }}>Quando deseja pagar? *</span>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px' }}>
+                      {([
+                        { value: 'agora', title: 'Pagar agora', detail: 'Checkout seguro do Mercado Pago' },
+                        { value: 'na_entrega', title: 'Pagar na entrega', detail: 'Escolha o meio ao receber' },
+                      ] as const).map(option => {
+                        const selected = form.paymentTiming === option.value;
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => setField('paymentTiming', option.value)}
+                            aria-pressed={selected}
+                            style={{
+                              padding: '14px',
+                              textAlign: 'left',
+                              borderRadius: '10px',
+                              border: selected ? '2px solid var(--color-primary)' : '1px solid #cbd5e1',
+                              background: selected ? '#f0fdf4' : '#fff',
+                              color: selected ? '#047857' : '#334155',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <strong style={{ display: 'block' }}>{option.title}</strong>
+                            <small>{option.detail}</small>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  {form.paymentTiming === 'na_entrega' && <label className={styles.fullField}>
                     Forma de pagamento na entrega *
                     <select
                       value={form.formaPagamento}
@@ -991,18 +1038,15 @@ Aguardo a confirmação da entrega!`;
                       <option value="dinheiro">Dinheiro (Espécie)</option>
                       <option value="cartao">Cartão de Crédito / Débito</option>
                     </select>
-                  </label>
+                  </label>}
                 </div>
 
-                <label className={styles.confirmation} style={{ marginTop: '16px' }}>
-                  <input
-                    type="checkbox"
-                    required
-                    checked={form.pagamentoNaEntrega}
-                    onChange={e => setField('pagamentoNaEntrega', e.target.checked)}
-                  />
-                  <span>Confirmo que o pagamento será realizado somente no momento da entrega.</span>
-                </label>
+                <div className={styles.confirmation} style={{ marginTop: '16px' }}>
+                  <LockKeyhole size={18} />
+                  <span>{form.paymentTiming === 'agora'
+                    ? 'Você será direcionado ao ambiente seguro do Mercado Pago.'
+                    : 'O pagamento será realizado somente no momento da entrega.'}</span>
+                </div>
 
                 <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
                   <button
@@ -1028,9 +1072,9 @@ Aguardo a confirmação da entrega!`;
                     className={styles.submitOrder}
                     type="button"
                     onClick={handleSubmitOrder}
-                    disabled={loading || !form.pagamentoNaEntrega}
+                    disabled={loading}
                   >
-                    {loading ? 'Enviando agendamento…' : 'Confirmar agendamento'} <LockKeyhole size={18} />
+                    {loading ? 'Processando…' : form.paymentTiming === 'agora' ? 'Continuar para pagamento' : 'Confirmar agendamento'} <LockKeyhole size={18} />
                   </button>
                 </div>
 

@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     metadataBase: new URL('https://bryza.com.br'),
     title: 'Kit Bryza 10 Litros + 2 Panos Premium | Entrega Grátis',
-    description: 'Leve Sabão Líquido Bryza 5L, Amaciante Microencapsulado 5L e ganhe 2 Panos Premium Xadrez. Kit por R$79,80, com frete grátis e pagamento na entrega.',
+    description: 'Leve Sabão Líquido Bryza 5L, Amaciante Microencapsulado 5L e ganhe 2 Panos Premium Xadrez. Kit por R$79,80, com frete grátis e pagamento agora ou na entrega.',
     alternates: {
       canonical: `https://bryza.com.br/${rawCode}`,
     },
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     openGraph: {
       title: 'Kit Bryza 10 Litros + 2 Panos Premium | Entrega Grátis',
-      description: 'Kit completo por R$79,80, com frete grátis nas regiões atendidas e pagamento somente na entrega.',
+      description: 'Kit completo por R$79,80, com frete grátis nas regiões atendidas e pagamento agora ou na entrega.',
       url: `https://bryza.com.br/${rawCode}`,
       siteName: 'Bryza',
       locale: 'pt_BR',
@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     twitter: {
       card: 'summary_large_image',
       title: 'Kit Bryza 10 Litros + 2 Panos Premium | Entrega Grátis',
-      description: 'Kit completo por R$79,80, com frete grátis nas regiões atendidas e pagamento somente na entrega.',
+      description: 'Kit completo por R$79,80, com frete grátis nas regiões atendidas e pagamento agora ou na entrega.',
       images: ['https://bryza.com.br/og-kit-bryza.png'],
     },
   };

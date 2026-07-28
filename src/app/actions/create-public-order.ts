@@ -4,6 +4,11 @@ import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 import { verifyAndParseReferralCookie, COOKIE_NAME } from '@/lib/referral/cookie';
 import { getSyntheticEmail } from '@/utils/env';
+import {
+  configureSchedulingPayment,
+  type PaymentStatus,
+  type PaymentTiming,
+} from '@/lib/payments/payment-intents';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -34,6 +39,7 @@ export interface PublicSchedulingInput {
   data: string;
   hora: string;
   forma_pagamento: 'dinheiro' | 'pix' | 'cartao';
+  payment_timing: PaymentTiming;
   idempotency_key: string;
   itens: Array<{ produto_id: string; quantidade: number; desconto_aplicado?: number }>;
 }
@@ -44,6 +50,9 @@ export interface PublicSchedulingResult {
   data_agendamento: string;
   valor_total: number;
   program_invitation_available: boolean;
+  payment_timing: PaymentTiming;
+  payment_status: PaymentStatus;
+  checkout_token: string | null;
 }
 
 export type PublicSchedulingActionResult =
@@ -83,7 +92,12 @@ function isRealDate(value: string): boolean {
     && date.getUTCDate() === day;
 }
 
-function normalizeRpcResult(value: unknown): PublicSchedulingResult | null {
+type BaseSchedulingResult = Omit<
+  PublicSchedulingResult,
+  'payment_timing' | 'payment_status' | 'checkout_token'
+>;
+
+function normalizeRpcResult(value: unknown): BaseSchedulingResult | null {
   const row = Array.isArray(value) ? value[0] : value;
   if (!row || typeof row !== 'object') return null;
 
@@ -160,6 +174,9 @@ export async function createPublicSchedulingAction(
 
     if (!['dinheiro', 'pix', 'cartao'].includes(input.forma_pagamento)) {
       return { success: false, error: 'Selecione uma forma de pagamento válida.' };
+    }
+    if (!['agora', 'na_entrega'].includes(input.payment_timing)) {
+      return { success: false, error: 'Selecione quando deseja realizar o pagamento.' };
     }
     if (!UUID_PATTERN.test(input.idempotency_key)) {
       return { success: false, error: 'Não foi possível validar esta tentativa. Reabra o formulário.' };
@@ -250,6 +267,19 @@ export async function createPublicSchedulingAction(
       console.error('Resposta inválida da RPC fn_criar_agendamento_publico.');
       return { success: false, error: 'O agendamento foi processado, mas a confirmação não pôde ser exibida. Entre em contato com a Bryza.' };
     }
+
+    const payment = await configureSchedulingPayment(
+      supabaseAdmin,
+      normalizedResult.agendamento_id,
+      normalizedResult.valor_total,
+      input.payment_timing,
+    );
+    const resultWithPayment: PublicSchedulingResult = {
+      ...normalizedResult,
+      payment_timing: input.payment_timing,
+      payment_status: payment.paymentStatus,
+      checkout_token: payment.checkoutToken,
+    };
 
     // Criar/Promover automaticamente para Embaixador Ativo se ainda não possuir conta
     try {
@@ -342,7 +372,7 @@ export async function createPublicSchedulingAction(
       console.error('Aviso ao provisionar embaixador ativo no agendamento público:', ambErr);
     }
 
-    return { success: true, data: normalizedResult };
+    return { success: true, data: resultWithPayment };
   } catch (error) {
     console.error('Erro ao criar agendamento público:', error instanceof Error ? error.message : 'erro desconhecido');
     return { success: false, error: 'Não foi possível processar o agendamento. Tente novamente.' };

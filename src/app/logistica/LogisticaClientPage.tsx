@@ -190,6 +190,10 @@ export default function LogisticaClientPage({ initialPedidos }: Props) {
     setPaymentLoading(true);
     try {
       const result = await confirmarPagamento(params);
+      if (!result.success) {
+        toast.error(result.error || 'Não foi possível confirmar o pagamento.');
+        return;
+      }
       if (result.divergent) {
         toast.warning('Pagamento divergente registrado. O pedido continuará como entregue até conferência.');
       } else {

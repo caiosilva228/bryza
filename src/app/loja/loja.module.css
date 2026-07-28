@@ -1,0 +1,342 @@
+.storePage,
+.siteHeader,
+.headerInner,
+.hero,
+.heroInner,
+.catalogMain,
+.catalogLayout,
+.catalogContent,
+.catalogToolbar,
+.productsGrid,
+.productCard,
+.cartDrawer,
+.footer {
+  min-width: 0;
+}
+
+.headerCartButton,
+.iconButton {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+@media (max-width: 768px) {
+  .siteHeader {
+    width: 100%;
+  }
+
+  .headerInner {
+    padding: 10px 12px !important;
+    gap: 8px !important;
+  }
+
+  .logoLink {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .logoImage {
+    width: min(128px, 100%) !important;
+    height: 38px !important;
+  }
+
+  .headerActions {
+    gap: 8px !important;
+    flex-shrink: 0;
+  }
+
+  .ambassadorLink {
+    width: 44px;
+    height: 44px;
+    padding: 0 !important;
+    justify-content: center;
+    border-radius: 10px !important;
+  }
+
+  .ambassadorLink > span:last-child {
+    display: none;
+  }
+
+  .headerCartButton {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .announcement {
+    padding: 9px 12px !important;
+    font-size: 11.5px !important;
+    line-height: 1.4;
+  }
+
+  .hero {
+    padding: 20px 16px !important;
+  }
+
+  .heroInner {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 16px !important;
+  }
+
+  .heroCopy h1 {
+    font-size: 21px !important;
+    line-height: 1.18 !important;
+  }
+
+  .heroCopy p {
+    line-height: 1.45;
+  }
+
+  .searchBox {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  .searchBox input {
+    min-height: 44px;
+    box-sizing: border-box;
+  }
+
+  .catalogMain {
+    width: 100% !important;
+    margin: 18px auto !important;
+    padding: 0 12px !important;
+    box-sizing: border-box;
+  }
+
+  .catalogLayout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 18px !important;
+  }
+
+  .filters {
+    padding: 16px !important;
+    gap: 16px !important;
+    border-radius: 14px !important;
+  }
+
+  .filters button,
+  .filters label {
+    min-height: 44px;
+  }
+
+  .filters label {
+    display: flex !important;
+    align-items: center;
+  }
+
+  .catalogToolbar {
+    padding: 12px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .sortControls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .sortControls select {
+    min-width: 0;
+    min-height: 44px;
+    flex: 1;
+  }
+
+  .productsGrid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 16px !important;
+  }
+
+  .productCard {
+    width: 100%;
+    padding: 16px !important;
+    box-sizing: border-box;
+  }
+
+  .productImage {
+    height: 184px !important;
+  }
+
+  .productCard button {
+    min-height: 48px !important;
+  }
+
+  .whatsappFloat {
+    right: 12px !important;
+    bottom: 84px !important;
+  }
+
+  .whatsappButton {
+    width: 52px !important;
+    height: 52px !important;
+  }
+
+  .floatingCart {
+    left: 12px !important;
+    right: 12px !important;
+    bottom: max(12px, env(safe-area-inset-bottom)) !important;
+    width: auto !important;
+    padding: 10px 12px !important;
+    gap: 10px !important;
+    justify-content: space-between;
+    border-radius: 14px !important;
+  }
+
+  .floatingCartButton {
+    min-height: 44px;
+    padding: 10px 14px !important;
+    white-space: nowrap;
+  }
+
+  .productModalOverlay {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+
+  .productModal {
+    max-width: none !important;
+    max-height: 100dvh !important;
+    border-radius: 20px 20px 0 0 !important;
+  }
+
+  .productModalContent {
+    padding: 60px 16px 20px !important;
+    gap: 16px !important;
+  }
+
+  .productModalImage {
+    height: 190px !important;
+  }
+
+  .productModalContent button {
+    min-height: 48px;
+    flex-wrap: wrap;
+  }
+
+  .iconButton {
+    width: 44px !important;
+    height: 44px !important;
+    padding: 0 !important;
+  }
+
+  .cartDrawer {
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  .cartHeader {
+    padding: 14px 16px !important;
+    gap: 8px;
+  }
+
+  .cartHeader h2 {
+    font-size: 17px !important;
+  }
+
+  .cartHeader button {
+    min-height: 44px;
+  }
+
+  .deliveryBanner {
+    padding: 10px 14px !important;
+    gap: 10px !important;
+  }
+
+  .deliveryBanner > div:last-child > div {
+    align-items: flex-start !important;
+    gap: 6px;
+  }
+
+  .cartBody {
+    padding: 16px !important;
+    gap: 16px !important;
+  }
+
+  .cartBody button {
+    min-height: 44px;
+  }
+
+  .cartItem {
+    align-items: flex-start !important;
+    padding: 12px !important;
+    gap: 10px !important;
+  }
+
+  .cartItemDetails {
+    min-width: 0;
+  }
+
+  .cartItemDetails h4,
+  .cartItemDetails span {
+    overflow-wrap: anywhere;
+  }
+
+  .cartItemDetails > div {
+    flex-wrap: wrap;
+  }
+
+  .quantityButton,
+  .removeItemButton {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px;
+    padding: 0 !important;
+  }
+
+  .cartItem input[type="number"] {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .cartFooter {
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .cartFooter button {
+    min-height: 52px;
+  }
+
+  .footer {
+    padding: 40px 16px 96px !important;
+    margin-top: 40px !important;
+  }
+
+  .footerGrid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 28px !important;
+    margin-bottom: 28px !important;
+  }
+
+  .footerBottom {
+    align-items: flex-start !important;
+    flex-direction: column;
+  }
+
+  .footer a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 359px) {
+  .logoImage {
+    width: 112px !important;
+  }
+
+  .floatingCart {
+    gap: 8px !important;
+  }
+
+  .floatingCartButton {
+    padding-inline: 10px !important;
+    font-size: 13px !important;
+  }
+
+  .productModalContent {
+    padding-inline: 12px !important;
+  }
+}

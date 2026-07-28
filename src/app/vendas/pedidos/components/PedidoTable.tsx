@@ -21,6 +21,20 @@ interface Props {
   onSort: (key: SortKey) => void;
 }
 
+function PaymentBadges({ pedido }: { pedido: Pedido }) {
+  const timing = pedido.payment_timing === 'agora' ? 'Pagamento online' : 'Pagamento na entrega';
+  const statusValue = pedido.payment_status || (pedido.payment_check_status === 'confirmado' ? 'aprovado' : 'pendente');
+  const approved = ['aprovado', 'confirmado', 'pago'].includes(statusValue);
+  const statusLabel = approved ? 'Pago' : statusValue === 'processando' ? 'Processando' : statusValue === 'recusado' ? 'Recusado' : 'Não pago';
+
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'center' }}>
+      <span style={{ padding: '3px 6px', borderRadius: '999px', fontSize: '9px', fontWeight: 800, background: '#e0f2fe', color: '#0369a1' }}>{timing}</span>
+      <span style={{ padding: '3px 6px', borderRadius: '999px', fontSize: '9px', fontWeight: 800, background: approved ? '#dcfce7' : '#fef3c7', color: approved ? '#166534' : '#92400e' }}>{statusLabel}</span>
+    </div>
+  );
+}
+
 
 export default function PedidoTable({
   pedidos,
@@ -192,6 +206,7 @@ export default function PedidoTable({
               {renderSortableHeader('Destino (Entrega)', 'destino')}
               {renderSortableHeader('Responsável', 'responsavel')}
               {renderSortableHeader('Status', 'status', 'center')}
+              <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: '11px', fontWeight: 800, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pagamento</th>
               <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: '11px', fontWeight: 800, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Ação Rápida</th>
               {renderSortableHeader('Valor Total', 'valor', 'right')}
               <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: '11px', fontWeight: 800, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Detalhes</th>
@@ -249,6 +264,9 @@ export default function PedidoTable({
                       <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>{status.icon}</span>
                       {status.label}
                     </span>
+                  </td>
+                  <td style={{ padding: '6px 10px', textAlign: 'center' }}>
+                    <PaymentBadges pedido={pedido} />
                   </td>
                   <td style={{ padding: '6px 10px', textAlign: 'center' }}>
                     {statusWorkflow[pedido.status_pedido]?.next ? (
@@ -391,6 +409,9 @@ export default function PedidoTable({
                 <span style={{ fontWeight: 800, color: 'var(--color-primary)', fontSize: '14px' }}>
                   {formatCurrency(pedido.valor_total)}
                 </span>
+              </div>
+              <div style={{ paddingLeft: '8px', display: 'flex' }}>
+                <PaymentBadges pedido={pedido} />
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingLeft: '8px' }}>

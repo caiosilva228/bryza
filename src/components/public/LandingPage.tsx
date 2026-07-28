@@ -22,8 +22,8 @@ export const LandingPage: React.FC = () => {
       answer: 'Sim! O frete é 100% grátis para regiões participantes e pedidos dentro das condições promocionais.'
     },
     {
-      question: 'Como funciona o pagamento na entrega?',
-      answer: 'Você faz seu pedido no site e paga somente quando o entregador chegar com seus produtos, aceitando Pix, cartão ou dinheiro.'
+      question: 'Como posso pagar?',
+      answer: 'Você escolhe: pagar agora com segurança pelo Mercado Pago ou pagar na entrega por Pix, cartão ou dinheiro.'
     },
     {
       question: 'Como funciona o Programa de Embaixadores?',
@@ -394,7 +394,7 @@ export const LandingPage: React.FC = () => {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', fontWeight: 600, color: '#ffffff', textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
                 <span className="material-symbols-outlined" style={{ color: '#A6CE39', fontSize: '20px' }}>verified_user</span>
-                <span>Pague somente na entrega</span>
+                <span>Pague agora ou na entrega</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', fontWeight: 600, color: '#ffffff', textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
                 <span className="material-symbols-outlined" style={{ color: '#A6CE39', fontSize: '20px' }}>local_shipping</span>
@@ -510,10 +510,10 @@ export const LandingPage: React.FC = () => {
             </div>
             <div>
               <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#0f172a', margin: '0 0 6px' }}>
-                Pague somente na entrega
+                Pague agora ou na entrega
               </h3>
               <p style={{ fontSize: '13.5px', color: '#64748b', lineHeight: 1.5, margin: 0 }}>
-                Faça seu pedido com segurança e pague quando receber seus produtos.
+                Faça seu pedido com segurança e escolha pagar agora ou quando receber seus produtos.
               </p>
             </div>
           </div>

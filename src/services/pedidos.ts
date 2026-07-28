@@ -249,6 +249,22 @@ export const confirmOrderPayment = async (params: {
   const supabase = await createClient();
   const { orderId, expectedAmount, receivedAmount, paymentMethod, notes } = params;
 
+  const { data: currentOrder, error: fetchError } = await supabase
+    .from('pedidos')
+    .select('status_pedido, payment_check_status')
+    .eq('id', orderId)
+    .single();
+
+  if (fetchError || !currentOrder) {
+    throw new Error('Pedido não encontrado.');
+  }
+
+  if (currentOrder.status_pedido !== 'entregue' && currentOrder.status_pedido !== 'finalizado') {
+    throw new Error(
+      `A confirmação de pagamento só é permitida para pedidos com status "Entregue" ou "Finalizado". O status atual deste pedido é "${currentOrder.status_pedido}".`
+    );
+  }
+
   const isDivergent = Math.abs(receivedAmount - expectedAmount) > 0.01;
 
   const updateData: Record<string, unknown> = {
@@ -259,7 +275,7 @@ export const confirmOrderPayment = async (params: {
     updated_at: new Date().toISOString(),
   };
 
-  if (!isDivergent) {
+  if (!isDivergent && currentOrder.status_pedido === 'entregue') {
     updateData.status_pedido = 'finalizado' as StatusPedido;
     updateData.finalized_at = new Date().toISOString();
   }

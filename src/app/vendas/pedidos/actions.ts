@@ -159,10 +159,15 @@ export async function confirmarPagamentoAction(params: {
     revalidatePath('/vendas/historico');
     revalidatePath('/embaixador/comissoes');
     revalidatePath('/embaixador/dashboard');
-    return result;
+    return { success: true, ...result, error: undefined };
   } catch (error) {
     unstable_rethrow(error);
     console.error('Erro ao confirmar pagamento:', error);
-    throw new Error(error instanceof Error ? error.message : 'Falha ao confirmar pagamento do pedido.');
+    return {
+      success: false,
+      finalized: false,
+      divergent: false,
+      error: error instanceof Error ? error.message : 'Falha ao confirmar pagamento do pedido.',
+    };
   }
 }

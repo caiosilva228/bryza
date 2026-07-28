@@ -6,6 +6,7 @@ import { getStoreProductsAction, getStoreUserInfoAction, createStoreOrderAction,
 import { toast } from 'sonner';
 
 import LojaCheckoutModal from './LojaCheckoutModal';
+import styles from './loja.module.css';
 
 export default function LojaVirtualPage() {
   const [loading, setLoading] = useState(true);
@@ -33,6 +34,7 @@ export default function LojaVirtualPage() {
   const [scheduledDate, setScheduledDate] = useState('');
   const [period, setPeriod] = useState('manhademanha');
   const [paymentMethod, setPaymentMethod] = useState('PIX');
+  const [paymentTiming] = useState<'agora' | 'na_entrega'>('na_entrega');
   const [notes, setNotes] = useState('');
 
   // Modais & Steps
@@ -286,6 +288,7 @@ export default function LojaVirtualPage() {
         scheduledDate,
         period,
         paymentMethod,
+        paymentTiming,
         notes,
         items: cartItemsDetailed.map(item => ({
           produto_id: item.produto.id,
@@ -319,7 +322,7 @@ export default function LojaVirtualPage() {
   };
 
   return (
-    <div style={{ 
+    <div className={styles.storePage} style={{
       minHeight: '100vh', 
       backgroundColor: '#f8fafc', 
       fontFamily: 'Inter, Arial, sans-serif',
@@ -329,7 +332,7 @@ export default function LojaVirtualPage() {
     }}>
       
       {/* 1. Header do Site (Design Limpo: Logo + Perfil + Ícone de Carrinho) */}
-      <header style={{
+      <header className={styles.siteHeader} style={{
         backgroundColor: '#ffffff',
         borderBottom: '1px solid #e2e8f0',
         position: 'sticky',
@@ -337,7 +340,7 @@ export default function LojaVirtualPage() {
         zIndex: 100,
         boxShadow: '0 2px 10px rgba(0,0,0,0.04)'
       }}>
-        <div style={{
+        <div className={styles.headerInner} style={{
           maxWidth: '1280px',
           margin: '0 auto',
           padding: '12px 24px',
@@ -347,19 +350,21 @@ export default function LojaVirtualPage() {
           gap: '24px'
         }}>
           {/* Logo Oficial da Bryza */}
-          <a href="/loja" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+          <a className={styles.logoLink} href="/loja" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
             <img 
               src="/Logo Bryza.svg" 
               alt="Bryza - O perfume que envolve a Paranoá" 
+              className={styles.logoImage}
               style={{ height: '44px', objectFit: 'contain' }} 
             />
           </a>
 
           {/* Lado Direito: Botão Espaço do Embaixador & Ícone do Carrinho */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div className={styles.headerActions} style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             
             <a 
               href="/embaixador/dashboard" 
+              className={styles.ambassadorLink}
               style={{
                 border: '1.5px solid #051329',
                 color: '#051329',
@@ -384,6 +389,8 @@ export default function LojaVirtualPage() {
               <button
                 onClick={() => { setIsCartOpen(true); setStep('carrinho'); }}
                 title="Ver Carrinho"
+                className={styles.headerCartButton}
+                aria-label="Abrir carrinho"
                 style={{
                   backgroundColor: '#AEDB45',
                   color: '#051329',
@@ -440,7 +447,7 @@ export default function LojaVirtualPage() {
       </header>
 
       {/* 2. Red Announcement Bar (Aviso de Área de Atuação - Bryza.com.br) */}
-      <div style={{
+      <div className={styles.announcement} style={{
         backgroundColor: '#dc2626',
         color: '#ffffff',
         padding: '10px 16px',
@@ -454,15 +461,15 @@ export default function LojaVirtualPage() {
       </div>
 
       {/* 3. Sub-header Claro de Pesquisa & Boas-Vindas (Substituído fundo escuro por claro) */}
-      <div style={{
+      <div className={styles.hero} style={{
         backgroundColor: '#ffffff',
         color: '#051329',
         padding: '24px',
         borderBottom: '1px solid #e2e8f0',
         boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
       }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
-          <div>
+        <div className={styles.heroInner} style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
+          <div className={styles.heroCopy}>
             <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 800, color: '#051329' }}>
               Produtos Direto da Fábrica
             </h1>
@@ -472,7 +479,7 @@ export default function LojaVirtualPage() {
           </div>
 
           {/* Campo de Busca Rápida (Fundo Claro) */}
-          <div style={{ flex: 1, maxWidth: '420px', minWidth: '240px', position: 'relative' }}>
+          <div className={styles.searchBox} style={{ flex: 1, maxWidth: '420px', minWidth: '240px', position: 'relative' }}>
             <span className="material-symbols-outlined" style={{
               position: 'absolute',
               left: '14px',
@@ -503,12 +510,12 @@ export default function LojaVirtualPage() {
       </div>
 
       {/* 4. Área Principal do E-Commerce (Sidebar + Grid de Produtos) */}
-      <main id="catalogo" style={{ maxWidth: '1280px', margin: '32px auto', padding: '0 24px', flex: 1, width: '100%' }}>
+      <main id="catalogo" className={styles.catalogMain} style={{ maxWidth: '1280px', margin: '32px auto', padding: '0 24px', flex: 1, width: '100%' }}>
         
-        <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '32px', alignItems: 'start' }}>
+        <div className={styles.catalogLayout} style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '32px', alignItems: 'start' }}>
           
           {/* SIDEBAR DE FILTROS E-COMMERCE */}
-          <aside style={{
+          <aside className={styles.filters} style={{
             backgroundColor: '#ffffff',
             borderRadius: '16px',
             border: '1px solid #e2e7ef',
@@ -616,10 +623,10 @@ export default function LojaVirtualPage() {
           </aside>
 
           {/* ÁREA DE PRODUTOS & TOOLBAR DE ORDENAÇÃO */}
-          <div>
+          <div className={styles.catalogContent}>
             
             {/* Toolbar Superior do Catálogo */}
-            <div style={{
+            <div className={styles.catalogToolbar} style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -636,7 +643,7 @@ export default function LojaVirtualPage() {
               </span>
 
               {/* Ordenação */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div className={styles.sortControls} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>Ordenar por:</span>
                 <select 
                   value={sortOrder}
@@ -669,7 +676,7 @@ export default function LojaVirtualPage() {
                 <p style={{ marginTop: '12px', fontWeight: 600, color: '#64748b' }}>Carregando catálogo Bryza...</p>
               </div>
             ) : produtosFiltrados.length === 0 ? (
-              <div style={{
+              <div className={styles.productsGrid} style={{
                 textAlign: 'center',
                 padding: '80px 20px',
                 backgroundColor: '#ffffff',
@@ -699,7 +706,8 @@ export default function LojaVirtualPage() {
                   const hasStock = p.estoque_atual > 0;
 
                   return (
-                    <article 
+                    <article
+                      className={styles.productCard}
                       key={p.id}
                       style={{
                         backgroundColor: '#ffffff',
@@ -724,7 +732,8 @@ export default function LojaVirtualPage() {
                       }}
                     >
                       {/* Crop da Imagem (Clicável) */}
-                      <div 
+                      <div
+                        className={styles.productImage}
                         onClick={() => setDetailProduct(p)}
                         style={{
                           height: '200px',
@@ -886,7 +895,7 @@ export default function LojaVirtualPage() {
       </main>
 
       {/* 5. Botão Flutuante de Suporte no WhatsApp + Balão de Chamada com Botão Fechar X */}
-      <div style={{
+      <div className={styles.whatsappFloat} style={{
         position: 'fixed',
         bottom: totalCartCount > 0 && !isCartOpen ? '96px' : '24px',
         right: '24px',
@@ -978,6 +987,7 @@ export default function LojaVirtualPage() {
 
         {/* Botão Ícone WhatsApp (Vetor Oficial Perfeito) */}
         <a
+          className={styles.whatsappButton}
           href="https://wa.me/556132462117?text=Ol%C3%A1!%20Estou%20na%20Loja%20Virtual%20Bryza%20e%20gostaria%20de%20tirar%20uma%20d%C3%BAvida%20sobre%20os%20produtos."
           target="_blank"
           rel="noopener noreferrer"
@@ -1007,7 +1017,7 @@ export default function LojaVirtualPage() {
 
       {/* 6. Floating Bottom Cart Bar */}
       {totalCartCount > 0 && !isCartOpen && (
-        <div style={{
+        <div className={styles.floatingCart} style={{
           position: 'fixed',
           bottom: '24px',
           right: '24px',
@@ -1029,6 +1039,7 @@ export default function LojaVirtualPage() {
             <strong style={{ fontSize: '18px', color: '#ffffff' }}>{formatCurrency(totalCartValue)}</strong>
           </div>
           <button
+            className={styles.floatingCartButton}
             onClick={() => { setIsCartOpen(true); setStep('carrinho'); }}
             style={{
               backgroundColor: '#ffffff',
@@ -1056,7 +1067,7 @@ export default function LojaVirtualPage() {
 
       {/* 6.5. Modal de Detalhes do Produto ao Clicar no Item */}
       {detailProduct && (
-        <div style={{
+        <div className={styles.productModalOverlay} style={{
           position: 'fixed',
           inset: 0,
           backgroundColor: 'rgba(15,23,42,0.65)',
@@ -1068,7 +1079,7 @@ export default function LojaVirtualPage() {
           padding: '20px'
         }} onClick={() => setDetailProduct(null)}>
           
-          <div style={{
+          <div className={styles.productModal} style={{
             backgroundColor: '#ffffff',
             borderRadius: '24px',
             width: '100%',
@@ -1083,6 +1094,7 @@ export default function LojaVirtualPage() {
 
             {/* Botão Fechar Modal X */}
             <button
+              className={styles.iconButton}
               onClick={() => setDetailProduct(null)}
               title="Fechar detalhes"
               style={{
@@ -1115,10 +1127,10 @@ export default function LojaVirtualPage() {
             </button>
 
             {/* Conteúdo Principal do Modal */}
-            <div style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className={styles.productModalContent} style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
               
               {/* Imagem do Produto */}
-              <div style={{
+              <div className={styles.productModalImage} style={{
                 height: '240px',
                 backgroundColor: '#f8fafc',
                 borderRadius: '16px',
@@ -1266,7 +1278,7 @@ export default function LojaVirtualPage() {
 
       {/* 7. Side Drawer do Carrinho & Checkout */}
       {isCartOpen && (
-        <div style={{
+        <div className={styles.cartOverlay} style={{
           position: 'fixed',
           inset: 0,
           backgroundColor: 'rgba(15,23,42,0.5)',
@@ -1276,7 +1288,7 @@ export default function LojaVirtualPage() {
           justifyContent: 'flex-end'
         }} onClick={() => setIsCartOpen(false)}>
           
-          <div style={{
+          <div className={styles.cartDrawer} style={{
             backgroundColor: '#ffffff',
             width: '100%',
             maxWidth: '540px',
@@ -1287,7 +1299,7 @@ export default function LojaVirtualPage() {
           }} onClick={e => e.stopPropagation()}>
             
             {/* Header do Drawer - Verde Logo Bryza */}
-            <div style={{
+            <div className={styles.cartHeader} style={{
               padding: '20px 24px',
               background: 'linear-gradient(135deg, #009845 0%, #047857 100%)',
               color: '#ffffff',
@@ -1338,7 +1350,8 @@ export default function LojaVirtualPage() {
                   </button>
                 )}
 
-                <button 
+                <button
+                  className={styles.iconButton}
                   onClick={() => setIsCartOpen(false)}
                   style={{
                     background: 'rgba(255,255,255,0.15)',
@@ -1361,7 +1374,7 @@ export default function LojaVirtualPage() {
             </div>
 
             {/* Banner Informativo de Frete Grátis & Região */}
-            <div style={{
+            <div className={styles.deliveryBanner} style={{
               backgroundColor: '#f0fdf4',
               borderBottom: '1px solid #bbf7d0',
               padding: '12px 24px',
@@ -1399,7 +1412,7 @@ export default function LojaVirtualPage() {
             </div>
 
             {/* Conteúdo do Drawer (Lista de Produtos & Resumo) */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className={styles.cartBody} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
               {cartItemsDetailed.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '60px 0' }}>
@@ -1449,7 +1462,7 @@ export default function LojaVirtualPage() {
                     {cartItemsDetailed.map(item => {
                       const itemSubtotal = item.produto.preco_venda * item.quantidade;
                       return (
-                        <div key={item.produto.id} style={{
+                        <div key={item.produto.id} className={styles.cartItem} style={{
                           display: 'flex',
                           alignItems: 'center',
                           gap: '14px',
@@ -1485,7 +1498,7 @@ export default function LojaVirtualPage() {
                           </div>
 
                           {/* Detalhes do Produto */}
-                          <div style={{ flex: 1 }}>
+                          <div className={styles.cartItemDetails} style={{ flex: 1 }}>
                             <h4
                               onClick={() => setDetailProduct(item.produto)}
                               style={{ margin: '0 0 4px', fontSize: '14.5px', fontWeight: 700, color: '#0f172a', lineHeight: 1.25, cursor: 'pointer' }}
@@ -1507,6 +1520,7 @@ export default function LojaVirtualPage() {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#f1f5f9', borderRadius: '8px', padding: '2px' }}>
                                 <button
+                                  className={styles.quantityButton}
                                   onClick={() => updateQuantity(item.produto.id, -1)}
                                   style={{
                                     width: '28px',
@@ -1554,6 +1568,7 @@ export default function LojaVirtualPage() {
                                   }}
                                 />
                                 <button
+                                  className={styles.quantityButton}
                                   onClick={() => updateQuantity(item.produto.id, 1)}
                                   style={{
                                     width: '28px',
@@ -1572,6 +1587,7 @@ export default function LojaVirtualPage() {
                               </div>
 
                               <button
+                                className={styles.removeItemButton}
                                 onClick={() => removeFromCart(item.produto.id)}
                                 title="Remover item"
                                 style={{
@@ -1658,7 +1674,7 @@ export default function LojaVirtualPage() {
                       gap: '4px'
                     }}>
                       <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#009845' }}>verified_user</span>
-                      <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#334155', lineHeight: 1.2 }}>Pague na Entrega</span>
+                      <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#334155', lineHeight: 1.2 }}>Pague agora ou na entrega</span>
                     </div>
 
                     <div style={{
@@ -1697,7 +1713,7 @@ export default function LojaVirtualPage() {
 
             {/* Rodapé Fixo de Ação */}
             {cartItemsDetailed.length > 0 && (
-              <div style={{
+              <div className={styles.cartFooter} style={{
                 padding: '20px 24px',
                 borderTop: '1px solid #e2e8f0',
                 backgroundColor: '#ffffff',
@@ -1772,14 +1788,14 @@ export default function LojaVirtualPage() {
       )}
 
       {/* 8. Rodapé E-Commerce Completo Bryza (Fundo Escuro #051329) */}
-      <footer style={{
+      <footer className={styles.footer} style={{
         backgroundColor: '#051329',
         color: '#ffffff',
         padding: '60px 24px 24px',
         marginTop: '60px',
         borderTop: '1px solid rgba(255,255,255,0.1)'
       }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '40px', marginBottom: '40px' }}>
+        <div className={styles.footerGrid} style={{ maxWidth: '1280px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '40px', marginBottom: '40px' }}>
           
           {/* Coluna 1: Sobre a Bryza */}
           <div>
@@ -1823,9 +1839,9 @@ export default function LojaVirtualPage() {
 
           {/* Coluna 4: Pagamento & Segurança */}
           <div>
-            <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px' }}>Pagamento na Entrega</h4>
+            <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px' }}>Pagamento flexível</h4>
             <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.5, marginBottom: '12px' }}>
-              Pague somente ao receber o pedido em sua casa:
+              Pague agora com Mercado Pago ou escolha pagar ao receber:
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {['PIX', 'Dinheiro', 'Cartão Crédito', 'Cartão Débito'].map(p => (
@@ -1839,7 +1855,7 @@ export default function LojaVirtualPage() {
         </div>
 
         {/* Linha de Copyright */}
-        <div style={{ maxWidth: '1280px', margin: '0 auto', paddingTop: '24px', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
+        <div className={styles.footerBottom} style={{ maxWidth: '1280px', margin: '0 auto', paddingTop: '24px', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
           <span>© 2026 Bryza Produtos de Limpeza. Todos os direitos reservados.</span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span className="material-symbols-outlined" style={{ fontSize: '14px', color: '#5a8216' }}>lock</span>

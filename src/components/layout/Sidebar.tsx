@@ -62,6 +62,7 @@ export const Sidebar = () => {
       return [
         { label: 'Visão geral', path: '/embaixador/dashboard', icon: 'space_dashboard' },
         { label: 'Fazer Pedido (Loja)', path: '/loja', icon: 'storefront' },
+        { label: 'Meus pedidos', path: '/embaixador/meus-pedidos', icon: 'package_2' },
         { label: 'Minhas indicações', path: '/embaixador/indicacoes', icon: 'person_add' },
         { label: 'Minha rede', path: '/embaixador/minha-rede', icon: 'hub' },
         { label: 'Vendas da rede', path: '/embaixador/vendas', icon: 'shopping_bag' },

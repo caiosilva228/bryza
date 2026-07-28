@@ -42,7 +42,7 @@ export const kitItems = [
 export const steps = [
   { title: 'Agende o pedido', text: 'Preencha seus dados e escolha o melhor período para receber.' },
   { title: 'Confirme sua região', text: 'A equipe Bryza verificará a disponibilidade da rota no seu endereço.' },
-  { title: 'Receba em casa', text: 'O kit é entregue completo e você paga somente na entrega.' },
+  { title: 'Receba em casa', text: 'O kit é entregue completo e você escolhe pagar agora ou na entrega.' },
 ] as const;
 
 export const faqs = [
@@ -64,7 +64,7 @@ export const faqs = [
   {
     id: 'pagamento-antecipado',
     question: 'Preciso pagar antecipadamente?',
-    answer: 'Não. Você não precisa realizar nenhum pagamento para solicitar o agendamento. O pagamento acontece somente quando o Kit Bryza for entregue.',
+    answer: 'Não. Você pode escolher pagar agora pelo Mercado Pago ou somente quando o Kit Bryza for entregue.',
   },
   {
     id: 'entrega-gratis',
@@ -79,7 +79,7 @@ export const faqs = [
   {
     id: 'formas-pagamento',
     question: 'Quais formas de pagamento são aceitas?',
-    answer: 'O pagamento é realizado somente na entrega. Você pode pagar por Pix, dinheiro ou cartão, conforme disponibilidade informada pela equipe.',
+    answer: 'Você escolhe pagar agora pelo checkout seguro do Mercado Pago ou na entrega por Pix, dinheiro ou cartão.',
   },
   {
     id: 'indicacao-preco',
@@ -188,4 +188,3 @@ export const realTestimonials: TestimonialItem[] = [
     isPublished: true,
   },
 ];
-

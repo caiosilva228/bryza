@@ -24,7 +24,7 @@ export default function PrivacidadePage() {
           1. Dados Coletados
         </h2>
         <p style={{ color: 'rgba(255,255,255,0.8)', lineHeight: '1.6', marginBottom: '16px' }}>
-          Para processar a sua solicitação de agendamento do Kit Bryza, podemos coletar: nome completo, telefone/WhatsApp, endereço de entrega, cidade, bairro, preferência de horário e forma de pagamento escolhida para o momento da entrega.
+          Para processar a sua solicitação de agendamento do Kit Bryza, podemos coletar: nome completo, telefone/WhatsApp, endereço de entrega, cidade, bairro, preferência de horário, opção de pagar agora ou na entrega e forma de pagamento escolhida.
         </p>
 
         <h2 style={{ fontSize: '20px', fontWeight: '700', marginTop: '28px', marginBottom: '12px', color: '#a6ce39' }}>
