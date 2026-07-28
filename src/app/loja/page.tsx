@@ -5,6 +5,8 @@ import { Produto } from '@/models/types';
 import { getStoreProductsAction, getStoreUserInfoAction, createStoreOrderAction, StoreCartItem } from './actions';
 import { toast } from 'sonner';
 
+import LojaCheckoutModal from './LojaCheckoutModal';
+
 export default function LojaVirtualPage() {
   const [loading, setLoading] = useState(true);
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -35,6 +37,7 @@ export default function LojaVirtualPage() {
 
   // Modais & Steps
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [step, setStep] = useState<'carrinho' | 'checkout' | 'sucesso'>('carrinho');
   const [submitting, setSubmitting] = useState(false);
   const [showHelpTooltip, setShowHelpTooltip] = useState(true);
@@ -1285,97 +1288,195 @@ export default function LojaVirtualPage() {
             
             {/* Header do Drawer - Verde Logo Bryza */}
             <div style={{
-              padding: '24px',
+              padding: '20px 24px',
               background: 'linear-gradient(135deg, #009845 0%, #047857 100%)',
               color: '#ffffff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              boxShadow: '0 4px 20px rgba(0,152,69,0.2)'
+              boxShadow: '0 4px 20px rgba(0,152,69,0.25)'
             }}>
               <div>
-                <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#ffffff' }}>
-                  {step === 'carrinho' && 'Seu Carrinho Bryza'}
-                  {step === 'checkout' && 'Finalizar Agendamento'}
-                  {step === 'sucesso' && 'Pedido Confirmado!'}
+                <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#ffffff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>shopping_cart</span>
+                  Seu Carrinho Bryza
                 </h2>
-                <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.9)', fontWeight: 500 }}>
-                  {step === 'carrinho' && `${totalCartCount} produtos adicionados`}
-                  {step === 'checkout' && (isLoggedIn ? 'Confirme seus dados para agendamento' : 'Preencha seus dados para agendamento')}
-                  {step === 'sucesso' && 'Confirme seu pedido via WhatsApp'}
+                <span style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.9)', fontWeight: 500 }}>
+                  {totalCartCount === 0 ? 'Carrinho vazio' : `${totalCartCount} ${totalCartCount === 1 ? 'item adicionado' : 'itens adicionados'}`}
                 </span>
               </div>
-              <button 
-                onClick={() => setIsCartOpen(false)}
-                style={{
-                  background: 'rgba(255,255,255,0.15)',
-                  border: 'none',
-                  color: '#ffffff',
-                  cursor: 'pointer',
-                  padding: '6px',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'background 0.2s'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>close</span>
-              </button>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {cartItemsDetailed.length > 0 && (
+                  <button
+                    onClick={() => {
+                      if (confirm('Deseja realmente remover todos os itens do carrinho?')) {
+                        setCart(new Map());
+                        localStorage.removeItem('bryza_store_cart');
+                        toast.success('Carrinho limpo.');
+                      }
+                    }}
+                    style={{
+                      background: 'rgba(255,255,255,0.15)',
+                      border: 'none',
+                      color: '#ffffff',
+                      cursor: 'pointer',
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.3)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
+                    Limpar
+                  </button>
+                )}
+
+                <button 
+                  onClick={() => setIsCartOpen(false)}
+                  style={{
+                    background: 'rgba(255,255,255,0.15)',
+                    border: 'none',
+                    color: '#ffffff',
+                    cursor: 'pointer',
+                    padding: '6px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'background 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>close</span>
+                </button>
+              </div>
             </div>
 
-            {/* Conteúdo do Drawer */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+            {/* Banner Informativo de Frete Grátis & Região */}
+            <div style={{
+              backgroundColor: '#f0fdf4',
+              borderBottom: '1px solid #bbf7d0',
+              padding: '12px 24px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              <div style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: '50%',
+                backgroundColor: '#dcfce7',
+                border: '1px solid #86efac',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                color: '#16a34a'
+              }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>local_shipping</span>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 800, color: '#166534' }}>
+                    Frete Grátis Ativado 🎉
+                  </span>
+                  <span style={{ fontSize: '11px', fontWeight: 800, color: '#15803d', backgroundColor: '#dcfce7', padding: '2px 8px', borderRadius: '999px' }}>
+                    GRÁTIS
+                  </span>
+                </div>
+                <p style={{ margin: '2px 0 0', fontSize: '11.5px', color: '#15803d', lineHeight: 1.3 }}>
+                  Entrega direta da fábrica para Cidade Ocidental, Valparaíso, Novo Gama e Luziânia.
+                </p>
+              </div>
+            </div>
 
-              {/* PASSO 1: CARRINHO */}
-              {step === 'carrinho' && (
-                <div>
-                  {cartItemsDetailed.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '60px 0' }}>
-                      <div style={{
-                        width: '80px',
-                        height: '80px',
-                        borderRadius: '50%',
-                        backgroundColor: '#f0fdf4',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        margin: '0 auto 16px',
-                        border: '1px solid #bbf7d0'
-                      }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: '42px', color: '#009845' }}>
-                          shopping_basket
-                        </span>
-                      </div>
-                      <p style={{ marginTop: '12px', color: '#0f172a', fontWeight: 700, fontSize: '16px' }}>Seu carrinho está vazio.</p>
-                      <p style={{ color: '#64748b', fontSize: '13.5px', margin: '4px 0 0' }}>Navegue pelo catálogo e adicione os produtos desejados.</p>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                      {cartItemsDetailed.map(item => (
+            {/* Conteúdo do Drawer (Lista de Produtos & Resumo) */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+              {cartItemsDetailed.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '60px 0' }}>
+                  <div style={{
+                    width: '84px',
+                    height: '84px',
+                    borderRadius: '50%',
+                    backgroundColor: '#f0fdf4',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 16px',
+                    border: '1px solid #bbf7d0',
+                    boxShadow: '0 8px 20px rgba(0,152,69,0.1)'
+                  }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '46px', color: '#009845' }}>
+                      shopping_basket
+                    </span>
+                  </div>
+                  <p style={{ marginTop: '12px', color: '#0f172a', fontWeight: 800, fontSize: '17px' }}>Seu carrinho está vazio</p>
+                  <p style={{ color: '#64748b', fontSize: '13.5px', margin: '6px 0 20px' }}>Adicione produtos concentrados de alta qualidade Bryza.</p>
+                  <button
+                    onClick={() => setIsCartOpen(false)}
+                    style={{
+                      padding: '12px 24px',
+                      backgroundColor: '#009845',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontWeight: 800,
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 14px rgba(0,152,69,0.3)'
+                    }}
+                  >
+                    Ver Produtos na Loja
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* Lista de Produtos Adicionados */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Itens Escolhidos ({cartItemsDetailed.length})
+                    </span>
+
+                    {cartItemsDetailed.map(item => {
+                      const itemSubtotal = item.produto.preco_venda * item.quantidade;
+                      return (
                         <div key={item.produto.id} style={{
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '16px',
-                          padding: '16px',
-                          borderRadius: '12px',
-                          backgroundColor: '#f8fafc',
-                          border: '1px solid #e2e8f0'
+                          gap: '14px',
+                          padding: '14px 16px',
+                          borderRadius: '16px',
+                          backgroundColor: '#ffffff',
+                          border: '1px solid #e2e8f0',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
                         }}>
-                          <div style={{
-                            width: '60px',
-                            height: '60px',
-                            borderRadius: '8px',
-                            backgroundColor: '#ffffff',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            overflow: 'hidden',
-                            flexShrink: 0,
-                            border: '1px solid #e2e8f0'
-                          }}>
+                          {/* Imagem do Produto */}
+                          <div
+                            onClick={() => setDetailProduct(item.produto)}
+                            style={{
+                              width: '64px',
+                              height: '64px',
+                              borderRadius: '12px',
+                              backgroundColor: '#f8fafc',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              overflow: 'hidden',
+                              flexShrink: 0,
+                              border: '1px solid #e2e8f0',
+                              cursor: 'pointer',
+                              padding: '4px'
+                            }}
+                          >
                             {item.produto.imagem_url ? (
                               <img src={item.produto.imagem_url} alt={item.produto.nome_produto} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                             ) : (
@@ -1383,417 +1484,291 @@ export default function LojaVirtualPage() {
                             )}
                           </div>
 
+                          {/* Detalhes do Produto */}
                           <div style={{ flex: 1 }}>
-                            <h4 style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: 700, color: '#0f172a' }}>
+                            <h4
+                              onClick={() => setDetailProduct(item.produto)}
+                              style={{ margin: '0 0 4px', fontSize: '14.5px', fontWeight: 700, color: '#0f172a', lineHeight: 1.25, cursor: 'pointer' }}
+                            >
                               {item.produto.nome_produto}
                             </h4>
-                            <span style={{ fontSize: '14px', fontWeight: 800, color: '#009845' }}>
-                              {formatCurrency(item.produto.preco_venda)}
-                            </span>
-                          </div>
-
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <button
-                                onClick={() => updateQuantity(item.produto.id, -1)}
-                                style={{ width: '32px', height: '32px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#ffffff', fontWeight: 800, cursor: 'pointer', color: '#0f172a' }}
-                              >
-                                -
-                              </button>
-                              <input
-                                type="number"
-                                min="1"
-                                value={item.quantidade}
-                                onChange={(e) => {
-                                  const val = parseInt(e.target.value, 10);
-                                  if (!isNaN(val)) {
-                                    setDirectQuantity(item.produto.id, val);
-                                  } else {
-                                    setDirectQuantity(item.produto.id, 0);
-                                  }
-                                }}
-                                onBlur={(e) => {
-                                  const val = parseInt(e.target.value, 10);
-                                  if (isNaN(val) || val <= 0) {
-                                    removeFromCart(item.produto.id);
-                                  }
-                                }}
-                                style={{
-                                  width: '48px',
-                                  height: '32px',
-                                  borderRadius: '6px',
-                                  border: '1px solid #cbd5e1',
-                                  backgroundColor: '#ffffff',
-                                  textAlign: 'center',
-                                  fontWeight: 800,
-                                  fontSize: '14px',
-                                  color: '#0f172a',
-                                  outline: 'none',
-                                  padding: '0 2px'
-                                }}
-                              />
-                              <button
-                                onClick={() => updateQuantity(item.produto.id, 1)}
-                                style={{ width: '32px', height: '32px', borderRadius: '6px', border: 'none', background: '#009845', color: '#ffffff', fontWeight: 800, cursor: 'pointer' }}
-                              >
-                                +
-                              </button>
+                            
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                              <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>
+                                {formatCurrency(item.produto.preco_venda)} / un
+                              </span>
+                              <span style={{ fontSize: '11px', color: '#94a3b8' }}>•</span>
+                              <span style={{ fontSize: '12.5px', fontWeight: 800, color: '#009845' }}>
+                                Subtotal: {formatCurrency(itemSubtotal)}
+                              </span>
                             </div>
 
-                            {/* Botão X para Zerar/Remover Produto */}
-                            <button
-                              onClick={() => removeFromCart(item.produto.id)}
-                              title="Remover este produto do carrinho"
-                              style={{
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '6px',
-                                border: '1px solid #fecaca',
-                                backgroundColor: '#fef2f2',
-                                color: '#ef4444',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                transition: 'all 0.15s ease',
-                                marginLeft: '4px'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = '#ef4444';
-                                e.currentTarget.style.color = '#ffffff';
-                                e.currentTarget.style.borderColor = '#dc2626';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = '#fef2f2';
-                                e.currentTarget.style.color = '#ef4444';
-                                e.currentTarget.style.borderColor = '#fecaca';
-                              }}
-                            >
-                              <span className="material-symbols-outlined" style={{ fontSize: '18px', fontWeight: 700 }}>close</span>
-                            </button>
+                            {/* Controles de Quantidade */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#f1f5f9', borderRadius: '8px', padding: '2px' }}>
+                                <button
+                                  onClick={() => updateQuantity(item.produto.id, -1)}
+                                  style={{
+                                    width: '28px',
+                                    height: '28px',
+                                    borderRadius: '6px',
+                                    border: 'none',
+                                    background: '#ffffff',
+                                    fontWeight: 800,
+                                    cursor: 'pointer',
+                                    color: '#0f172a',
+                                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                                  }}
+                                >
+                                  -
+                                </button>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  value={item.quantidade}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value, 10);
+                                    if (!isNaN(val)) {
+                                      setDirectQuantity(item.produto.id, val);
+                                    } else {
+                                      setDirectQuantity(item.produto.id, 0);
+                                    }
+                                  }}
+                                  onBlur={(e) => {
+                                    const val = parseInt(e.target.value, 10);
+                                    if (isNaN(val) || val <= 0) {
+                                      removeFromCart(item.produto.id);
+                                    }
+                                  }}
+                                  style={{
+                                    width: '38px',
+                                    height: '28px',
+                                    borderRadius: '6px',
+                                    border: 'none',
+                                    backgroundColor: 'transparent',
+                                    textAlign: 'center',
+                                    fontWeight: 800,
+                                    fontSize: '13.5px',
+                                    color: '#0f172a',
+                                    outline: 'none'
+                                  }}
+                                />
+                                <button
+                                  onClick={() => updateQuantity(item.produto.id, 1)}
+                                  style={{
+                                    width: '28px',
+                                    height: '28px',
+                                    borderRadius: '6px',
+                                    border: 'none',
+                                    background: '#009845',
+                                    color: '#ffffff',
+                                    fontWeight: 800,
+                                    cursor: 'pointer',
+                                    boxShadow: '0 1px 3px rgba(0,152,69,0.3)'
+                                  }}
+                                >
+                                  +
+                                </button>
+                              </div>
+
+                              <button
+                                onClick={() => removeFromCart(item.produto.id)}
+                                title="Remover item"
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  color: '#94a3b8',
+                                  cursor: 'pointer',
+                                  padding: '4px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  transition: 'color 0.15s'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.color = '#dc2626'}
+                                onMouseLeave={(e) => e.currentTarget.style.color = '#94a3b8'}
+                              >
+                                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span>
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* PASSO 2: CHECKOUT */}
-              {step === 'checkout' && (
-                <form id="checkout-form" onSubmit={handleFinalizeOrder} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  
-                  {/* Dados do Cliente */}
-                  <div style={{ padding: '18px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                    <h3 style={{ margin: '0 0 14px', fontSize: '15px', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span className="material-symbols-outlined" style={{ color: '#009845' }}>person</span>
-                      Seus Dados Pessoais
-                    </h3>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <div>
-                        <label style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Nome Completo *</label>
-                        <input 
-                          type="text" 
-                          required
-                          value={clientName}
-                          onChange={(e) => setClientName(e.target.value)}
-                          placeholder="Ex: Maria das Graças Silva"
-                          style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }}
-                        />
-                      </div>
-
-                      <div>
-                        <label style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Telefone / WhatsApp *</label>
-                        <input 
-                          type="tel" 
-                          required
-                          value={clientPhone}
-                          onChange={(e) => setClientPhone(e.target.value)}
-                          placeholder="Ex: 61999999999"
-                          style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }}
-                        />
-                      </div>
-                    </div>
+                      );
+                    })}
                   </div>
 
-                  {/* Endereço de Entrega */}
-                  <div style={{ padding: '18px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                    <h3 style={{ margin: '0 0 14px', fontSize: '15px', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span className="material-symbols-outlined" style={{ color: '#009845' }}>location_on</span>
-                      Endereço de Entrega
-                    </h3>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <div>
-                        <label style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Logradouro / Rua *</label>
-                        <input 
-                          type="text" 
-                          required
-                          value={address}
-                          onChange={(e) => setAddress(e.target.value)}
-                          placeholder="Ex: QNN 18 Conjunto B"
-                          style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }}
-                        />
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '10px' }}>
-                        <div>
-                          <label style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Número</label>
-                          <input 
-                            type="text" 
-                            value={number}
-                            onChange={(e) => setNumber(e.target.value)}
-                            placeholder="Ex: Casa 12"
-                            style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }}
-                          />
-                        </div>
-                        <div>
-                          <label style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Bairro / Setor *</label>
-                          <input 
-                            type="text" 
-                            required
-                            value={neighborhood}
-                            onChange={(e) => setNeighborhood(e.target.value)}
-                            placeholder="Ex: Ceilândia Sul"
-                            style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }}
-                          />
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
-                        <div>
-                          <label style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Cidade *</label>
-                          <input 
-                            type="text" 
-                            required
-                            value={city}
-                            onChange={(e) => setCity(e.target.value)}
-                            style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }}
-                          />
-                        </div>
-                        <div>
-                          <label style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>UF *</label>
-                          <input 
-                            type="text" 
-                            required
-                            value={state}
-                            onChange={(e) => setState(e.target.value)}
-                            style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Agendamento */}
-                  <div style={{ padding: '18px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                    <h3 style={{ margin: '0 0 14px', fontSize: '15px', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span className="material-symbols-outlined" style={{ color: '#009845' }}>calendar_month</span>
-                      Agendamento da Entrega (Próximos 5 dias)
-                    </h3>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <div>
-                        <label style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Dia de Agendamento</label>
-                        <select 
-                          value={scheduledDate}
-                          onChange={(e) => setScheduledDate(e.target.value)}
-                          style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', backgroundColor: '#ffffff' }}
-                        >
-                          {nextDaysOptions.map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Período Preferencial</label>
-                        <select 
-                          value={period}
-                          onChange={(e) => setPeriod(e.target.value)}
-                          style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', backgroundColor: '#ffffff' }}
-                        >
-                          <option value="manhademanha">Manhã (08:00 - 12:00)</option>
-                          <option value="tarde">Tarde (13:00 - 18:00)</option>
-                          <option value="noite">Noite (18:00 - 21:00)</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Forma de Pagamento */}
-                  <div style={{ padding: '18px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                    <h3 style={{ margin: '0 0 14px', fontSize: '15px', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span className="material-symbols-outlined" style={{ color: '#009845' }}>payments</span>
-                      Forma de Pagamento na Entrega
-                    </h3>
-
-                    <select 
-                      value={paymentMethod}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', backgroundColor: '#ffffff' }}
-                    >
-                      <option value="PIX">PIX</option>
-                      <option value="Dinheiro">Dinheiro</option>
-                      <option value="Cartão de Crédito/Débito">Cartão de Crédito/Débito</option>
-                    </select>
-                  </div>
-
-                  {/* Observações */}
-                  <div>
-                    <label style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Observações (Opcional)</label>
-                    <textarea 
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Instruções de entrega, ponto de referência..."
-                      style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', minHeight: '60px' }}
-                    />
-                  </div>
-                </form>
-              )}
-
-              {/* PASSO 3: SUCESSO & WHATSAPP */}
-              {step === 'sucesso' && lastOrder && (
-                <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                  {/* Card de Resumo do Valor & Benefícios */}
                   <div style={{
-                    width: '72px',
-                    height: '72px',
-                    borderRadius: '50%',
-                    backgroundColor: '#f0fdf4',
-                    color: '#009845',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '0 auto 16px',
-                    border: '1px solid #bbf7d0'
-                  }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: '40px' }}>check_circle</span>
-                  </div>
-
-                  <h3 style={{ margin: '0 0 6px', fontSize: '22px', fontWeight: 800, color: '#0f172a' }}>
-                    Pedido #{lastOrder.number} Agendado!
-                  </h3>
-                  <p style={{ margin: '0 0 24px', color: '#64748b', fontSize: '14px' }}>
-                    Seu pedido foi registrado no sistema com sucesso.
-                  </p>
-
-                  <div style={{
-                    padding: '20px',
                     backgroundColor: '#f8fafc',
                     borderRadius: '16px',
                     border: '1px solid #e2e8f0',
-                    textAlign: 'left',
-                    marginBottom: '28px'
+                    padding: '18px 20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px'
                   }}>
-                    <h4 style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>Resumo da Entrega</h4>
-                    <p style={{ margin: '6px 0', fontSize: '13.5px', color: '#334155' }}>• <strong>Cliente:</strong> {clientName}</p>
-                    <p style={{ margin: '6px 0', fontSize: '13.5px', color: '#334155' }}>• <strong>Telefone:</strong> {clientPhone}</p>
-                    <p style={{ margin: '6px 0', fontSize: '13.5px', color: '#334155' }}>• <strong>Endereço:</strong> {address}, {number} - {neighborhood}, {city}</p>
-                    <p style={{ margin: '6px 0', fontSize: '13.5px', color: '#334155' }}>• <strong>Data Agendada:</strong> {scheduledDate} ({period})</p>
-                    <p style={{ margin: '6px 0', fontSize: '13.5px', color: '#334155' }}>• <strong>Pagamento:</strong> {paymentMethod}</p>
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Resumo da Compra
+                    </span>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13.5px', color: '#475569' }}>
+                      <span>Subtotal dos Produtos</span>
+                      <span style={{ fontWeight: 700, color: '#0f172a' }}>{formatCurrency(totalCartValue)}</span>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13.5px', color: '#475569' }}>
+                      <span>Taxa de Entrega</span>
+                      <strong style={{ color: '#16a34a', backgroundColor: '#dcfce7', padding: '1px 8px', borderRadius: '6px', fontSize: '12px' }}>
+                        GRÁTIS
+                      </strong>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13.5px', color: '#475569' }}>
+                      <span>Pagamento</span>
+                      <span style={{ fontWeight: 600, color: '#0f172a' }}>Na Entrega (Pix, Cartão ou Cash)</span>
+                    </div>
+
+                    <div style={{ borderTop: '1px dashed #cbd5e1', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                      <div>
+                        <strong style={{ fontSize: '15px', color: '#0f172a', display: 'block' }}>Valor Total</strong>
+                        <span style={{ fontSize: '11px', color: '#64748b' }}>Sem taxa extra ou cobrança oculta</span>
+                      </div>
+                      <strong style={{ fontSize: '24px', color: '#009845', fontWeight: 800, letterSpacing: '-0.02em' }}>
+                        {formatCurrency(totalCartValue)}
+                      </strong>
+                    </div>
                   </div>
 
-                  {/* Botão de Confirmação no WhatsApp */}
-                  <a
-                    href={lastOrder.whatsappUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
+                  {/* Selos de Confiança Bryza (Trust Badges) */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gap: '8px',
+                    paddingTop: '4px'
+                  }}>
+                    <div style={{
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '12px',
+                      padding: '10px 8px',
+                      textAlign: 'center',
                       display: 'flex',
+                      flexDirection: 'column',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '10px',
-                      backgroundColor: '#25D366',
-                      color: '#ffffff',
-                      padding: '16px 24px',
-                      borderRadius: '8px',
-                      fontWeight: 800,
-                      fontSize: '15px',
-                      textDecoration: 'none',
-                      boxShadow: '0 8px 24px rgba(37,211,102,0.3)',
-                      transition: 'transform 0.2s'
-                    }}
-                  >
-                    <span className="material-symbols-outlined">chat</span>
-                    <span>Clique aqui para confirmar no WhatsApp</span>
-                  </a>
-                </div>
+                      gap: '4px'
+                    }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#009845' }}>verified_user</span>
+                      <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#334155', lineHeight: 1.2 }}>Pague na Entrega</span>
+                    </div>
+
+                    <div style={{
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '12px',
+                      padding: '10px 8px',
+                      textAlign: 'center',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#009845' }}>event_available</span>
+                      <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#334155', lineHeight: 1.2 }}>Data Agendada</span>
+                    </div>
+
+                    <div style={{
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '12px',
+                      padding: '10px 8px',
+                      textAlign: 'center',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#009845' }}>factory</span>
+                      <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#334155', lineHeight: 1.2 }}>Direto de Fábrica</span>
+                    </div>
+                  </div>
+                </>
               )}
             </div>
 
-            {/* Rodapé do Drawer */}
-            {step !== 'sucesso' && (
+            {/* Rodapé Fixo de Ação */}
+            {cartItemsDetailed.length > 0 && (
               <div style={{
                 padding: '20px 24px',
                 borderTop: '1px solid #e2e8f0',
                 backgroundColor: '#ffffff',
+                boxShadow: '0 -4px 20px rgba(0,0,0,0.05)',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '16px'
+                flexDirection: 'column',
+                gap: '12px'
               }}>
-                <div>
-                  <span style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', display: 'block', fontWeight: 600 }}>VALOR TOTAL</span>
-                  <strong style={{ fontSize: '22px', color: '#009845' }}>{formatCurrency(totalCartValue)}</strong>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <span style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', display: 'block', fontWeight: 700, letterSpacing: '0.05em' }}>
+                      TOTAL DO PEDIDO
+                    </span>
+                    <strong style={{ fontSize: '24px', color: '#009845', fontWeight: 800 }}>
+                      {formatCurrency(totalCartValue)}
+                    </strong>
+                  </div>
+
+                  <span style={{ fontSize: '12px', color: '#16a34a', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '4px 10px', borderRadius: '999px', fontWeight: 700 }}>
+                    100% Seguro
+                  </span>
                 </div>
 
-                {step === 'carrinho' ? (
-                  <button
-                    disabled={cartItemsDetailed.length === 0}
-                    onClick={() => setStep('checkout')}
-                    style={{
-                      background: cartItemsDetailed.length > 0 ? 'linear-gradient(135deg, #009845 0%, #047857 100%)' : '#e2e8f0',
-                      color: cartItemsDetailed.length > 0 ? '#ffffff' : '#94a3b8',
-                      border: 'none',
-                      padding: '14px 24px',
-                      borderRadius: '8px',
-                      fontWeight: 800,
-                      fontSize: '15px',
-                      cursor: cartItemsDetailed.length > 0 ? 'pointer' : 'not-allowed',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      boxShadow: cartItemsDetailed.length > 0 ? '0 8px 20px rgba(0,152,69,0.3)' : 'none'
-                    }}
-                  >
-                    <span>Avançar para Entrega</span>
-                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_forward</span>
-                  </button>
-                ) : (
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <button
-                      type="button"
-                      onClick={() => setStep('carrinho')}
-                      style={{ padding: '12px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ffffff', fontWeight: 700, cursor: 'pointer', color: '#0f172a' }}
-                    >
-                      Voltar
-                    </button>
-                    <button
-                      type="submit"
-                      form="checkout-form"
-                      disabled={submitting}
-                      style={{
-                        background: 'linear-gradient(135deg, #009845 0%, #047857 100%)',
-                        color: '#ffffff',
-                        border: 'none',
-                        padding: '12px 20px',
-                        borderRadius: '8px',
-                        fontWeight: 800,
-                        fontSize: '14px',
-                        cursor: submitting ? 'not-allowed' : 'pointer',
-                        opacity: submitting ? 0.7 : 1,
-                        boxShadow: '0 8px 20px rgba(0,152,69,0.3)'
-                      }}
-                    >
-                      {submitting ? 'Confirmando...' : 'Confirmar Agendamento'}
-                    </button>
-                  </div>
-                )}
+                <button
+                  disabled={cartItemsDetailed.length === 0}
+                  onClick={() => setIsCheckoutModalOpen(true)}
+                  style={{
+                    width: '100%',
+                    padding: '16px 24px',
+                    background: 'linear-gradient(135deg, #009845 0%, #047857 100%)',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '14px',
+                    fontWeight: 800,
+                    fontSize: '16px',
+                    letterSpacing: '0.02em',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px',
+                    boxShadow: '0 8px 24px rgba(0,152,69,0.35)',
+                    transition: 'transform 0.2s ease, boxShadow 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  <span>AVANÇAR PARA ENTREGA</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>arrow_forward</span>
+                </button>
               </div>
             )}
           </div>
         </div>
+      )}
+
+      {/* 7.5 Modal de Checkout e Agendamento Estilo Bryza02 */}
+      {isCheckoutModalOpen && (
+        <LojaCheckoutModal
+          cartItems={cartItemsDetailed}
+          totalValue={totalCartValue}
+          isLoggedIn={isLoggedIn}
+          userData={userData}
+          onClose={() => setIsCheckoutModalOpen(false)}
+          onSuccess={(orderRes) => {
+            setCart(new Map());
+            localStorage.removeItem('bryza_store_cart');
+            setIsCartOpen(false);
+            toast.success(`Pedido #${orderRes.orderNumber} registrado! Redirecionando para o WhatsApp...`);
+          }}
+        />
       )}
 
       {/* 8. Rodapé E-Commerce Completo Bryza (Fundo Escuro #051329) */}

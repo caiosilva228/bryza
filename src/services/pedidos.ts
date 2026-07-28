@@ -41,9 +41,10 @@ export const fetchPedidoById = async (id: string) => {
 export const createPedido = async (
   pedido: Omit<Pedido, 'id' | 'numero_pedido' | 'created_at' | 'updated_at'>,
   itens: Omit<PedidoItem, 'id' | 'pedido_id' | 'created_at'>[],
-  idempotencyKey: string
+  idempotencyKey: string,
+  client?: any
 ) => {
-  const supabase = await createClient();
+  const supabase = client || (await createClient());
   const { data, error } = await supabase.rpc('fn_create_manual_order_canonical', {
     p_order: pedido,
     p_items: itens,
@@ -115,11 +116,6 @@ export const fetchPedidosStats = async () => {
  * Finaliza um pedido convertendo-o em venda e dando baixa no estoque.
  */
 export const finalizarPedido = async (pedidoId: string) => {
-  // O banco de dados (Trigger trg_confirmar_baixa_estoque_pedido) cuida de:
-  // 1. Abater o estoque físico
-  // 2. Limpar a reserva
-  // 3. Criar o registro na tabela de vendas
-  // 4. Copiar os itens para venda_itens
   return await updateStatusPedido(pedidoId, 'finalizado');
 };
 
@@ -129,18 +125,13 @@ export const finalizarPedido = async (pedidoId: string) => {
 export const cancelarPedido = async (pedidoId: string) => {
   const pedido = await fetchPedidoById(pedidoId);
   if (!pedido) throw new Error('Pedido não encontrado');
-  // Se o pedido foi finalizado, a trigger agora cuida de devolver o estoque físico.
-  // if (pedido.status_pedido === 'finalizado') throw new Error('Não é possível cancelar um pedido finalizado');
   if (pedido.status_pedido === 'cancelado') return { success: true };
 
-  // O banco de dados (Trigger trg_confirmar_baixa_estoque_pedido) cuida de:
-  // 1. Liberar o estoque reservado
   return await updateStatusPedido(pedidoId, 'cancelado');
 };
 
 /**
  * Edita um pedido que ainda está em 'aguardando_preparacao'.
- * Substitui os itens antigos pelos novos — as triggers de reserva cuidam do estoque.
  */
 export const updatePedido = async (
   pedidoId: string,
@@ -149,7 +140,6 @@ export const updatePedido = async (
 ) => {
   const supabase = await createClient();
 
-  // Verificar se ainda está em aguardando_preparacao
   const { data: pedido, error: fetchError } = await supabase
     .from('pedidos')
     .select('status_pedido')
@@ -161,10 +151,8 @@ export const updatePedido = async (
     throw new Error('Só é possível editar pedidos com status "Aguardando Preparação".');
   }
 
-  // Preserva o total informado pela tela quando houver desconto no pedido inteiro.
   const valorTotal = pedidoData.valor_total ?? itens.reduce((acc, item) => acc + item.subtotal, 0);
 
-  // Atualizar meta dados do pedido
   const { error: updateError } = await supabase
     .from('pedidos')
     .update({ ...pedidoData, valor_total: valorTotal, updated_at: new Date().toISOString() })
@@ -172,7 +160,6 @@ export const updatePedido = async (
 
   if (updateError) throw updateError;
 
-  // Remover todos os itens antigos (trigger libera reserva automaticamente via DELETE)
   const { error: deleteError } = await supabase
     .from('pedido_itens')
     .delete()
@@ -180,7 +167,6 @@ export const updatePedido = async (
 
   if (deleteError) throw deleteError;
 
-  // Inserir novos itens (trigger reserva estoque automaticamente via INSERT)
   const novosItens = itens.map(item => ({ ...item, pedido_id: pedidoId }));
   const { error: insertError } = await supabase
     .from('pedido_itens')
@@ -193,9 +179,6 @@ export const updatePedido = async (
 
 // ── Funções de Logística ──────────────────────────────────────────────────────
 
-/**
- * Busca pedidos logísticos (exclui aguardando_preparacao por padrão).
- */
 export const fetchPedidosLogistica = async () => {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -216,10 +199,6 @@ export const fetchPedidosLogistica = async () => {
   return data as Pedido[];
 };
 
-/**
- * Marca pedido como "Em Rota de Entrega".
- * Pré-condição: status deve ser 'pronto_para_entrega'.
- */
 export const markOrderAsInRoute = async (orderId: string): Promise<void> => {
   const supabase = await createClient();
 
@@ -228,12 +207,9 @@ export const markOrderAsInRoute = async (orderId: string): Promise<void> => {
     updated_at: new Date().toISOString(),
   };
 
-  // delivery_started_at é um campo extra — safe update (ignorado se coluna não existir via RLS)
   try {
     updateData.delivery_started_at = new Date().toISOString();
-  } catch {
-    // campo ainda não criado no banco — ignora
-  }
+  } catch {}
 
   const { error } = await supabase
     .from('pedidos')
@@ -243,10 +219,6 @@ export const markOrderAsInRoute = async (orderId: string): Promise<void> => {
   if (error) throw error;
 };
 
-/**
- * Marca pedido como "Entregue".
- * Pré-condição: status deve ser 'em_rota'.
- */
 export const markOrderAsDelivered = async (orderId: string): Promise<void> => {
   const supabase = await createClient();
 
@@ -257,9 +229,7 @@ export const markOrderAsDelivered = async (orderId: string): Promise<void> => {
 
   try {
     updateData.delivered_at = new Date().toISOString();
-  } catch {
-    // campo ainda não criado no banco — ignora
-  }
+  } catch {}
 
   const { error } = await supabase
     .from('pedidos')
@@ -269,11 +239,6 @@ export const markOrderAsDelivered = async (orderId: string): Promise<void> => {
   if (error) throw error;
 };
 
-/**
- * Confere o pagamento de um pedido entregue.
- * Se valor recebido == valor esperado → finaliza e muda status.
- * Se divergente → registra divergência e mantém 'entregue'.
- */
 export const confirmOrderPayment = async (params: {
   orderId: string;
   expectedAmount: number;
@@ -306,13 +271,9 @@ export const confirmOrderPayment = async (params: {
 
   if (error) throw error;
 
-  // Se finalizado, a trigger do banco cuidará do estoque e da venda
   return { finalized: !isDivergent, divergent: isDivergent };
 };
 
-/**
- * Registra um problema de entrega e muda o status conforme a ação escolhida.
- */
 export const registerDeliveryProblem = async (params: {
   orderId: string;
   problemType: DeliveryProblemType;
@@ -346,9 +307,6 @@ export const registerDeliveryProblem = async (params: {
   if (error) throw error;
 };
 
-/**
- * Atualiza motorista e rota de um pedido.
- */
 export const updateOrderDriver = async (params: {
   orderId: string;
   motorista: string;

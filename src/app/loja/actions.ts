@@ -1,10 +1,11 @@
 'use server';
 
+import crypto from 'crypto';
 import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { Produto } from '@/models/types';
-import { createPedido } from '@/services/pedidos';
+import { createAgendamento } from '@/services/agendamentos';
 
 export interface StoreCartItem {
   produto: Produto;
@@ -14,6 +15,7 @@ export interface StoreCartItem {
 export interface StoreOrderPayload {
   clientName?: string;
   clientPhone?: string;
+  cpf?: string;
   address: string;
   number?: string;
   neighborhood: string;
@@ -273,50 +275,80 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
     });
 
     const fullEndereco = `${payload.address}${payload.number ? `, Nº ${payload.number}` : ''}`;
-    const idempotencyKey = `store_${user?.id || 'guest'}_${Date.now()}`;
+    const paymentMethodLower = (payload.paymentMethod || '').toLowerCase();
+    let normalizedFormaPagamento: 'dinheiro' | 'pix' | 'cartao' = 'pix';
+    if (paymentMethodLower.includes('dinheiro')) {
+      normalizedFormaPagamento = 'dinheiro';
+    } else if (paymentMethodLower.includes('cart') || paymentMethodLower.includes('débito') || paymentMethodLower.includes('crédito')) {
+      normalizedFormaPagamento = 'cartao';
+    } else {
+      normalizedFormaPagamento = 'pix';
+    }
 
-    const pedidoData: any = {
+    // Formatar data de agendamento válida (ISO string)
+    let scheduledIsoDate = new Date().toISOString();
+    if (payload.scheduledDate) {
+      try {
+        const parts = payload.scheduledDate.split('-');
+        if (parts.length === 3) {
+          scheduledIsoDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10), 12, 0, 0).toISOString();
+        } else {
+          scheduledIsoDate = new Date(payload.scheduledDate).toISOString();
+        }
+      } catch {
+        scheduledIsoDate = new Date().toISOString();
+      }
+    }
+
+    const agendamentoData: any = {
+      data_agendamento: scheduledIsoDate,
       cliente_id: customerId,
+      vendedor_id: null,
+      valor_total: valorTotal,
+      forma_pagamento: normalizedFormaPagamento,
+      observacoes: payload.notes ? `[Loja Virtual - Período: ${payload.period}] ${payload.notes}` : `[Agendamento via Loja Virtual - Período: ${payload.period}]`,
       nome_cliente: clientName,
       telefone_cliente: clientPhone,
-      endereco: fullEndereco,
-      cidade: payload.city,
+      endereco_entrega: fullEndereco,
       bairro: payload.neighborhood,
+      cidade: payload.city || 'Brasília',
       estado: payload.state || 'DF',
       cep: payload.cep || '',
       ambassador_id: ambassadorId,
-      valor_total: valorTotal,
-      forma_pagamento: payload.paymentMethod,
-      data_agendamento: payload.scheduledDate,
-      periodo_agendamento: payload.period,
-      status_pedido: 'aguardando_preparacao',
-      observacoes: payload.notes ? `[Loja Virtual] ${payload.notes}` : '[Pedido via Loja Virtual Público]',
     };
 
-    const result = await createPedido(pedidoData, itensPedido, idempotencyKey);
+    const itensAgendamento = payload.items.map(item => ({
+      produto_id: item.produto_id,
+      quantidade: item.quantidade,
+      preco_unitario: item.preco_unitario,
+      subtotal: item.quantidade * item.preco_unitario,
+      desconto_aplicado: 0
+    }));
+
+    const result = await createAgendamento(agendamentoData, itensAgendamento, admin);
 
     revalidatePath('/loja');
-    revalidatePath('/vendas/pedidos');
+    revalidatePath('/vendas/agendamentos');
+    revalidatePath('/agendamento');
 
     // Gerar link formatado para o WhatsApp da Bryza
     const cleanPhone = '556132462117';
-    const numPedido = result.order_number || result.order_id || 'NOVO';
-    const message = `*NOVO PEDIDO REALIZADO NA LOJA VIRTUAL BRYZA* ✨\n\n` +
-      `• *Pedido Nº:* #${numPedido}\n` +
+    const numAgendamento = (result as any).numero_agendamento || (result as any).id?.slice(0, 8) || 'NOVO';
+    const message = `*NOVO AGENDAMENTO REALIZADO NA LOJA VIRTUAL BRYZA* ✨\n\n` +
+      `• *Agendamento Nº:* #${numAgendamento}\n` +
       `• *Cliente:* ${clientName}\n` +
       `• *Telefone:* ${clientPhone}\n` +
       `• *Endereço:* ${fullEndereco} - ${payload.neighborhood}, ${payload.city}\n` +
-      `• *Agendamento:* ${payload.scheduledDate} (${payload.period})\n` +
-      `• *Pagamento:* ${payload.paymentMethod}\n` +
+      `• *Data Agendada:* ${payload.scheduledDate} (${payload.period})\n` +
+      `• *Forma de Pagamento:* ${payload.paymentMethod}\n` +
       `• *Valor Total:* R$ ${valorTotal.toFixed(2).replace('.', ',')}\n\n` +
-      `Aguardando confirmação e separação!`;
+      `Gostaria de confirmar o agendamento da minha entrega!`;
 
     const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 
     return {
       success: true,
-      orderNumber: numPedido,
-      orderId: result.order_id,
+      orderNumber: numAgendamento,
       whatsappUrl
     };
   } catch (err: any) {

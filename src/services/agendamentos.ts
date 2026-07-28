@@ -62,9 +62,10 @@ export interface AgendamentoInput {
 
 export const createAgendamento = async (
   agendamento: AgendamentoInput,
-  itens: Omit<AgendamentoItem, 'produto'>[]
+  itens: Omit<AgendamentoItem, 'produto'>[],
+  client?: any
 ): Promise<Agendamento> => {
-  const supabase = await createClient();
+  const supabase = client || (await createClient());
 
   const { data: agendamentoData, error: agendamentoError } = await supabase
     .from('agendamentos')
