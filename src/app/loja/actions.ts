@@ -84,48 +84,100 @@ export async function getStoreUserInfoAction(): Promise<{
 
     const admin = createAdminClient();
 
-    // Tentar buscar como embaixador
-    const { data: amb } = await admin
-      .from('ambassadors')
-      .select('id, full_name, phone, address, number, neighborhood, city, state, cep')
-      .eq('user_id', user.id)
-      .maybeSingle();
+    let amb: any = null;
+    let prof: any = null;
+    let cli: any = null;
 
-    if (amb) {
-      return {
-        isLoggedIn: true,
-        userData: {
-          full_name: amb.full_name || '',
-          phone: amb.phone || '',
-          address: amb.address || '',
-          number: amb.number || '',
-          neighborhood: amb.neighborhood || '',
-          city: amb.city || 'Brasília',
-          state: amb.state || 'DF',
-          cep: amb.cep || '',
-          ambassador_id: amb.id,
-        }
-      };
+    // 1. Tentar buscar embaixador pelo user_id ou email
+    if (user.id) {
+      const { data } = await admin
+        .from('ambassadors')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      amb = data;
     }
 
-    // Caso não seja embaixador, buscar perfil
-    const { data: prof } = await admin
-      .from('profiles')
-      .select('nome, telefone')
-      .eq('id', user.id)
-      .maybeSingle();
+    if (!amb && user.email) {
+      const { data } = await admin
+        .from('ambassadors')
+        .select('*')
+        .eq('email', user.email)
+        .maybeSingle();
+      amb = data;
+    }
+
+    // 2. Buscar em profiles
+    if (user.id) {
+      const { data } = await admin
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
+      prof = data;
+    }
+
+    // 3. Buscar em clientes por email, telefone, cpf ou own_ambassador_id
+    const userPhone = amb?.phone || prof?.telefone;
+    const userCpf = amb?.cpf || prof?.cpf;
+
+    if (user.email) {
+      const { data } = await admin
+        .from('clientes')
+        .select('*')
+        .eq('email', user.email)
+        .maybeSingle();
+      cli = data;
+    }
+
+    if (!cli && userPhone) {
+      const { data } = await admin
+        .from('clientes')
+        .select('*')
+        .eq('telefone', userPhone)
+        .maybeSingle();
+      cli = data;
+    }
+
+    if (!cli && userCpf) {
+      const { data } = await admin
+        .from('clientes')
+        .select('*')
+        .eq('cpf', userCpf)
+        .maybeSingle();
+      cli = data;
+    }
+
+    if (!cli && amb?.id) {
+      const { data } = await admin
+        .from('clientes')
+        .select('*')
+        .eq('own_ambassador_id', amb.id)
+        .maybeSingle();
+      cli = data;
+    }
+
+    const full_name = amb?.display_name || amb?.full_name || cli?.nome || prof?.nome || user.email || '';
+    const phone = amb?.phone || cli?.telefone || prof?.telefone || '';
+    const address = amb?.address || amb?.endereco || cli?.endereco || prof?.endereco || '';
+    const number = amb?.number || amb?.numero || cli?.numero || prof?.numero || '';
+    const neighborhood = amb?.neighborhood || amb?.bairro || cli?.bairro || prof?.bairro || '';
+    const city = amb?.city || amb?.cidade || cli?.cidade || prof?.cidade || 'Brasília';
+    const state = amb?.state || amb?.estado || cli?.estado || prof?.estado || 'DF';
+    const cep = amb?.cep || cli?.cep || prof?.cep || '';
 
     return {
       isLoggedIn: true,
       userData: {
-        full_name: prof?.nome || user.email || '',
-        phone: prof?.telefone || '',
-        address: '',
-        number: '',
-        neighborhood: '',
-        city: 'Brasília',
-        state: 'DF',
-        cep: '',
+        full_name,
+        phone,
+        address,
+        number,
+        neighborhood,
+        city,
+        state,
+        cep,
+        ambassador_id: amb?.id,
       }
     };
   } catch (err) {
