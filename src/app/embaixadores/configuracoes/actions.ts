@@ -272,3 +272,55 @@ export async function saveAmbassadorProgramSettings(input: ProgramSettingsInput)
   revalidatePath('/embaixador/calculadora-de-ganhos');
   return { success: true as const };
 }
+
+export async function deleteAmbassadorCommissionPlan(planId: string) {
+  const { admin } = await requireAdmin();
+
+  if (!planId || planId === 'new') {
+    throw new Error('Plano inválido para exclusão.');
+  }
+
+  // 1. Obter plano padrão atual do programa
+  const { data: settings } = await admin
+    .from('ambassador_program_settings')
+    .select('default_commission_plan_id')
+    .eq('singleton', true)
+    .maybeSingle();
+
+  // 2. Verificar a quantidade de planos ativos
+  const { data: activePlans } = await admin
+    .from('commission_plans')
+    .select('id')
+    .eq('status', 'ativo');
+
+  if ((activePlans || []).length <= 1) {
+    throw new Error('Não é possível excluir o único plano do programa.');
+  }
+
+  // 3. Se for o plano padrão atual, reatribuir o padrão para outro plano antes da exclusão
+  if (settings?.default_commission_plan_id === planId) {
+    const otherPlan = (activePlans || []).find((p) => p.id !== planId);
+    if (otherPlan) {
+      await admin
+        .from('ambassador_program_settings')
+        .update({ default_commission_plan_id: otherPlan.id })
+        .eq('singleton', true);
+    }
+  }
+
+  // 4. Inativar / excluir o plano na tabela commission_plans
+  const { error: deleteError } = await admin
+    .from('commission_plans')
+    .update({ status: 'inativo' })
+    .eq('id', planId);
+
+  if (deleteError) {
+    console.error('Erro ao excluir plano de comissões:', deleteError);
+    throw new Error('Não foi possível excluir o plano de comissões.');
+  }
+
+  revalidatePath('/embaixadores/configuracoes');
+  revalidatePath('/calculadora-de-ganhos');
+  revalidatePath('/embaixador/calculadora-de-ganhos');
+  return { success: true as const };
+}

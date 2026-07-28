@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { saveAmbassadorProgramSettings } from './actions';
+import { saveAmbassadorProgramSettings, deleteAmbassadorCommissionPlan } from './actions';
 import type { CommissionLevelConfig, ProgramSettingsData, ProgramSettingsInput } from './actions';
 import styles from './settings.module.css';
 
@@ -107,6 +107,44 @@ export function ProgramSettingsForm({ initialSettings }: Props) {
       .filter((_, levelIndex) => levelIndex !== index)
       .map((level, levelIndex) => ({ ...level, level_number: levelIndex + 1, name: level.name || `Nível ${levelIndex + 1}` }));
     updatePlan('levels', levels);
+  };
+
+  const handleDeletePlan = () => {
+    const currentPlanId = settings.defaultPlan.id;
+    const currentPlanName = settings.defaultPlan.name;
+
+    if (currentPlanId === 'new') {
+      const firstPlan = (initialSettings.plans || [])[0];
+      if (firstPlan) {
+        setSettings((current) => ({
+          ...current,
+          defaultPlan: structuredClone(firstPlan),
+        }));
+      }
+      toast.success('Rascunho de novo plano descartado.');
+      return;
+    }
+
+    if ((initialSettings.plans || []).length <= 1) {
+      toast.error('Não é possível excluir o único plano do programa.');
+      return;
+    }
+
+    if (!window.confirm(`Tem certeza que deseja excluir o plano "${currentPlanName}"?`)) {
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        const res = await deleteAmbassadorCommissionPlan(currentPlanId);
+        if (res.success) {
+          toast.success(`Plano "${currentPlanName}" excluído com sucesso!`);
+          window.location.reload();
+        }
+      } catch (err: any) {
+        toast.error(err.message || 'Erro ao excluir o plano.');
+      }
+    });
   };
 
   const restore = () => {
@@ -217,7 +255,32 @@ export function ProgramSettingsForm({ initialSettings }: Props) {
         <section className={styles.card} id="comissoes">
           <SectionHeading icon="account_tree" title="Níveis e comissões" description="Expanda a rede com níveis configuráveis e percentuais independentes." />
           <div className={styles.planBar}>
-            <Field label="Selecione o plano">
+            <Field
+              label="Selecione o plano"
+              action={
+                <button
+                  type="button"
+                  onClick={handleDeletePlan}
+                  disabled={isPending}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#dc2626',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: isPending ? 'wait' : 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '2px',
+                    padding: 0,
+                  }}
+                  title="Excluir este plano de comissão"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span>
+                  <span>Excluir plano</span>
+                </button>
+              }
+            >
               <select
                 value={settings.defaultPlan.id}
                 onChange={(event) => {
@@ -315,8 +378,17 @@ function SectionHeading({ icon, title, description, action }: { icon: string; ti
   return <header className={styles.sectionHeading}><div className={styles.sectionIcon}><span className="material-symbols-outlined">{icon}</span></div><div><h2>{title}</h2><p>{description}</p></div>{action && <div className={styles.headingAction}>{action}</div>}</header>;
 }
 
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
-  return <label className={styles.field}><span>{label}</span>{children}{hint && <small>{hint}</small>}</label>;
+function Field({ label, hint, action, children }: { label: string; hint?: string; action?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className={styles.field}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+        <span style={{ fontSize: '12px', fontWeight: 750, color: '#203c53' }}>{label}</span>
+        {action}
+      </div>
+      {children}
+      {hint && <small>{hint}</small>}
+    </div>
+  );
 }
 
 function Switch({ checked, onChange, label, description, compact = false }: { checked: boolean; onChange: (checked: boolean) => void; label: string; description?: string; compact?: boolean }) {
