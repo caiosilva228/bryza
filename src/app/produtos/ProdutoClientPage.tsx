@@ -4,8 +4,9 @@ import { useMemo, useState } from 'react';
 import { Produto } from '@/models/types';
 import ProdutoTable from './ProdutoTable';
 import ProdutoFormModal from './ProdutoFormModal';
-import { toggleStatusProduto } from './actions';
+import { toggleStatusProduto, toggleStatusProdutoLoja } from './actions';
 import ProdutoStats from './ProdutoStats';
+import CategoriasConfigTab from './CategoriasConfigTab';
 
 interface ProdutoClientPageProps {
   initialProdutos: Produto[];
@@ -44,31 +45,114 @@ export default function ProdutoClientPage({ initialProdutos }: ProdutoClientPage
   };
 
   const handleToggleAtivo = async (id: string, currentStatus: boolean) => {
-    const res = await toggleStatusProduto(id, !currentStatus);
+    const nextStatus = !currentStatus;
+    const res = await toggleStatusProduto(id, nextStatus);
     if (res.success) {
-      setProdutos(prev => prev.map(p => p.id === id ? { ...p, ativo: !currentStatus } : p));
+      setProdutos(prev => prev.map(p => {
+        if (p.id === id) {
+          return {
+            ...p,
+            ativo: nextStatus,
+            ativo_loja: nextStatus ? p.ativo_loja : false
+          };
+        }
+        return p;
+      }));
     }
   };
+
+  const handleToggleAtivoLoja = async (id: string, currentStatus: boolean) => {
+    const targetProd = produtos.find(p => p.id === id);
+    if (targetProd && !targetProd.ativo && currentStatus === false) {
+      alert('⚠️ Produtos com status INATIVO não podem ser exibidos na Loja Virtual. Ative o produto primeiro.');
+      return;
+    }
+    const res = await toggleStatusProdutoLoja(id, !currentStatus);
+    if (res.success) {
+      setProdutos(prev => prev.map(p => p.id === id ? { ...p, ativo_loja: !currentStatus } : p));
+    }
+  };
+
+  const [activeSubTab, setActiveSubTab] = useState<'produtos' | 'categorias'>('produtos');
 
   return (
     <div className="page-wrapper">
       <header className="page-header">
         <div className="page-header-text">
-          <h1 style={{ color: 'var(--color-on-surface)' }}>Catálogo de Produtos</h1>
-          <p>Gerencie matérias-primas, embalagens e produtos finais.</p>
+          <h1 style={{ color: 'var(--color-on-surface)' }}>Gestão de Produtos & Categorias</h1>
+          <p>Gerencie catálogo de produtos, matérias-primas, embalagens e categorias da Loja Virtual.</p>
         </div>
         <div className="page-header-actions">
-          <button
-            onClick={() => handleOpenModal()}
-            className="btn-primary"
-          >
-            <span className="material-symbols-outlined">add</span>
-            Novo Produto
-          </button>
+          {activeSubTab === 'produtos' && (
+            <button
+              onClick={() => handleOpenModal()}
+              className="btn-primary"
+            >
+              <span className="material-symbols-outlined">add</span>
+              Novo Produto
+            </button>
+          )}
         </div>
       </header>
 
-      <ProdutoStats stats={stats} />
+      {/* Subabas de Navegação */}
+      <div style={{
+        display: 'flex',
+        gap: '8px',
+        marginBottom: '24px',
+        borderBottom: '1px solid var(--color-outline-variant)',
+        paddingBottom: '4px'
+      }}>
+        <button
+          onClick={() => setActiveSubTab('produtos')}
+          style={{
+            padding: '10px 20px',
+            borderRadius: '10px 10px 0 0',
+            border: 'none',
+            borderBottom: activeSubTab === 'produtos' ? '3px solid #0b5ea8' : '3px solid transparent',
+            backgroundColor: activeSubTab === 'produtos' ? 'var(--color-surface-container-low)' : 'transparent',
+            color: activeSubTab === 'produtos' ? '#0b5ea8' : 'var(--color-on-surface-variant)',
+            fontWeight: 800,
+            fontSize: '14px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.2s'
+          }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>inventory_2</span>
+          <span>Catálogo de Produtos</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSubTab('categorias')}
+          style={{
+            padding: '10px 20px',
+            borderRadius: '10px 10px 0 0',
+            border: 'none',
+            borderBottom: activeSubTab === 'categorias' ? '3px solid #0b5ea8' : '3px solid transparent',
+            backgroundColor: activeSubTab === 'categorias' ? 'var(--color-surface-container-low)' : 'transparent',
+            color: activeSubTab === 'categorias' ? '#0b5ea8' : 'var(--color-on-surface-variant)',
+            fontWeight: 800,
+            fontSize: '14px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.2s'
+          }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>category</span>
+          <span>Configurar Categorias</span>
+        </button>
+      </div>
+
+      {activeSubTab === 'categorias' ? (
+        <CategoriasConfigTab produtos={produtos} />
+      ) : (
+        <>
+          <ProdutoStats stats={stats} />
 
       {/* Filtros */}
       <div style={{
@@ -113,9 +197,15 @@ export default function ProdutoClientPage({ initialProdutos }: ProdutoClientPage
           }}
         >
           <option value="">Todas as Categorias</option>
+          <option value="Lava Roupas">Lava Roupas</option>
+          <option value="Amaciantes">Amaciantes</option>
+          <option value="Multiuso">Multiuso</option>
+          <option value="Panos & Limpeza">Panos & Limpeza</option>
+          <option value="Sacos de Lixo">Sacos de Lixo</option>
+          <option value="Kits Promocionais">Kits Promocionais</option>
           <option value="Materia prima">Matéria Prima</option>
           <option value="Embalagem">Embalagem</option>
-          <option value="Produto Final">Produto Final</option>
+          <option value="Outros">Outros</option>
         </select>
       </div>
 
@@ -124,7 +214,10 @@ export default function ProdutoClientPage({ initialProdutos }: ProdutoClientPage
         produtos={filteredProdutos} 
         onEdit={handleOpenModal} 
         onToggleAtivo={handleToggleAtivo}
+        onToggleAtivoLoja={handleToggleAtivoLoja}
       />
+      </>
+      )}
 
       {isModalOpen && (
         <ProdutoFormModal 

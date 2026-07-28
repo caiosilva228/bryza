@@ -7,9 +7,10 @@ interface ProdutoTableProps {
   produtos: Produto[];
   onEdit: (produto: Produto) => void;
   onToggleAtivo: (id: string, currentStatus: boolean) => void;
+  onToggleAtivoLoja?: (id: string, currentStatus: boolean) => void;
 }
 
-export default function ProdutoTable({ produtos, onEdit, onToggleAtivo }: ProdutoTableProps) {
+export default function ProdutoTable({ produtos, onEdit, onToggleAtivo, onToggleAtivoLoja }: ProdutoTableProps) {
   const [sortConfig, setSortConfig] = useState<{ key: keyof Produto | 'disponivel', direction: 'asc' | 'desc' } | null>(null);
   const [expandedImage, setExpandedImage] = useState<{ url: string; title: string } | null>(null);
 
@@ -127,6 +128,7 @@ export default function ProdutoTable({ produtos, onEdit, onToggleAtivo }: Produt
               <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('custo_unitario')}>Custo{getSortIcon('custo_unitario')}</th>
               <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('preco_venda')}>Venda{getSortIcon('preco_venda')}</th>
               <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('ativo')}>Status{getSortIcon('ativo')}</th>
+              <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }} onClick={() => requestSort('ativo_loja')}>Loja Virtual{getSortIcon('ativo_loja')}</th>
               <th style={{ padding: '12px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--color-on-surface)', textTransform: 'uppercase', textAlign: 'right' }}>Ações</th>
             </tr>
           </thead>
@@ -256,6 +258,36 @@ export default function ProdutoTable({ produtos, onEdit, onToggleAtivo }: Produt
                         {p.ativo ? 'Ativo' : 'Inativo'}
                       </span>
                     </button>
+                  </td>
+                  <td style={{ padding: '10px 16px' }}>
+                    {(() => {
+                      const isLojaOn = p.ativo && p.ativo_loja !== false;
+                      return (
+                        <button
+                          onClick={() => onToggleAtivoLoja?.(p.id, isLojaOn)}
+                          style={{
+                            border: '1px solid var(--color-outline-variant)',
+                            background: isLojaOn ? '#f0fdf4' : 'var(--color-surface)',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            color: isLojaOn ? '#16a34a' : '#94a3b8',
+                            opacity: p.ativo ? 1 : 0.65
+                          }}
+                          title={p.ativo ? 'Clique para alternar a visibilidade na Loja Virtual (/loja)' : 'Ative o produto para exibir na Loja Virtual'}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+                            {isLojaOn ? 'storefront' : 'visibility_off'}
+                          </span>
+                          <span style={{ fontWeight: 700, fontSize: '10px', textTransform: 'uppercase' }}>
+                            {isLojaOn ? 'Loja ON' : 'Loja OFF'}
+                          </span>
+                        </button>
+                      );
+                    })()}
                   </td>
                   <td style={{ padding: '10px 16px', textAlign: 'right' }}>
                     <button

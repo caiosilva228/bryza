@@ -60,17 +60,12 @@ export const Sidebar = () => {
 
     if (profile?.role === 'embaixador') {
       return [
-        { label: 'Visão geral', path: '/embaixador/dashboard', icon: 'dashboard' },
-        { label: 'Meu link', path: '/embaixador/meu-link', icon: 'link' },
-        {
-          label: 'Minhas indicações',
-          icon: 'group_add',
-          subItems: [
-            { label: 'Clientes indicados', path: '/embaixador/indicacoes', icon: 'person_add' },
-            { label: 'Minha Rede', path: '/embaixador/minha-rede', icon: 'account_tree' },
-          ],
-        },
-        { label: 'Minhas vendas', path: '/embaixador/vendas', icon: 'shopping_bag' },
+        { label: 'Visão geral', path: '/embaixador/dashboard', icon: 'space_dashboard' },
+        { label: 'Fazer Pedido (Loja)', path: '/loja', icon: 'storefront' },
+        { label: 'Minhas indicações', path: '/embaixador/indicacoes', icon: 'person_add' },
+        { label: 'Minha rede', path: '/embaixador/minha-rede', icon: 'hub' },
+        { label: 'Vendas da rede', path: '/embaixador/vendas', icon: 'shopping_bag' },
+        { label: 'Meu link de indicação', path: '/embaixador/meu-link', icon: 'link' },
         {
           label: 'Minhas comissões',
           icon: 'payments',
@@ -87,6 +82,7 @@ export const Sidebar = () => {
     
     const baseRoutes = [
       { label: 'Dashboard', path: '/', icon: 'dashboard' },
+      { label: 'Loja Virtual', path: '/loja', icon: 'storefront' },
       { label: 'Metas', path: '/metas', icon: 'flag' },
       { label: 'CRM/Clientes', path: '/clientes', icon: 'group' },
       { 

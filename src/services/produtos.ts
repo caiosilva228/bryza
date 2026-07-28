@@ -54,13 +54,32 @@ export async function upsertProduto(produto: Partial<Produto>) {
 export async function toggleProdutoAtivo(id: string, ativo: boolean) {
   const supabase = await createClient();
   
+  const payload: { ativo: boolean; ativo_loja?: boolean } = { ativo };
+  if (!ativo) {
+    payload.ativo_loja = false;
+  }
+
   const { error } = await supabase
     .from('produtos')
-    .update({ ativo })
+    .update(payload)
     .eq('id', id);
 
   if (error) {
     console.error('Erro ao alternar status do produto:', error);
+    throw error;
+  }
+}
+
+export async function toggleProdutoAtivoLoja(id: string, ativo_loja: boolean) {
+  const supabase = await createClient();
+  
+  const { error } = await supabase
+    .from('produtos')
+    .update({ ativo_loja })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Erro ao alternar visibilidade na loja:', error);
     throw error;
   }
 }

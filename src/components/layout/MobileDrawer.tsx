@@ -61,7 +61,8 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
 
     if (role === 'embaixador') {
       return [
-        { label: 'Visão geral', path: '/embaixador/dashboard', icon: 'dashboard' },
+        { label: 'Visão geral', path: '/embaixador/dashboard', icon: 'space_dashboard' },
+        { label: 'Fazer Pedido (Loja)', path: '/loja', icon: 'storefront' },
         { label: 'Meu link', path: '/embaixador/meu-link', icon: 'link' },
         {
           label: 'Minhas indicações',
@@ -88,6 +89,7 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
 
     const baseRoutes = [
       { label: 'Dashboard', path: '/', icon: 'dashboard' },
+      { label: 'Loja Virtual', path: '/loja', icon: 'storefront' },
       { label: 'Metas', path: '/metas', icon: 'flag' },
       { label: 'CRM / Clientes', path: '/clientes', icon: 'group' },
       { 

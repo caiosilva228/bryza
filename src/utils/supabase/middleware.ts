@@ -43,12 +43,13 @@ export async function updateSession(request: NextRequest) {
   const isPublicSalesPage = /^\/bryza[0-9]+$/.test(pathname.toLowerCase());
   const isPublicEarningsCalculator = pathname === '/calculadora-de-ganhos';
   const isPublicCadastroPage = pathname.startsWith('/cadastro');
+  const isPublicLojaPage = pathname.startsWith('/loja');
   const isAmbassadorAcceptance = pathname.startsWith('/programa/embaixadores/aceitar');
   
   // Ignorar assets estáticos comuns
   const isStaticAsset = pathname.match(/\.(svg|png|jpg|jpeg|gif|webp|ico|css|js)$/) || pathname.includes('_next/');
 
-  if (isStaticAsset || isPublicIndication || isPublicSalesPage || isPublicEarningsCalculator || isPublicCadastroPage) {
+  if (isStaticAsset || isPublicIndication || isPublicSalesPage || isPublicEarningsCalculator || isPublicCadastroPage || isPublicLojaPage) {
     return supabaseResponse;
   }
 

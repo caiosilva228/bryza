@@ -69,6 +69,88 @@ export async function toggleStatusProduto(id: string, ativo: boolean) {
   }
 }
 
+export async function toggleStatusProdutoLoja(id: string, ativo_loja: boolean) {
+  try {
+    await produtoService.toggleProdutoAtivoLoja(id, ativo_loja);
+    revalidatePath('/produtos');
+    revalidatePath('/loja');
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: 'Erro ao alterar visibilidade na loja' };
+  }
+}
+
+export async function fetchCategoriasAction() {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('categorias_produtos')
+      .select('*')
+      .order('ordem', { ascending: true });
+
+    if (error) throw error;
+    return { success: true, data: data || [] };
+  } catch (error: any) {
+    console.error('Erro ao buscar categorias:', error);
+    return { success: false, error: error.message || 'Erro ao carregar categorias' };
+  }
+}
+
+export async function saveCategoriaAction(categoria: { id?: string; nome: string; icone?: string; cor?: string; ativo_loja?: boolean; ordem?: number }) {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('categorias_produtos')
+      .upsert(categoria)
+      .select()
+      .single();
+
+    if (error) throw error;
+    revalidatePath('/produtos');
+    revalidatePath('/loja');
+    return { success: true, data };
+  } catch (error: any) {
+    console.error('Erro ao salvar categoria:', error);
+    return { success: false, error: error.message || 'Erro ao salvar categoria' };
+  }
+}
+
+export async function toggleStatusCategoriaLojaAction(id: string, ativo_loja: boolean) {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from('categorias_produtos')
+      .update({ ativo_loja })
+      .eq('id', id);
+
+    if (error) throw error;
+    revalidatePath('/produtos');
+    revalidatePath('/loja');
+    return { success: true };
+  } catch (error: any) {
+    console.error('Erro ao alterar status da categoria:', error);
+    return { success: false, error: error.message || 'Erro ao alterar categoria' };
+  }
+}
+
+export async function deleteCategoriaAction(id: string) {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from('categorias_produtos')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    revalidatePath('/produtos');
+    revalidatePath('/loja');
+    return { success: true };
+  } catch (error: any) {
+    console.error('Erro ao excluir categoria:', error);
+    return { success: false, error: error.message || 'Erro ao excluir categoria' };
+  }
+}
+
 export async function fetchProductImageLibrary(): Promise<{
   success: boolean;
   data?: ProductImageLibraryItem[];

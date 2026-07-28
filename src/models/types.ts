@@ -194,14 +194,18 @@ export interface Produto {
   codigo_produto?: number | string;
   nome_produto: string;
   categoria: string;
+  categorias_adicionais?: string[];
   unidade: string;
   custo_unitario: number;
   preco_venda: number;
+  preco_original?: number;
   estoque_atual: number;
   estoque_minimo: number;
   estoque_reservado: number;
   ativo: boolean;
+  ativo_loja?: boolean;
   imagem_url?: string | null;
+  descricao?: string | null;
   created_at?: string;
 }
 
