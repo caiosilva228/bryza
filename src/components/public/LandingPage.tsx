@@ -151,7 +151,7 @@ export const LandingPage: React.FC = () => {
               Espaço do Embaixador
             </a>
             <a
-              href="#hero"
+              href="/loja"
               style={{
                 textDecoration: 'none',
                 color: '#ffffff',
@@ -259,7 +259,7 @@ export const LandingPage: React.FC = () => {
               Espaço do Embaixador
             </a>
             <a
-              href="#hero"
+              href="/loja"
               onClick={() => setMobileMenuOpen(false)}
               style={{
                 textDecoration: 'none',
@@ -363,7 +363,7 @@ export const LandingPage: React.FC = () => {
             {/* CTA Button */}
             <div style={{ marginBottom: '36px' }}>
               <a
-                href={evUrl}
+                href="/loja"
                 style={{
                   textDecoration: 'none',
                   color: '#ffffff',
@@ -1221,7 +1221,7 @@ export const LandingPage: React.FC = () => {
             <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '16px', color: '#A6CE39' }}>Links rápidos</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
               <a href={evUrl} style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none' }}>Espaço do Embaixador</a>
-              <a href="#hero" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none' }}>Loja Virtual</a>
+              <a href="/loja" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none' }}>Loja Virtual</a>
             </div>
           </div>
 
