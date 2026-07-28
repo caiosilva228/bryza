@@ -139,7 +139,16 @@ export async function cadastrarEmbaixadorPorConvite(
       customerId = newCustomer.id;
     }
 
-    // 4. Inserir novo embaixador (com parent_ambassador_id vinculado ao patrocinador)
+    // 3.5. Obter Plano de Comissão Padrão do Programa
+    const { data: progSettings } = await adminClient
+      .from('ambassador_program_settings')
+      .select('default_commission_plan_id')
+      .eq('singleton', true)
+      .maybeSingle();
+
+    const defaultPlanId = progSettings?.default_commission_plan_id || null;
+
+    // 4. Inserir novo embaixador (com parent_ambassador_id e commission_plan_id)
     const { data: newAmbassador, error: createAmbError } = await adminClient
       .from('ambassadors')
       .insert({
@@ -149,6 +158,7 @@ export async function cadastrarEmbaixadorPorConvite(
         email: cleanEmail,
         cpf: cleanCpf,
         parent_ambassador_id: sponsorAmb.id,
+        commission_plan_id: defaultPlanId,
         status: 'ativo',
         cep: input.cep || null,
         address: input.address || null,
