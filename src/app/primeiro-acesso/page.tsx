@@ -1,12 +1,15 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
-import { alterarSenhaPrimeiroAcesso } from './actions';
+import { useEffect, useMemo, useState, useTransition } from 'react';
+import { alterarSenhaPrimeiroAcesso, getPrimeiroAcessoUserData } from './actions';
 import { logout } from '../login/actions';
 import styles from './primeiro-acesso.module.css';
 
 export default function PrimeiroAcessoPage() {
   const [cpf, setCpf] = useState('');
+  const [hasExistingCpf, setHasExistingCpf] = useState(false);
+  const [isLoadingUserData, setIsLoadingUserData] = useState(true);
+
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -14,21 +17,38 @@ export default function PrimeiroAcessoPage() {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  useEffect(() => {
+    async function loadUserData() {
+      try {
+        const data = await getPrimeiroAcessoUserData();
+        if (data.authenticated && data.hasCpf) {
+          setHasExistingCpf(true);
+          setCpf(data.existingCpf);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar dados do primeiro acesso:', err);
+      } finally {
+        setIsLoadingUserData(false);
+      }
+    }
+    loadUserData();
+  }, []);
+
   const cpfClean = useMemo(() => cpf.replace(/\D/g, ''), [cpf]);
 
   const passwordState = useMemo(() => ({
-    hasValidCpf: cpfClean.length === 11,
+    hasValidCpf: hasExistingCpf || cpfClean.length === 11,
     hasMinimumLength: newPassword.length >= 8,
     passwordsMatch: confirmPassword.length > 0 && newPassword === confirmPassword,
-  }), [cpfClean, newPassword, confirmPassword]);
+  }), [hasExistingCpf, cpfClean, newPassword, confirmPassword]);
 
-  const canSubmit = passwordState.hasValidCpf && passwordState.hasMinimumLength && passwordState.passwordsMatch && !isPending;
+  const canSubmit = passwordState.hasValidCpf && passwordState.hasMinimumLength && passwordState.passwordsMatch && !isPending && !isLoadingUserData;
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
 
-    if (cpfClean.length !== 11) {
+    if (!hasExistingCpf && cpfClean.length !== 11) {
       setError('Informe um CPF válido com 11 dígitos.');
       return;
     }
@@ -44,7 +64,9 @@ export default function PrimeiroAcessoPage() {
     }
 
     const formData = new FormData();
-    formData.append('cpf', cpfClean);
+    if (!hasExistingCpf) {
+      formData.append('cpf', cpfClean);
+    }
     formData.append('newPassword', newPassword);
     formData.append('confirmPassword', confirmPassword);
 
@@ -75,13 +97,16 @@ export default function PrimeiroAcessoPage() {
 
             <h2>Falta pouco para acessar seu painel.</h2>
             <p>
-              Complete seus dados informando seu CPF e criando uma nova senha pessoal para proteger
-              sua conta.
+              {hasExistingCpf
+                ? 'Crie uma nova senha pessoal para proteger sua conta e liberar o seu acesso.'
+                : 'Complete seus dados informando seu CPF e criando uma nova senha pessoal para proteger sua conta.'}
             </p>
           </div>
 
           <ul className={styles.benefits}>
-            <li><span className="material-symbols-outlined">badge</span> CPF obrigatório para validação da conta</li>
+            {!hasExistingCpf && (
+              <li><span className="material-symbols-outlined">badge</span> CPF obrigatório para validação da conta</li>
+            )}
             <li><span className="material-symbols-outlined">lock</span> Sua senha é armazenada com segurança</li>
             <li><span className="material-symbols-outlined">shield_person</span> Somente você terá acesso ao painel</li>
           </ul>
@@ -96,9 +121,13 @@ export default function PrimeiroAcessoPage() {
           </div>
 
           <span className={styles.step}>Primeiro acesso</span>
-          <h1 id="first-access-title">Informe seu CPF e crie uma senha</h1>
+          <h1 id="first-access-title">
+            {hasExistingCpf ? 'Crie sua nova senha' : 'Informe seu CPF e crie uma senha'}
+          </h1>
           <p className={styles.subtitle}>
-            Informe seu CPF para validação e escolha uma nova senha pessoal.
+            {hasExistingCpf
+              ? 'Escolha uma nova senha pessoal para o seu primeiro acesso ao painel.'
+              : 'Informe seu CPF para validação e escolha uma nova senha pessoal.'}
           </p>
 
           {error && (
@@ -109,31 +138,33 @@ export default function PrimeiroAcessoPage() {
           )}
 
           <form onSubmit={handleSubmit} className={styles.form}>
-            <div className={styles.field}>
-              <label htmlFor="cpf">CPF *</label>
-              <div className={styles.inputShell}>
-                <span className={`material-symbols-outlined ${styles.leadingIcon}`}>badge</span>
-                <input
-                  type="text"
-                  id="cpf"
-                  name="cpf"
-                  value={cpf}
-                  onChange={(event) => {
-                    let v = event.target.value.replace(/\D/g, '');
-                    v = v.replace(/(\d{3})(\d)/, '$1.$2');
-                    v = v.replace(/(\d{3})(\d)/, '$1.$2');
-                    v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-                    setCpf(v.slice(0, 14));
-                    setError(null);
-                  }}
-                  placeholder="Ex: 123.456.789-00"
-                  maxLength={14}
-                  required
-                  disabled={isPending}
-                  autoFocus
-                />
+            {!hasExistingCpf && (
+              <div className={styles.field}>
+                <label htmlFor="cpf">CPF *</label>
+                <div className={styles.inputShell}>
+                  <span className={`material-symbols-outlined ${styles.leadingIcon}`}>badge</span>
+                  <input
+                    type="text"
+                    id="cpf"
+                    name="cpf"
+                    value={cpf}
+                    onChange={(event) => {
+                      let v = event.target.value.replace(/\D/g, '');
+                      v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                      v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                      v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                      setCpf(v.slice(0, 14));
+                      setError(null);
+                    }}
+                    placeholder="Ex: 123.456.789-00"
+                    maxLength={14}
+                    required={!hasExistingCpf}
+                    disabled={isPending || isLoadingUserData}
+                    autoFocus={!hasExistingCpf}
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             <div className={styles.field}>
               <label htmlFor="newPassword">Nova senha</label>
@@ -153,7 +184,8 @@ export default function PrimeiroAcessoPage() {
                   aria-describedby="password-rules"
                   minLength={8}
                   required
-                  disabled={isPending}
+                  disabled={isPending || isLoadingUserData}
+                  autoFocus={hasExistingCpf}
                 />
                 <button
                   type="button"
@@ -183,7 +215,7 @@ export default function PrimeiroAcessoPage() {
                   placeholder="Digite novamente"
                   autoComplete="new-password"
                   required
-                  disabled={isPending}
+                  disabled={isPending || isLoadingUserData}
                 />
                 <button
                   type="button"
@@ -198,10 +230,12 @@ export default function PrimeiroAcessoPage() {
             </div>
 
             <div id="password-rules" className={styles.rules} aria-live="polite">
-              <div className={passwordState.hasValidCpf ? styles.ruleValid : ''}>
-                <span className="material-symbols-outlined">{passwordState.hasValidCpf ? 'check_circle' : 'radio_button_unchecked'}</span>
-                CPF com 11 dígitos preenchido
-              </div>
+              {!hasExistingCpf && (
+                <div className={passwordState.hasValidCpf ? styles.ruleValid : ''}>
+                  <span className="material-symbols-outlined">{passwordState.hasValidCpf ? 'check_circle' : 'radio_button_unchecked'}</span>
+                  CPF com 11 dígitos preenchido
+                </div>
+              )}
               <div className={passwordState.hasMinimumLength ? styles.ruleValid : ''}>
                 <span className="material-symbols-outlined">{passwordState.hasMinimumLength ? 'check_circle' : 'radio_button_unchecked'}</span>
                 Pelo menos 8 caracteres na senha
@@ -216,7 +250,7 @@ export default function PrimeiroAcessoPage() {
               {isPending ? (
                 <><span className={`material-symbols-outlined ${styles.spinner}`}>progress_activity</span> Atualizando...</>
               ) : (
-                <>Salvar dados e continuar <span className="material-symbols-outlined">arrow_forward</span></>
+                <>{hasExistingCpf ? 'Salvar nova senha e continuar' : 'Salvar dados e continuar'} <span className="material-symbols-outlined">arrow_forward</span></>
               )}
             </button>
           </form>

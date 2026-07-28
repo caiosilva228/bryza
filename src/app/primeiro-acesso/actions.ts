@@ -33,18 +33,49 @@ function isValidCPF(cpf: string): boolean {
   return true;
 }
 
-export async function alterarSenhaPrimeiroAcesso(prevState: any, formData: FormData) {
-  const cpfInput = (formData.get('cpf') as string || '').trim();
-  const newPassword = formData.get('newPassword') as string;
-  const confirmPassword = formData.get('confirmPassword') as string;
+export async function getPrimeiroAcessoUserData() {
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error: authUserError } = await supabase.auth.getUser();
 
-  const cleanCpf = cpfInput.replace(/\D/g, '');
+    if (authUserError || !user) {
+      return { authenticated: false };
+    }
 
-  if (!cleanCpf || !isValidCPF(cleanCpf)) {
-    return { success: false, error: 'Informe um CPF válido com 11 dígitos.' };
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role, ativo, must_change_password, username, cpf, nome')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!profile || !profile.ativo) {
+      return { authenticated: false };
+    }
+
+    const admin = createAdminClient();
+    const { data: amb } = await admin
+      .from('ambassadors')
+      .select('cpf, full_name')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    const existingCpf = (profile.cpf || amb?.cpf || '').replace(/\D/g, '');
+    const hasCpf = existingCpf.length === 11;
+
+    return {
+      authenticated: true,
+      mustChangePassword: profile.must_change_password,
+      nome: profile.nome || amb?.full_name || '',
+      existingCpf: hasCpf ? existingCpf : '',
+      hasCpf,
+    };
+  } catch (err) {
+    console.error('Erro ao buscar dados do primeiro acesso:', err);
+    return { authenticated: false };
   }
+}
 
-  // 1. Validar sessão real no servidor
+export async function alterarSenhaPrimeiroAcesso(prevState: any, formData: FormData) {
   const supabase = await createClient();
   const { data: { user }, error: authUserError } = await supabase.auth.getUser();
 
@@ -52,14 +83,23 @@ export async function alterarSenhaPrimeiroAcesso(prevState: any, formData: FormD
     return { success: false, error: 'Sessão expirada. Faça login novamente.' };
   }
 
-  // 2. Validar perfil no banco (ativo e must_change_password = true)
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('role, ativo, must_change_password, username, cpf')
-    .eq('id', user.id)
-    .single();
+  // 1. Validar perfil e dados do embaixador no banco
+  const adminClient = createAdminClient();
+  const [profileRes, ambRes] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('role, ativo, must_change_password, username, cpf')
+      .eq('id', user.id)
+      .single(),
+    adminClient
+      .from('ambassadors')
+      .select('cpf')
+      .eq('user_id', user.id)
+      .maybeSingle()
+  ]);
 
-  if (profileError || !profile) {
+  const profile = profileRes.data;
+  if (profileRes.error || !profile) {
     return { success: false, error: 'Perfil não encontrado.' };
   }
 
@@ -71,11 +111,22 @@ export async function alterarSenhaPrimeiroAcesso(prevState: any, formData: FormD
     return { success: false, error: 'Esta conta já realizou a troca de senha obrigatória.' };
   }
 
+  // Verificar se o CPF já existe cadastrado ou se veio do formulário de campos faltantes
+  const existingCpf = (profile.cpf || ambRes.data?.cpf || '').replace(/\D/g, '');
+  const inputCpf = (formData.get('cpf') as string || '').trim().replace(/\D/g, '');
+  const finalCpf = existingCpf.length === 11 ? existingCpf : inputCpf;
+
+  if (!finalCpf || !isValidCPF(finalCpf)) {
+    return { success: false, error: 'Informe um CPF válido com 11 dígitos.' };
+  }
+
+  const newPassword = formData.get('newPassword') as string;
+  const confirmPassword = formData.get('confirmPassword') as string;
   const username = profile.username || '';
 
-  // 3. Validações estritas de senha no servidor
+  // 2. Validações estritas de senha
   if (!newPassword || !confirmPassword) {
-    return { success: false, error: 'Preencha todos os campos.' };
+    return { success: false, error: 'Preencha todos os campos de senha.' };
   }
 
   if (newPassword !== confirmPassword) {
@@ -86,7 +137,7 @@ export async function alterarSenhaPrimeiroAcesso(prevState: any, formData: FormD
     return { success: false, error: 'A senha deve ter pelo menos 8 caracteres.' };
   }
 
-  if (newPassword === cleanCpf || newPassword.includes(cleanCpf)) {
+  if (newPassword === finalCpf || newPassword.includes(finalCpf)) {
     return { success: false, error: 'A nova senha não pode ser igual ou conter o seu CPF.' };
   }
 
@@ -94,17 +145,14 @@ export async function alterarSenhaPrimeiroAcesso(prevState: any, formData: FormD
     return { success: false, error: 'A nova senha não pode conter o seu nome de usuário.' };
   }
 
-  // 4. Executar alteração de senha no Supabase Auth
+  // 3. Executar alteração de senha no Supabase Auth
   const { error: updateAuthError } = await supabase.auth.updateUser({
     password: newPassword,
   });
 
-  const adminClient = createAdminClient();
-
   if (updateAuthError) {
     console.error('Erro ao atualizar senha no Auth:', updateAuthError);
     
-    // Registrar falha na auditoria
     await adminClient.from('audit_logs').insert({
       actor_id: user.id,
       actor_role: profile.role,
@@ -117,19 +165,19 @@ export async function alterarSenhaPrimeiroAcesso(prevState: any, formData: FormD
     return { success: false, error: `Erro no provedor de autenticação: ${updateAuthError.message}` };
   }
 
-  // 5. Salvar CPF na tabela ambassadors e profiles, e atualizar must_change_password = false
+  // 4. Salvar CPF (se atualizado) e marcar must_change_password = false
   await Promise.all([
     adminClient
       .from('profiles')
-      .update({ cpf: cleanCpf, must_change_password: false })
+      .update({ cpf: finalCpf, must_change_password: false })
       .eq('id', user.id),
     adminClient
       .from('ambassadors')
-      .update({ cpf: cleanCpf })
+      .update({ cpf: finalCpf })
       .eq('user_id', user.id)
   ]);
 
-  // Registrar sucesso na auditoria
+  // Auditoria
   await adminClient.from('audit_logs').insert({
     actor_id: user.id,
     actor_role: profile.role,
@@ -139,7 +187,6 @@ export async function alterarSenhaPrimeiroAcesso(prevState: any, formData: FormD
     metadata: { status: 'concluido', cpf_updated: true }
   });
 
-  // Revalidar rotas e redirecionar
   revalidatePath('/', 'layout');
 
   let targetUrl = '/';
@@ -149,6 +196,5 @@ export async function alterarSenhaPrimeiroAcesso(prevState: any, formData: FormD
     targetUrl = '/logistica';
   }
 
-  // Executamos o redirect fora do bloco try-catch para não interromper a lógica do Next.js
   redirect(targetUrl);
 }
