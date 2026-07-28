@@ -6,7 +6,8 @@ import PedidoStats from './PedidoStats';
 import PedidoTable from './PedidoTable';
 import PedidoFormModal from './PedidoFormModal';
 import PedidoDetailsModal from './PedidoDetailsModal';
-import { getPedidos, getPedidosStats, getProdutosAction } from '../actions';
+import PaymentCheckModal from '@/components/logistica/PaymentCheckModal';
+import { getPedidos, getPedidosStats, getProdutosAction, confirmarPagamentoAction } from '../actions';
 import { toast } from 'sonner';
 import Pagination from '@/components/ui/Pagination';
 
@@ -60,6 +61,32 @@ export default function PedidoClientPage({
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [selectedPedido, setSelectedPedido] = useState<Pedido | null>(null);
   const [pedidoToEdit, setPedidoToEdit] = useState<Pedido | null>(null);
+  const [paymentPedido, setPaymentPedido] = useState<Pedido | null>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+
+  const handleConfirmarPagamento = async (params: {
+    orderId: string;
+    expectedAmount: number;
+    receivedAmount: number;
+    paymentMethod: string;
+    notes?: string;
+  }) => {
+    setPaymentLoading(true);
+    try {
+      const res = await confirmarPagamentoAction(params);
+      if (res.divergent) {
+        toast.warning('Pagamento divergente registrado.');
+      } else {
+        toast.success('Pedido finalizado com sucesso e comissão processada!');
+      }
+      setPaymentPedido(null);
+      await refreshData();
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao confirmar pagamento.');
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
 
   const refreshData = async () => {
     setIsLoading(true);
@@ -498,6 +525,7 @@ export default function PedidoClientPage({
         <PedidoTable 
           pedidos={paginatedPedidos} 
           onSelectPedido={(p) => setSelectedPedido(p)}
+          onOpenPaymentModal={(p) => setPaymentPedido(p)}
           onRefresh={refreshData}
           isLoading={isLoading}
           sortKey={sortKey}
@@ -536,12 +564,21 @@ export default function PedidoClientPage({
           isOpen={!!selectedPedido}
           onClose={() => setSelectedPedido(null)}
           onUpdate={refreshData}
+          onOpenPaymentModal={(p) => setPaymentPedido(p)}
           onEdit={(pedido) => {
             setPedidoToEdit(pedido);
             setIsFormModalOpen(true);
           }}
         />
       )}
+
+      <PaymentCheckModal
+        pedido={paymentPedido}
+        open={!!paymentPedido}
+        onClose={() => setPaymentPedido(null)}
+        onConfirm={handleConfirmarPagamento}
+        loading={paymentLoading}
+      />
     </div>
   );
 }

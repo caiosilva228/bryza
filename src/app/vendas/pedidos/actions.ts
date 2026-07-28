@@ -141,3 +141,28 @@ export async function updatePedidoAction(
     throw new Error(error instanceof Error ? error.message : 'Falha ao editar o pedido.');
   }
 }
+
+export async function confirmarPagamentoAction(params: {
+  orderId: string;
+  expectedAmount: number;
+  receivedAmount: number;
+  paymentMethod: string;
+  notes?: string;
+}) {
+  try {
+    const result = await pedidoService.confirmOrderPayment(params);
+    revalidatePath('/');
+    revalidatePath('/vendas/pedidos');
+    revalidatePath('/logistica');
+    revalidatePath('/estoque');
+    revalidatePath('/vendas');
+    revalidatePath('/vendas/historico');
+    revalidatePath('/embaixador/comissoes');
+    revalidatePath('/embaixador/dashboard');
+    return result;
+  } catch (error) {
+    unstable_rethrow(error);
+    console.error('Erro ao confirmar pagamento:', error);
+    throw new Error(error instanceof Error ? error.message : 'Falha ao confirmar pagamento do pedido.');
+  }
+}

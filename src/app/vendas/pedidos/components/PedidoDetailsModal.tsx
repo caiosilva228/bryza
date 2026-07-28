@@ -15,10 +15,11 @@ interface Props {
   onClose: () => void;
   onUpdate: () => void;
   onEdit?: (pedido: Pedido) => void;
+  onOpenPaymentModal?: (pedido: Pedido) => void;
 }
 
 
-export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onClose, onUpdate, onEdit }: Props) {
+export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onClose, onUpdate, onEdit, onOpenPaymentModal }: Props) {
   const [itens, setItens] = useState<PedidoItem[]>([]);
   const [pedido, setPedido] = useState<Pedido>(pedidoInitial);
   const [isLoading, setIsLoading] = useState(false);
@@ -82,8 +83,11 @@ export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onCl
     }
 
     if (nextStatus === 'finalizado') {
-      const confirm = window.confirm('CONFIRMAR FINALIZAÇÃO DE VENDA? O estoque será atualizado definitivamente.');
-      if (!confirm) return;
+      if (onOpenPaymentModal) {
+        onClose();
+        onOpenPaymentModal(pedido);
+        return;
+      }
     }
 
     setIsUpdating(true);

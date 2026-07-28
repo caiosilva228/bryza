@@ -14,6 +14,7 @@ interface Props {
   pedidos: Pedido[];
   onSelectPedido: (pedido: Pedido) => void;
   onRefresh: () => void;
+  onOpenPaymentModal?: (pedido: Pedido) => void;
   isLoading?: boolean;
   sortKey: SortKey | null;
   sortDirection: SortDirection;
@@ -25,6 +26,7 @@ export default function PedidoTable({
   pedidos,
   onSelectPedido,
   onRefresh,
+  onOpenPaymentModal,
   isLoading,
   sortKey,
   sortDirection,
@@ -114,8 +116,8 @@ export default function PedidoTable({
 
   if (!isMounted) return null;
 
-  async function handleQuickAdvance(pedidoId: string, currentStatus: StatusPedido) {
-    const workflow = statusWorkflow[currentStatus];
+  async function handleQuickAdvance(pedido: Pedido) {
+    const workflow = statusWorkflow[pedido.status_pedido];
     if (!workflow || !workflow.next) return;
     
     const nextStatus = workflow.next;
@@ -128,13 +130,15 @@ export default function PedidoTable({
     }
 
     if (nextStatus === 'finalizado') {
-      const confirm = window.confirm('CONFIRMAR FINALIZAÇÃO DE VENDA? O estoque será atualizado definitivamente.');
-      if (!confirm) return;
+      if (onOpenPaymentModal) {
+        onOpenPaymentModal(pedido);
+        return;
+      }
     }
 
-    setUpdatingId(pedidoId);
+    setUpdatingId(pedido.id);
     try {
-      await updatePedidoStatus(pedidoId, nextStatus);
+      await updatePedidoStatus(pedido.id, nextStatus);
       toast.success(`STATUS ATUALIZADO: ${statusWorkflow[nextStatus].label}`);
       onRefresh();
     } catch (error) {
@@ -251,7 +255,7 @@ export default function PedidoTable({
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleQuickAdvance(pedido.id, pedido.status_pedido);
+                          handleQuickAdvance(pedido);
                         }}
                         disabled={updatingId === pedido.id}
                         style={{
@@ -403,7 +407,7 @@ export default function PedidoTable({
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleQuickAdvance(pedido.id, pedido.status_pedido);
+                      handleQuickAdvance(pedido);
                     }}
                     disabled={isUpdating}
                     style={{
