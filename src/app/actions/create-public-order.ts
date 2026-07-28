@@ -3,6 +3,7 @@
 import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 import { verifyAndParseReferralCookie, COOKIE_NAME } from '@/lib/referral/cookie';
+import { getSyntheticEmail } from '@/utils/env';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -34,7 +35,7 @@ export interface PublicSchedulingInput {
   hora: string;
   forma_pagamento: 'dinheiro' | 'pix' | 'cartao';
   idempotency_key: string;
-  itens: Array<{ produto_id: string; quantidade: number }>;
+  itens: Array<{ produto_id: string; quantidade: number; desconto_aplicado?: number }>;
 }
 
 export interface PublicSchedulingResult {
@@ -170,6 +171,7 @@ export async function createPublicSchedulingAction(
     const itens = input.itens.map((item) => ({
       produto_id: typeof item?.produto_id === 'string' ? item.produto_id : '',
       quantidade: Number(item?.quantidade),
+      desconto_aplicado: Number(item?.desconto_aplicado || 0),
     }));
     if (itens.some((item) => !UUID_PATTERN.test(item.produto_id)
       || !Number.isInteger(item.quantidade)
@@ -247,6 +249,97 @@ export async function createPublicSchedulingAction(
     if (!normalizedResult) {
       console.error('Resposta inválida da RPC fn_criar_agendamento_publico.');
       return { success: false, error: 'O agendamento foi processado, mas a confirmação não pôde ser exibida. Entre em contato com a Bryza.' };
+    }
+
+    // Criar/Promover automaticamente para Embaixador Ativo se ainda não possuir conta
+    try {
+      const { data: existingAmb } = await supabaseAdmin
+        .from('ambassadors')
+        .select('id, username, referral_code')
+        .or(`cpf.eq.${cpf},phone.eq.${telefone}`)
+        .maybeSingle();
+
+      if (!existingAmb) {
+        // Obter embaixador patrocinador vinculado
+        const { data: sponsorAmb } = await supabaseAdmin
+          .from('ambassadors')
+          .select('id, referral_code')
+          .ilike('referral_code', verifiedReferral.referral_code)
+          .maybeSingle();
+
+        const sponsorId = sponsorAmb?.id || null;
+
+        // Obter plano de comissão padrão do programa
+        const { data: progSettings } = await supabaseAdmin
+          .from('ambassador_program_settings')
+          .select('default_commission_plan_id')
+          .eq('singleton', true)
+          .maybeSingle();
+
+        const defaultPlanId = progSettings?.default_commission_plan_id || null;
+
+        // Inserir novo embaixador ativo
+        const { data: newAmbassador } = await supabaseAdmin
+          .from('ambassadors')
+          .insert({
+            full_name: nome,
+            display_name: nome,
+            phone: telefone,
+            email: `${cpf}@cliente.bryza`,
+            cpf: cpf,
+            parent_ambassador_id: sponsorId,
+            commission_plan_id: defaultPlanId,
+            status: 'ativo',
+            cep: cep || null,
+            address: endereco || null,
+            number: numero || null,
+            neighborhood: bairro || null,
+            city: cidade || null,
+            state: estado || null,
+            notes: 'Cadastrado automaticamente como embaixador ativo via agendamento Kit Bryza.',
+          })
+          .select('id, username, referral_code')
+          .maybeSingle();
+
+        if (newAmbassador) {
+          // Atualizar vínculo de embaixador próprio no cliente
+          await supabaseAdmin
+            .from('clientes')
+            .update({ own_ambassador_id: newAmbassador.id })
+            .or(`cpf.eq.${cpf},telefone.eq.${telefone}`);
+
+          // Provisionar conta Auth (Login e Senha inicial = telefone)
+          const syntheticEmail = getSyntheticEmail(newAmbassador.username);
+          const { data: authData } = await supabaseAdmin.auth.admin.createUser({
+            email: syntheticEmail,
+            password: telefone,
+            email_confirm: true,
+            user_metadata: { nome },
+          });
+
+          if (authData?.user) {
+            const authUserId = authData.user.id;
+
+            await supabaseAdmin
+              .from('ambassadors')
+              .update({ user_id: authUserId })
+              .eq('id', newAmbassador.id);
+
+            await supabaseAdmin.from('profiles').insert({
+              id: authUserId,
+              nome,
+              email: syntheticEmail,
+              telefone,
+              role: 'embaixador',
+              username: newAmbassador.username,
+              must_change_password: true,
+              ativo: true,
+            });
+          }
+        }
+      }
+    } catch (ambErr) {
+      console.error('Aviso ao provisionar embaixador ativo no agendamento público:', ambErr);
     }
 
     return { success: true, data: normalizedResult };
