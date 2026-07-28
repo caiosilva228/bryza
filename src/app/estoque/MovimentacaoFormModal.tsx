@@ -19,10 +19,12 @@ export const MovimentacaoFormModal = ({ produtos, onClose, onSuccess }: Moviment
   const [observacoes, setObservacoes] = useState('');
   const [showNegativoWarning, setShowNegativoWarning] = useState(false);
 
+  const minQuantidade = tipo === 'ajuste' ? 0 : 1;
+
   // Validação de estoque negativo
   const handleSubmit = async (e: React.FormEvent, ignoreWarning = false) => {
     e.preventDefault();
-    if (!produtoId || quantidade <= 0) return;
+    if (!produtoId || quantidade < minQuantidade) return;
 
     if (!ignoreWarning && tipo === 'saida') {
       const produto = produtos.find(p => p.id === produtoId);
@@ -95,7 +97,13 @@ export const MovimentacaoFormModal = ({ produtos, onClose, onSuccess }: Moviment
               <label style={{ fontSize: '13px', fontWeight: 600 }}>Tipo</label>
               <select 
                 value={tipo} 
-                onChange={(e) => setTipo(e.target.value as TipoMovimento)}
+                onChange={(e) => {
+                  const newTipo = e.target.value as TipoMovimento;
+                  setTipo(newTipo);
+                  if (newTipo === 'ajuste') {
+                    setOrigem('ajuste_manual');
+                  }
+                }}
                 style={{ padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline)' }}
               >
                 <option value="entrada">Entrada (+)</option>
@@ -108,11 +116,16 @@ export const MovimentacaoFormModal = ({ produtos, onClose, onSuccess }: Moviment
               <input 
                 type="number" 
                 required
-                min="1"
+                min={minQuantidade}
                 value={quantidade}
                 onChange={(e) => setQuantidade(Number(e.target.value))}
                 style={{ padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline)' }}
               />
+              {tipo === 'ajuste' && (
+                <span style={{ fontSize: '11px', color: 'var(--color-outline)', marginTop: '-4px' }}>
+                  Informe 0 para zerar o estoque.
+                </span>
+              )}
             </div>
           </div>
 
