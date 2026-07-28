@@ -307,7 +307,12 @@ export default function EditarEmbaixadorPage({ params }: Context) {
         toast.success('Cadastro atualizado com sucesso!');
         router.push(`/embaixadores/${id}`);
       } catch (err: any) {
-        toast.error(err.message || 'Erro ao salvar alterações.');
+        if (err.message?.includes('Server Action') || err.message?.includes('not found')) {
+          toast.error('O sistema foi atualizado no servidor. Recarregando a página para aplicar a versão mais recente...');
+          setTimeout(() => window.location.reload(), 1500);
+        } else {
+          toast.error(err.message || 'Erro ao salvar alterações.');
+        }
       }
     });
   };
