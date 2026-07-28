@@ -113,6 +113,7 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
         icon: 'loyalty',
         subItems: [
           { label: 'Embaixadores', path: '/embaixadores', icon: 'groups' },
+          { label: 'Materiais', path: '/embaixadores/materiais', icon: 'folder_shared' },
           { label: 'Pagamentos', path: '/embaixadores/pagamentos', icon: 'account_balance_wallet' },
           { label: 'Configurações', path: '/embaixadores/configuracoes', icon: 'settings' },
         ],

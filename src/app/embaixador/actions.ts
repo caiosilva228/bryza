@@ -587,3 +587,37 @@ export async function getSignedProfilePhotoUrl(photoPath: string) {
   if (error || !data) return null;
   return data.signedUrl;
 }
+
+export async function getPublicPromotionalMaterialsAction(): Promise<{
+  success: boolean;
+  materials?: Array<{
+    id: string;
+    title: string;
+    description: string | null;
+    category: string;
+    file_url: string;
+    file_name: string | null;
+    file_type: string | null;
+    created_at: string;
+  }>;
+  error?: string;
+}> {
+  try {
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from('promotional_materials')
+      .select('id, title, description, category, file_url, file_name, file_type, created_at')
+      .eq('active', true)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Erro ao buscar materiais de divulgação públicos:', error);
+      return { success: false, error: 'Erro ao carregar materiais.' };
+    }
+
+    return { success: true, materials: data || [] };
+  } catch (err: any) {
+    console.error('Erro inesperado em getPublicPromotionalMaterialsAction:', err);
+    return { success: false, error: 'Erro inesperado ao carregar materiais.' };
+  }
+}

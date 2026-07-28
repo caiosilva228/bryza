@@ -112,6 +112,7 @@ export const Sidebar = () => {
         icon: 'loyalty',
         subItems: [
           { label: 'Embaixadores', path: '/embaixadores', icon: 'groups' },
+          { label: 'Materiais', path: '/embaixadores/materiais', icon: 'folder_shared' },
           { label: 'Pagamentos', path: '/embaixadores/pagamentos', icon: 'account_balance_wallet' },
           { label: 'Configurações', path: '/embaixadores/configuracoes', icon: 'settings' },
         ],
@@ -128,6 +129,7 @@ export const Sidebar = () => {
     if (path === '/embaixadores') {
       return pathname === path || (
         pathname.startsWith('/embaixadores/') &&
+        !pathname.startsWith('/embaixadores/materiais') &&
         !pathname.startsWith('/embaixadores/pagamentos') &&
         !pathname.startsWith('/embaixadores/configuracoes')
       );
