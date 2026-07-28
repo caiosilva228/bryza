@@ -85,7 +85,7 @@ export async function cadastrarEmbaixadorPorConvite(
       return { success: false, message: 'Este número de telefone já está cadastrado no sistema.' };
     }
 
-    // 3. Obter ou Criar Cliente Canônico
+    // 3. Obter ou Criar Cliente Canônico com Vínculo ao Embaixador Patrocinador
     let customerId: string | null = null;
     const { data: existingCustomer } = await adminClient
       .from('clientes')
@@ -95,6 +95,17 @@ export async function cadastrarEmbaixadorPorConvite(
 
     if (existingCustomer) {
       customerId = existingCustomer.id;
+      // Atualizar atribuição de indicação do patrocinador no cliente existente
+      await adminClient
+        .from('clientes')
+        .update({
+          ambassador_id: sponsorAmb.id,
+          commissionable_ambassador_id: sponsorAmb.id,
+          referral_code: sponsorAmb.referral_code,
+          referral_source: 'smart_link',
+          referral_attributed_at: new Date().toISOString(),
+        })
+        .eq('id', customerId);
     } else {
       const { data: newCustomer, error: createCustomerError } = await adminClient
         .from('clientes')
@@ -112,6 +123,11 @@ export async function cadastrarEmbaixadorPorConvite(
           origem: 'cadastro_convite_embaixador',
           status_cliente: 'lead',
           lifecycle_status: 'active',
+          ambassador_id: sponsorAmb.id,
+          commissionable_ambassador_id: sponsorAmb.id,
+          referral_code: sponsorAmb.referral_code,
+          referral_source: 'smart_link',
+          referral_attributed_at: new Date().toISOString(),
         })
         .select('id')
         .single();
@@ -123,8 +139,7 @@ export async function cadastrarEmbaixadorPorConvite(
       customerId = newCustomer.id;
     }
 
-    // 4. Inserir novo embaixador
-    // Triggers automáticos setam ambassador_number, username, referral_code
+    // 4. Inserir novo embaixador (com parent_ambassador_id vinculado ao patrocinador)
     const { data: newAmbassador, error: createAmbError } = await adminClient
       .from('ambassadors')
       .insert({
@@ -151,7 +166,7 @@ export async function cadastrarEmbaixadorPorConvite(
       return { success: false, message: 'Falha ao registrar a conta de embaixador.' };
     }
 
-    // Vincular cliente ao embaixador próprio
+    // Vincular cliente ao embaixador próprio (own_ambassador_id)
     if (customerId) {
       await adminClient
         .from('clientes')
@@ -170,7 +185,6 @@ export async function cadastrarEmbaixadorPorConvite(
 
     if (createAuthError || !authData.user) {
       console.error('Erro ao criar conta Auth para o embaixador:', createAuthError);
-      // Reverter cadastro para evitar inconformidade
       await adminClient.from('ambassadors').delete().eq('id', newAmbassador.id);
       return { success: false, message: 'Não foi possível provisionar o seu acesso inicial.' };
     }
@@ -199,22 +213,28 @@ export async function cadastrarEmbaixadorPorConvite(
       console.error('Erro ao criar profile do embaixador:', profileError);
     }
 
-    // 7. Criar Atribuição de Indicação
+    // 7. Registrar Atribuição em customer_ambassador_assignments
     if (customerId) {
-      await adminClient
-        .schema('private')
-        .from('customer_ambassador_assignments')
-        .insert({
-          customer_id: customerId,
-          ambassador_id: sponsorAmb.id,
-          source: 'smart_link',
-          status: 'active',
-          is_validated: true,
-          is_commissionable: true,
-          reason: `Convite aceito via link /cadastro/${rawSponsorCode}`,
-        })
-        .select()
-        .maybeSingle();
+      try {
+        await adminClient
+          .schema('private')
+          .from('customer_ambassador_assignments')
+          .insert({
+            customer_id: customerId,
+            ambassador_id: sponsorAmb.id,
+            source: 'smart_link',
+            evidence_code: sponsorAmb.referral_code,
+            status: 'active',
+            is_validated: true,
+            is_commissionable: true,
+            assigned_by: sponsorAmb.id,
+            reason: `Convite aceito via link /cadastro/${rawSponsorCode}`,
+          })
+          .select()
+          .maybeSingle();
+      } catch (assignErr) {
+        console.error('Aviso ao registrar atribuição em private:', assignErr);
+      }
     }
 
     return {

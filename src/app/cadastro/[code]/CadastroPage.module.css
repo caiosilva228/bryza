@@ -1,0 +1,266 @@
+/* CadastroPage.module.css — Design System 100% alinhado à Landing Page e ao Modal Kit Bryza */
+
+.container {
+  min-height: 100vh;
+  background: #ffffff;
+  color: #051329;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Faixa Superior Anúncio (Estilo Header Bryza #051329) */
+.announcement {
+  background: #051329;
+  color: #ffffff;
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Header Principal */
+.topBar {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-family: "DM Serif Display", Georgia, serif;
+  font-size: 26px;
+  font-weight: 400;
+  color: #051329;
+  text-decoration: none;
+}
+
+.logo span {
+  color: #5a8216;
+  font-weight: 700;
+}
+
+.headerBadge {
+  background: #f4f8ec;
+  border: 1px solid #d2e4b0;
+  color: #5a8216;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+}
+
+/* Hero Centralizado */
+.hero {
+  flex: 1;
+  width: min(1000px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 56px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Banner de Indicação do Embaixador */
+.sponsorSection {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 14px 24px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+  box-shadow: 0 4px 16px rgba(5, 19, 41, 0.03);
+}
+
+.sponsorAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #5a8216;
+  background: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: #5a8216;
+  flex-shrink: 0;
+}
+
+.sponsorText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.sponsorLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #5a8216;
+}
+
+.sponsorName {
+  font-size: 15px;
+  font-weight: 700;
+  color: #051329;
+}
+
+.sponsorLocation {
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+/* Título Serifado idêntico à Sales Page */
+.title {
+  font-family: "DM Serif Display", Georgia, serif;
+  font-size: clamp(34px, 4.5vw, 48px);
+  font-weight: 400;
+  line-height: 1.12;
+  color: #051329;
+  margin: 0 0 18px;
+  max-width: 780px;
+}
+
+.titleHighlight {
+  color: #5a8216;
+  font-style: italic;
+}
+
+.subtitle {
+  font-size: 16.5px;
+  color: #475569;
+  max-width: 640px;
+  line-height: 1.6;
+  margin: 0 0 36px;
+}
+
+/* Botão de Ação Verde Bryza */
+.ctaButton {
+  min-height: 54px;
+  padding: 0 38px;
+  background: #5a8216;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(90, 130, 22, 0.28);
+  transition: all 0.22s ease;
+}
+
+.ctaButton:hover {
+  background: #4b6e12;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(90, 130, 22, 0.38);
+}
+
+/* Grid de Benefícios estilo Cards da Sales Page */
+.benefitsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+  margin-top: 56px;
+}
+
+.benefitCard {
+  background: #ffffff;
+  border: 1px solid #e2e7ef;
+  border-radius: 16px;
+  padding: 28px 24px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.benefitCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(5, 19, 41, 0.08);
+}
+
+.benefitIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #f4f8ec;
+  color: #5a8216;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.benefitTitle {
+  margin: 8px 0 0;
+  font-family: "DM Serif Display", Georgia, serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: #051329;
+}
+
+.benefitDesc {
+  font-size: 13.5px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.footer {
+  border-top: 1px solid #e2e8f0;
+  padding: 24px;
+  text-align: center;
+  font-size: 13px;
+  color: #64748b;
+  background: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .topBar {
+    padding: 14px 20px;
+  }
+  .hero {
+    width: calc(100% - 32px);
+    padding: 36px 0;
+  }
+  .title {
+    font-size: 28px;
+  }
+  .subtitle {
+    font-size: 15px;
+  }
+  .benefitsGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .ctaButton {
+    width: 100%;
+    justify-content: center;
+  }
+}

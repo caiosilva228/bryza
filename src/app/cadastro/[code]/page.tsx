@@ -56,9 +56,28 @@ export default async function CadastroEmbaixadorConvitePage({ params }: PageProp
     p_code: rawCode,
   });
 
-  const ambassador = ambRows && ambRows[0];
+  let ambassador = ambRows && ambRows[0];
 
-  if (ambError || !ambassador) {
+  // Fallback de resiliência caso a RPC restrita não encontre (ex: durante cadastros ou perfis em migração)
+  if (!ambassador) {
+    const { data: directAmb } = await supabaseAdmin
+      .from('ambassadors')
+      .select('full_name, display_name, referral_code, photo_path, city')
+      .ilike('referral_code', rawCode)
+      .maybeSingle();
+
+    if (directAmb) {
+      ambassador = {
+        display_name: directAmb.display_name || directAmb.full_name || directAmb.referral_code,
+        referral_code: directAmb.referral_code,
+        photo_path: directAmb.photo_path,
+        city: directAmb.city,
+        instagram: null,
+      };
+    }
+  }
+
+  if (!ambassador) {
     notFound();
   }
 

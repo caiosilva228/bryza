@@ -4248,3 +4248,97 @@
   }
 }
 
+/* Custom Overrides for High-Contrast Modal & Marquee Ticker */
+@keyframes marqueeScroll {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.marqueeTrack {
+  display: inline-flex;
+  align-items: center;
+  gap: 36px;
+  white-space: nowrap;
+  animation: marqueeScroll 18s linear infinite;
+  will-change: transform;
+}
+
+.marqueeItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.orderModal { color: #0f172a !important; background: #ffffff !important; }
+.modalHeader { color: #ffffff !important; background: #051329 !important; }
+.modalHeader span { color: #a9bde9 !important; }
+.modalHeader h2 { color: #ffffff !important; }
+.modalHeader p { color: #cbd5ee !important; }
+.modalHeader button { color: #ffffff !important; }
+.orderForm { background: #ffffff !important; color: #0f172a !important; }
+.orderForm legend { color: #051329 !important; font-weight: 800 !important; font-size: 12px !important; text-transform: uppercase !important; border-bottom: 1px solid #e2e8f0 !important; }
+.formGrid label { color: #1e293b !important; font-size: 12px !important; font-weight: 700 !important; text-transform: uppercase !important; }
+.formGrid input, .formGrid select { color: #0f172a !important; background: #ffffff !important; border: 1px solid #cbd5e1 !important; }
+.formGrid input::placeholder, .formGrid select::placeholder { color: #64748b !important; opacity: 1 !important; }
+.privacyNote { color: #475569 !important; font-size: 11px !important; font-weight: 500 !important; }
+.submitOrder { color: #ffffff !important; background: #5a8216 !important; font-size: 15px !important; font-weight: 800 !important; text-transform: uppercase !important; }
+
+@media (max-width: 767px) {
+  .benefitGrid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    margin-bottom: 24px !important;
+  }
+
+  .modalOverlay {
+    padding: 12px 12px 24px !important;
+    place-items: start center !important;
+  }
+
+  .orderModal {
+    width: 100% !important;
+    max-height: 90dvh !important;
+    border-radius: 16px !important;
+    margin-top: 4px !important;
+  }
+
+  .modalHeader {
+    padding: 16px 20px !important;
+    border-radius: 16px 16px 0 0 !important;
+  }
+
+  .modalHeader h2 {
+    font-size: 22px !important;
+  }
+
+  .modalHeader p {
+    font-size: 11.5px !important;
+  }
+
+  .orderForm {
+    padding: 20px 18px 24px !important;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .formGrid input, .formGrid select {
+    font-size: 16px !important;
+    min-height: 48px !important;
+    padding: 10px 14px !important;
+  }
+
+  .submitOrder {
+    min-height: 52px !important;
+    font-size: 14px !important;
+  }
+}
+
+
+

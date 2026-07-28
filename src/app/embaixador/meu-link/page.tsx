@@ -27,6 +27,7 @@ export default function MeuLinkPage() {
 
   const code = data?.referral_code || 'bryza01';
   const fullUrl = getReferralUrl(code);
+  const cadastroUrl = `${getReferralUrl(code).replace(/\/r\/.*$/, '')}/cadastro/${code}`;
   const qrCodeUrl = `/api/r/${code}/qrcode`;
   const whatsappMsg = encodeURIComponent(`Olá! Compre na Bryza utilizando meu link exclusivo de indicação: ${fullUrl}`);
 
@@ -43,7 +44,7 @@ export default function MeuLinkPage() {
             Meu Link de Indicação
           </h1>
           <p style={{ color: 'var(--color-on-surface-variant)', fontSize: '14px', marginTop: '4px' }}>
-            Divulgue seu código ou link exclusivo e ganhe comissão por cada venda indicada.
+            Divulgue seu código, link de vendas ou convite de cadastro e ganhe comissão pelas suas indicações.
           </p>
         </header>
 
@@ -101,10 +102,10 @@ export default function MeuLinkPage() {
             </div>
           </div>
 
-          {/* Link Completo */}
+          {/* Link Completo de Vendas */}
           <div>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-on-surface-variant)', marginBottom: '8px', textTransform: 'uppercase' }}>
-              Seu Link Completo de Indicação
+              Seu Link Completo de Vendas
             </label>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               <input
@@ -148,7 +149,7 @@ export default function MeuLinkPage() {
                 Acessar
               </a>
               <button
-                onClick={() => handleCopy(fullUrl, 'Link')}
+                onClick={() => handleCopy(fullUrl, 'Link de Vendas')}
                 style={{
                   padding: '12px 20px',
                   borderRadius: '10px',
@@ -165,6 +166,77 @@ export default function MeuLinkPage() {
               >
                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>link</span>
                 Copiar Link
+              </button>
+            </div>
+          </div>
+
+          {/* Link de Convite de Cadastro para Novos Embaixadores */}
+          <div style={{ borderTop: '1px solid var(--color-outline-variant)', paddingTop: '24px' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-primary)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Link de Convite para Novos Embaixadores
+            </label>
+            <p style={{ color: 'var(--color-on-surface-variant)', fontSize: '13px', margin: '0 0 12px 0' }}>
+              Envie este link para quem deseja cadastrar como novo Embaixador indicado da sua rede.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <input
+                type="text"
+                value={cadastroUrl}
+                disabled
+                style={{
+                  flex: 1,
+                  padding: '12px 16px',
+                  borderRadius: '10px',
+                  border: '1px solid var(--color-outline-variant)',
+                  backgroundColor: 'var(--color-surface-container-high)',
+                  color: 'var(--color-on-surface)',
+                  fontFamily: 'monospace',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'not-allowed'
+                }}
+              />
+              <a
+                href={cadastroUrl}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  textDecoration: 'none',
+                  padding: '12px 20px',
+                  borderRadius: '10px',
+                  backgroundColor: 'var(--color-surface-container-highest, #e2e8f0)',
+                  color: 'var(--color-on-surface)',
+                  border: '1px solid var(--color-outline-variant)',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'background-color 0.2s'
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>open_in_new</span>
+                Acessar
+              </a>
+              <button
+                onClick={() => handleCopy(cadastroUrl, 'Link de Convite')}
+                style={{
+                  padding: '12px 20px',
+                  borderRadius: '10px',
+                  backgroundColor: 'var(--color-primary)',
+                  color: 'var(--color-on-primary)',
+                  border: 'none',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
+                Copiar Convite
               </button>
             </div>
           </div>
