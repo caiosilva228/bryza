@@ -64,8 +64,10 @@ export function printSummary(data: PrintData, type: 'pedido' | 'agendamento') {
     `;
   }).join('') || '<tr><td colspan="5" style="text-align:center; padding: 8px;">Nenhum item encontrado</td></tr>';
 
-  const totalBruto = data.valor_total + (data.desconto_aplicado || 0);
-  const totalDescontos = data.desconto_aplicado || 0;
+  const itemDescontosSum = data.itens?.reduce((acc, item) => acc + (item.desconto_aplicado || 0), 0) || 0;
+  const totalDescontos = (data.desconto_aplicado || 0) + itemDescontosSum;
+  const itemBrutoSum = data.itens?.reduce((acc, item) => acc + (item.quantidade * item.preco_unitario), 0) || 0;
+  const totalBruto = itemBrutoSum > 0 ? itemBrutoSum : (data.valor_total + totalDescontos);
 
   const htmlContent = `
     <!DOCTYPE html>

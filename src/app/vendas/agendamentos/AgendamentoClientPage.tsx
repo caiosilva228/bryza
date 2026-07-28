@@ -893,28 +893,37 @@ function AgendamentoDetailsModal({
             </table>
           </div>
 
-          <div style={{
-            display: 'flex', flexDirection: 'column', gap: '6px',
-            padding: '16px', borderRadius: '12px',
-            backgroundColor: 'var(--color-surface-container-lowest)',
-            border: '1px solid var(--color-outline-variant)',
-            fontSize: '13px'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-outline)' }}>
-              <span>Total Bruto</span>
-              <span>{formatCurrency(agendamento.valor_total + (agendamento.desconto_aplicado || 0))}</span>
-            </div>
-            {agendamento.desconto_aplicado && agendamento.desconto_aplicado > 0 ? (
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-primary)' }}>
-                <span>Desconto</span>
-                <span>- {formatCurrency(agendamento.desconto_aplicado)}</span>
+          {(() => {
+            const itemDescontosSum = agendamento.itens?.reduce((acc, item) => acc + (item.desconto_aplicado || 0), 0) || 0;
+            const totalDescontos = (agendamento.desconto_aplicado || 0) + itemDescontosSum;
+            const itemBrutoSum = agendamento.itens?.reduce((acc, item) => acc + (item.quantidade * item.preco_unitario), 0) || 0;
+            const totalBruto = itemBrutoSum > 0 ? itemBrutoSum : (agendamento.valor_total + totalDescontos);
+
+            return (
+              <div style={{
+                display: 'flex', flexDirection: 'column', gap: '6px',
+                padding: '16px', borderRadius: '12px',
+                backgroundColor: 'var(--color-surface-container-lowest)',
+                border: '1px solid var(--color-outline-variant)',
+                fontSize: '13px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-outline)' }}>
+                  <span>Total Bruto</span>
+                  <span>{formatCurrency(totalBruto)}</span>
+                </div>
+                {totalDescontos > 0 ? (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-primary)' }}>
+                    <span>Desconto</span>
+                    <span>- {formatCurrency(totalDescontos)}</span>
+                  </div>
+                ) : null}
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: '15px', marginTop: '6px', paddingTop: '6px', borderTop: '1px solid var(--color-outline-variant)' }}>
+                  <span>Valor Total</span>
+                  <span style={{ color: 'var(--color-primary)' }}>{formatCurrency(agendamento.valor_total)}</span>
+                </div>
               </div>
-            ) : null}
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: '15px', marginTop: '6px', paddingTop: '6px', borderTop: '1px solid var(--color-outline-variant)' }}>
-              <span>Valor Total</span>
-              <span style={{ color: 'var(--color-primary)' }}>{formatCurrency(agendamento.valor_total)}</span>
-            </div>
-          </div>
+            );
+          })()}
 
           {agendamento.observacoes && (
             <div style={{ marginTop: '20px' }}>
