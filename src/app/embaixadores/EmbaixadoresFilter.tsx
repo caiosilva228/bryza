@@ -33,6 +33,7 @@ export default function EmbaixadoresFilter({ onFilterChange }: FilterProps) {
       const { data } = await supabase
         .from('commission_plans')
         .select('id, name')
+        .eq('status', 'ativo')
         .order('name');
       if (data) setPlans(data);
     };

@@ -87,7 +87,7 @@ export default function EmbaixadorDetailsPage({ params }: Context) {
     // Carregar planos disponíveis
     const loadPlans = async () => {
       const supabase = createClient();
-      const { data } = await supabase.from('commission_plans').select('id, name').order('name');
+      const { data } = await supabase.from('commission_plans').select('id, name').eq('status', 'ativo').order('name');
       if (data) setPlans(data);
     };
     loadPlans();

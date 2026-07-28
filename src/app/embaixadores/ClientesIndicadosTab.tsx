@@ -102,6 +102,7 @@ export default function ClientesIndicadosTab() {
     supabase
       .from('commission_plans')
       .select('id, name')
+      .eq('status', 'ativo')
       .order('name')
       .then(({ data }) => {
         if (data) {
