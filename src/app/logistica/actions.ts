@@ -54,13 +54,16 @@ export async function confirmarPagamento(params: {
     revalidatePath('/estoque');
     revalidatePath('/');
     return { success: true, ...result, error: undefined };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erro ao confirmar pagamento:', error);
+    const message =
+      error?.message ||
+      (typeof error === 'string' ? error : 'Falha ao confirmar o pagamento.');
     return {
       success: false,
       finalized: false,
       divergent: false,
-      error: error instanceof Error ? error.message : 'Falha ao confirmar o pagamento.',
+      error: message,
     };
   }
 }

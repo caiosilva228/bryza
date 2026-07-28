@@ -285,7 +285,9 @@ export const confirmOrderPayment = async (params: {
     .update(updateData)
     .eq('id', orderId);
 
-  if (error) throw error;
+  if (error) {
+    throw new Error(error.message || 'Erro ao atualizar o pagamento do pedido no banco de dados.');
+  }
 
   return { finalized: !isDivergent, divergent: isDivergent };
 };
