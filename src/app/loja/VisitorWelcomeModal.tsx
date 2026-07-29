@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { login } from '@/app/login/actions';
 import { LoginSubmitButton } from '@/components/auth/LoginSubmitButton';
-import styles from './visitor-welcome-modal.module.css';
+import { X, ArrowLeft, LogIn, UserPlus, ShieldCheck, Lock, Eye, EyeOff, Sparkles } from 'lucide-react';
 
 const VISITOR_DISMISS_KEY = 'bryza_store_visitor_welcome_dismissed';
 
@@ -150,210 +150,366 @@ export default function VisitorWelcomeModal({
 
   return (
     <div
-      className={styles.overlay}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(5, 15, 32, 0.8)',
+        backdropFilter: 'blur(8px)',
+        zIndex: 5000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px'
+      }}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) dismissForSession();
       }}
     >
       <div
         ref={dialogRef}
-        className={styles.dialog}
         role="dialog"
         aria-modal="true"
         aria-labelledby="visitor-welcome-title"
-        aria-describedby="visitor-welcome-description"
+        style={{
+          backgroundColor: '#ffffff',
+          borderRadius: '24px',
+          width: '100%',
+          maxWidth: '480px',
+          maxHeight: '92vh',
+          overflowY: 'auto',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+          display: 'flex',
+          flexDirection: 'column',
+          position: 'relative'
+        }}
       >
-        <button
-          type="button"
-          className={styles.closeButton}
-          onClick={dismissForSession}
-          aria-label="Fechar e continuar como visitante"
-        >
-          <span className="material-symbols-outlined" aria-hidden="true">close</span>
-        </button>
-
-        {view === 'welcome' ? (
-          <>
-            <div className={styles.brandMark} aria-hidden="true">
-              <span className="material-symbols-outlined">shopping_bag</span>
-            </div>
-
-            <p className={styles.eyebrow}>Bem-vindo à Loja Bryza</p>
-            <h2 id="visitor-welcome-title">Você já tem cadastro?</h2>
-            <p id="visitor-welcome-description" className={styles.description}>
-              Embaixador, entre com a mesma credencial do seu portal. Se preferir,
-              você também pode comprar normalmente como visitante.
-            </p>
-
-            <div className={styles.benefits} aria-label="Benefícios do cadastro">
-              <span>
-                <span className="material-symbols-outlined" aria-hidden="true">bolt</span>
-                Checkout mais rápido
+        {/* CABEÇALHO ESCURO DE ALTO IMPACTO BRYZA (#051329) */}
+        <div style={{
+          backgroundColor: '#051329',
+          color: '#ffffff',
+          padding: '24px 28px 20px',
+          borderTopLeftRadius: '24px',
+          borderTopRightRadius: '24px',
+          position: 'relative'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+            <div>
+              <span style={{ fontSize: '11px', fontWeight: 800, color: '#A6CE39', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                {view === 'welcome' ? 'LOJA VIRTUAL BRYZA' : 'ACESSO DO CLIENTE'}
               </span>
-              <span>
-                <span className="material-symbols-outlined" aria-hidden="true">local_shipping</span>
-                Acompanhe seus pedidos
-              </span>
+              <h2 id="visitor-welcome-title" style={{ margin: '4px 0 2px', fontSize: '22px', fontWeight: 800, color: '#ffffff', lineHeight: 1.2 }}>
+                {view === 'welcome' ? 'Você já tem cadastro?' : 'Entrar na sua conta'}
+              </h2>
             </div>
-
-            <div className={styles.actions}>
-              <button
-                ref={firstActionRef}
-                type="button"
-                className={styles.primaryAction}
-                onClick={() => {
-                  setLoginError('');
-                  setReturnTo('/loja');
-                  setView('login');
-                }}
-              >
-                <span className="material-symbols-outlined" aria-hidden="true">login</span>
-                Entrar
-              </button>
-              <button
-                type="button"
-                className={styles.secondaryAction}
-                onClick={() => {
-                  dismissForSession();
-                  onCreateAccount();
-                }}
-              >
-                <span className="material-symbols-outlined" aria-hidden="true">person_add</span>
-                Criar cadastro
-              </button>
-            </div>
-
-            <button type="button" className={styles.guestAction} onClick={dismissForSession}>
-              Continuar como visitante
-            </button>
-
-            <p className={styles.privacyNote}>
-              Você poderá escolher pagar agora ou somente na entrega.
-            </p>
-          </>
-        ) : (
-          <>
+            
             <button
-              type="button"
-              className={styles.backButton}
-              onClick={() => {
-                setLoginError('');
-                setView('welcome');
+              onClick={dismissForSession}
+              aria-label="Fechar"
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                border: 'none',
+                color: '#ffffff',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'background 0.15s'
               }}
             >
-              <span className="material-symbols-outlined" aria-hidden="true">arrow_back</span>
-              Voltar
+              <X size={20} />
             </button>
+          </div>
 
-            <div className={styles.brandMark} aria-hidden="true">
-              <span className="material-symbols-outlined">person</span>
-            </div>
-            <p className={styles.eyebrow}>Acesso unificado Bryza</p>
-            <h2 id="visitor-welcome-title">Entrar na loja</h2>
-            <p id="visitor-welcome-description" className={styles.description}>
-              Use o mesmo Código Bryza, e-mail, CPF ou telefone e a mesma senha
-              do Portal do Embaixador.
-            </p>
+          <p style={{ margin: 0, fontSize: '13px', color: 'rgba(255, 255, 255, 0.75)', lineHeight: 1.4, fontWeight: 400 }}>
+            {view === 'welcome'
+              ? 'Entre com sua conta para checkout rápido e acompanhamento de pedidos, ou compre como visitante.'
+              : 'Use seu Código Bryza, e-mail, CPF ou telefone e sua senha.'}
+          </p>
+        </div>
 
-            {loginError ? (
-              <p className={styles.loginError} role="alert">{loginError}</p>
-            ) : null}
-
-            <form action={login} className={styles.loginForm}>
-              <input type="hidden" name="login_context" value="store" />
-              <input type="hidden" name="return_to" value={returnTo} />
-
-              <label htmlFor="store-login-identifier">
-                Código Bryza, e-mail, CPF ou telefone
-              </label>
-              <div className={styles.inputWrap}>
-                <span className="material-symbols-outlined" aria-hidden="true">person</span>
-                <input
-                  ref={loginInputRef}
-                  id="store-login-identifier"
-                  name="identifier"
-                  type="text"
-                  autoComplete="username"
-                  autoCapitalize="none"
-                  required
-                  placeholder="Digite sua identificação"
-                />
+        {/* CORPO DO MODAL (FUNDO BRANCO CLEAN #FFFFFF) */}
+        <div style={{ padding: '24px 28px 28px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          
+          {view === 'welcome' ? (
+            <>
+              {/* Benefícios Rápidos de Alta Conversão */}
+              <div style={{
+                backgroundColor: '#f8fafc',
+                borderRadius: '16px',
+                border: '1px solid #e2e8f0',
+                padding: '16px',
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '12px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: '#0f172a', fontWeight: 700 }}>
+                  <Sparkles size={16} color="#009845" />
+                  <span>Checkout ágil</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: '#0f172a', fontWeight: 700 }}>
+                  <ShieldCheck size={16} color="#009845" />
+                  <span>Pontos e Comissões</span>
+                </div>
               </div>
 
-              <label htmlFor="store-login-password">Sua senha</label>
-              <div className={styles.inputWrap}>
-                <span className="material-symbols-outlined" aria-hidden="true">lock</span>
-                <input
-                  id="store-login-password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  required
-                  placeholder="Digite sua senha"
-                />
+              {/* Botões Principais de Ação */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <button
+                  ref={firstActionRef}
+                  type="button"
+                  onClick={() => {
+                    setLoginError('');
+                    setReturnTo('/loja');
+                    setView('login');
+                  }}
+                  style={{
+                    width: '100%',
+                    minHeight: '48px',
+                    borderRadius: '12px',
+                    backgroundColor: '#009845',
+                    color: '#ffffff',
+                    border: 'none',
+                    fontSize: '15px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    boxShadow: '0 4px 14px rgba(0, 152, 69, 0.35)',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <LogIn size={18} />
+                  <span>Entrar com minha conta</span>
+                </button>
+
                 <button
                   type="button"
-                  className={styles.passwordToggle}
-                  onClick={() => setShowPassword((current) => !current)}
-                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  onClick={() => {
+                    dismissForSession();
+                    onCreateAccount();
+                  }}
+                  style={{
+                    width: '100%',
+                    minHeight: '48px',
+                    borderRadius: '12px',
+                    border: '1.5px solid #009845',
+                    backgroundColor: '#f0fdf4',
+                    color: '#08783e',
+                    fontSize: '14.5px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    transition: 'all 0.15s ease'
+                  }}
                 >
-                  <span className="material-symbols-outlined" aria-hidden="true">
-                    {showPassword ? 'visibility_off' : 'visibility'}
-                  </span>
+                  <UserPlus size={18} />
+                  <span>Criar minha conta de cliente</span>
                 </button>
               </div>
 
-              <LoginSubmitButton label="Entrar" />
-            </form>
+              <button
+                type="button"
+                onClick={dismissForSession}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#64748b',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  padding: '4px',
+                  textDecoration: 'underline'
+                }}
+              >
+                Continuar comprando como visitante
+              </button>
 
-            {/* BOTÃO PARA CADASTRAR-SE / CRIAR CONTA */}
-            <div style={{
-              marginTop: '16px',
-              paddingTop: '16px',
-              borderTop: '1px solid #e2e8f0',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              alignItems: 'center',
-              width: '100%'
-            }}>
-              <span style={{ fontSize: '12.5px', color: '#64748b', fontWeight: 600 }}>
-                Ainda não tem uma conta?
-              </span>
+              <div style={{ fontSize: '11.5px', color: '#94a3b8', textAlign: 'center', borderTop: '1px dashed #e2e8f0', paddingTop: '12px' }}>
+                🔒 Pagamento 100% seguro pelo Mercado Pago ou na entrega.
+              </div>
+            </>
+          ) : (
+            <>
               <button
                 type="button"
                 onClick={() => {
-                  dismissForSession();
-                  onCreateAccount();
+                  setLoginError('');
+                  setView('welcome');
                 }}
                 style={{
-                  width: '100%',
-                  minHeight: '46px',
-                  borderRadius: '12px',
-                  border: '1.5px solid #009845',
-                  backgroundColor: '#f0fdf4',
-                  color: '#08783e',
-                  fontSize: '13.5px',
+                  background: 'none',
+                  border: 'none',
+                  color: '#009845',
+                  fontSize: '13px',
                   fontWeight: 800,
                   cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  boxShadow: '0 2px 8px rgba(0, 152, 69, 0.08)',
-                  transition: 'all 0.15s ease'
+                  gap: '6px',
+                  padding: 0,
+                  marginBottom: '4px'
                 }}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
-                <span>Criar minha conta de cliente</span>
+                <ArrowLeft size={16} />
+                <span>Voltar para opções</span>
               </button>
-            </div>
 
-            <p className={styles.privacyNote}>
-              Uma única credencial para a loja e para o Portal do Embaixador.
-            </p>
-          </>
-        )}
+              {loginError && (
+                <div style={{
+                  padding: '12px 14px',
+                  backgroundColor: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  borderRadius: '10px',
+                  color: '#dc2626',
+                  fontSize: '13px',
+                  fontWeight: 700
+                }}>
+                  {loginError}
+                </div>
+              )}
+
+              <form action={login} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <input type="hidden" name="login_context" value="store" />
+                <input type="hidden" name="return_to" value={returnTo} />
+
+                <div>
+                  <label htmlFor="store-login-identifier" style={{ fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '6px' }}>
+                    Código Bryza, E-mail, CPF ou Telefone
+                  </label>
+                  <input
+                    ref={loginInputRef}
+                    id="store-login-identifier"
+                    name="identifier"
+                    type="text"
+                    autoComplete="username"
+                    autoCapitalize="none"
+                    required
+                    placeholder="Digite sua identificação"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      border: '1.5px solid #cbd5e1',
+                      fontSize: '14.5px',
+                      fontWeight: 600,
+                      color: '#0f172a',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="store-login-password" style={{ fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '6px' }}>
+                    Sua Senha
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      id="store-login-password"
+                      name="password"
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
+                      required
+                      placeholder="Digite sua senha"
+                      style={{
+                        width: '100%',
+                        padding: '12px 42px 12px 16px',
+                        borderRadius: '12px',
+                        border: '1.5px solid #cbd5e1',
+                        fontSize: '14.5px',
+                        fontWeight: 600,
+                        color: '#0f172a',
+                        outline: 'none',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((current) => !current)}
+                      aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                      style={{
+                        position: 'absolute',
+                        right: '12px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        color: '#64748b',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '6px' }}>
+                  <LoginSubmitButton label="Entrar na minha conta" />
+                </div>
+              </form>
+
+              {/* BOTÃO PARA CADASTRAR-SE / CRIAR CONTA */}
+              <div style={{
+                marginTop: '8px',
+                paddingTop: '16px',
+                borderTop: '1px solid #e2e8f0',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                alignItems: 'center',
+                width: '100%'
+              }}>
+                <span style={{ fontSize: '12.5px', color: '#64748b', fontWeight: 600 }}>
+                  Ainda não tem uma conta?
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    dismissForSession();
+                    onCreateAccount();
+                  }}
+                  style={{
+                    width: '100%',
+                    minHeight: '46px',
+                    borderRadius: '12px',
+                    border: '1.5px solid #009845',
+                    backgroundColor: '#f0fdf4',
+                    color: '#08783e',
+                    fontSize: '13.5px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    boxShadow: '0 2px 8px rgba(0, 152, 69, 0.08)',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <UserPlus size={18} />
+                  <span>Criar minha conta de cliente</span>
+                </button>
+              </div>
+
+              <div style={{ fontSize: '11.5px', color: '#94a3b8', textAlign: 'center' }}>
+                <Lock size={12} style={{ display: 'inline', marginRight: '4px' }} />
+                Sua mesma senha para a loja e para o Portal do Embaixador.
+              </div>
+            </>
+          )}
+
+        </div>
       </div>
     </div>
   );

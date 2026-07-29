@@ -1829,6 +1829,10 @@ export default function LojaVirtualPage() {
       <StoreRegistrationModal
         isOpen={isRegistrationOpen}
         onClose={() => setIsRegistrationOpen(false)}
+        onOpenLogin={() => {
+          setIsRegistrationOpen(false);
+          setLoginModalRequest(Date.now());
+        }}
       />
 
       {/* 8. Rodapé E-Commerce Completo Bryza (Fundo Escuro #051329) */}

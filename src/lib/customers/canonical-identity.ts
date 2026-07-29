@@ -108,7 +108,7 @@ export async function upsertPublicCustomerCanonical(
     referralCode?: string | null;
     source?: string;
   },
-): Promise<{ customerId: string; phone: string; cpf: string | null; email: string | null }> {
+): Promise<{ customerId: string; personId: string; phone: string; cpf: string | null; email: string | null }> {
   const identity = normalizeCustomerIdentity(input);
   const { data, error } = await client.rpc('fn_upsert_public_customer_canonical', {
     p_customer_data: {
@@ -136,15 +136,18 @@ export async function upsertPublicCustomerCanonical(
     status?: string;
     code?: string;
     customer_id?: string;
+    person_id?: string;
   };
   if (result.status === 'manual_review_required') {
     throw new Error(`customer_identity_review_required:${result.code || 'identity_conflict'}`);
   }
   const customerId = String(result.customer_id || '');
+  const personId = String(result.person_id || '');
   if (!customerId) throw new Error('canonical_customer_id_missing');
 
   return {
     customerId,
+    personId,
     phone: identity.phone,
     cpf: identity.cpf,
     email: identity.email,

@@ -173,6 +173,7 @@ export async function registerStoreCustomerAmbassador(
     const { data: ambassador, error: ambassadorError } = await admin
       .from('ambassadors')
       .insert({
+        person_id: canonicalCustomer.personId || null,
         full_name: fullName,
         display_name: fullName,
         phone,
@@ -197,6 +198,16 @@ export async function registerStoreCustomerAmbassador(
     if (ambassadorError || !ambassador) {
       console.error('Falha ao criar embaixador pela loja:', ambassadorError);
       return { success: false, message: 'Não foi possível criar o cadastro de embaixador.' };
+    }
+
+    if (canonicalCustomer.personId) {
+      await (admin as any).schema('private').from('person_business_roles').upsert({
+        person_id: canonicalCustomer.personId,
+        role_type: 'ambassador',
+        source_entity_id: ambassador.id,
+        status: 'active',
+        activated_at: new Date().toISOString(),
+      }, { onConflict: 'person_id,role_type' });
     }
 
     await admin
