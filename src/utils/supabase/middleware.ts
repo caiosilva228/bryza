@@ -47,7 +47,8 @@ export async function updateSession(request: NextRequest) {
   const isPublicPaymentReturn = pathname === '/pagamento/retorno';
   const isPublicPaymentEndpoint =
     pathname === '/api/payments/mercado-pago/preference'
-    || pathname === '/api/payments/mercado-pago/webhook';
+    || pathname === '/api/payments/mercado-pago/webhook'
+    || pathname === '/api/payments/mercado-pago/status';
   const isAmbassadorAcceptance = pathname.startsWith('/programa/embaixadores/aceitar');
   
   // Ignorar assets estáticos comuns

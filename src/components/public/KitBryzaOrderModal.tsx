@@ -419,6 +419,13 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
           if (!checkoutResponse.ok || !checkout.checkoutUrl) {
             throw new Error(checkout.error || 'Não foi possível abrir o pagamento. Tente novamente.');
           }
+          try {
+            sessionStorage.setItem('bryza_mp_checkout', JSON.stringify({
+              checkoutToken: paymentData.checkout_token,
+            }));
+          } catch {
+            // O retorno ainda pode usar os identificadores enviados pelo Mercado Pago.
+          }
           window.location.assign(checkout.checkoutUrl);
           return;
         }

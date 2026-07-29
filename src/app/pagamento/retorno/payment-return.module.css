@@ -1,0 +1,221 @@
+.page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 28px 18px;
+  background:
+    radial-gradient(circle at top, rgba(174, 219, 69, 0.18), transparent 38%),
+    linear-gradient(180deg, #f7faf7 0%, #eef3f7 100%);
+  color: #051329;
+}
+
+.card {
+  width: min(100%, 580px);
+  padding: clamp(26px, 6vw, 44px);
+  border: 1px solid rgba(5, 19, 41, 0.08);
+  border-radius: 26px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(5, 19, 41, 0.13);
+  text-align: center;
+}
+
+.iconWrap {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+}
+
+.iconWrap span {
+  font-size: 42px;
+}
+
+.processing {
+  color: #0b5ea8;
+  background: #e9f4ff;
+}
+
+.success {
+  color: #08783e;
+  background: #dcfce7;
+}
+
+.danger {
+  color: #b3261e;
+  background: #fee2e2;
+}
+
+.neutral {
+  color: #526174;
+  background: #edf1f5;
+}
+
+.spin {
+  animation: spin 1.1s linear infinite;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #0b5ea8;
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.card h1 {
+  margin: 0;
+  font-size: clamp(26px, 6vw, 36px);
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+}
+
+.description {
+  max-width: 470px;
+  margin: 14px auto 0;
+  color: #526174;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.orderNumber {
+  margin: 22px auto 0;
+  padding: 12px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border-radius: 12px;
+  background: #f4f7f9;
+}
+
+.orderNumber span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.orderNumber strong {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.processingBox {
+  margin-top: 24px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  border: 1px solid #cfe4f7;
+  border-radius: 16px;
+  background: #f4faff;
+}
+
+.processingBox strong {
+  font-size: 14px;
+}
+
+.processingBox small {
+  color: #526174;
+  line-height: 1.45;
+}
+
+.progressTrack {
+  height: 5px;
+  margin-bottom: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dbeafe;
+}
+
+.progressTrack span {
+  display: block;
+  width: 40%;
+  height: 100%;
+  border-radius: inherit;
+  background: #0b5ea8;
+  animation: progress 1.5s ease-in-out infinite alternate;
+}
+
+.actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.primaryButton,
+.secondaryButton {
+  min-height: 48px;
+  padding: 12px 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.primaryButton {
+  border: 1px solid #0b5ea8;
+  background: #0b5ea8;
+  color: #fff;
+}
+
+.secondaryButton {
+  border: 1px solid #b8c4d0;
+  background: #fff;
+  color: #27364a;
+}
+
+.help {
+  margin: 22px 0 0;
+  color: #718096;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes progress {
+  from { transform: translateX(-15%); }
+  to { transform: translateX(165%); }
+}
+
+@media (max-width: 520px) {
+  .page {
+    align-items: end;
+    padding: 0;
+  }
+
+  .card {
+    min-height: min(100dvh, 760px);
+    padding: 32px 18px calc(24px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 0;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin,
+  .progressTrack span {
+    animation: none;
+  }
+}

@@ -100,6 +100,7 @@ const ESTADOS_BRASIL = [
 ];
 
 const DRAFT_KEY = 'bryza_checkout_draft';
+const PAYMENT_RETURN_KEY = 'bryza_mp_checkout';
 
 function loadDraft() {
   if (typeof window === 'undefined') return null;
@@ -111,6 +112,74 @@ function loadDraft() {
     return null;
   }
 }
+
+// Mercado Pago Logo & Accepted Cards Badges Components
+const MercadoPagoLogoBadge = () => (
+  <div style={{
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    backgroundColor: '#009EE3',
+    color: '#ffffff',
+    padding: '4px 10px',
+    borderRadius: '6px',
+    fontWeight: 800,
+    fontSize: '12px',
+    letterSpacing: '-0.01em',
+    boxShadow: '0 2px 6px rgba(0, 158, 227, 0.25)'
+  }}>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM15.5 14.5L12 18L8.5 14.5L9.9 13.1L12 15.2L14.1 13.1L15.5 14.5ZM14.1 8.9L12 11L9.9 8.9L8.5 10.3L12 13.8L15.5 10.3L14.1 8.9Z" fill="white" />
+    </svg>
+    <span>mercado pago</span>
+  </div>
+);
+
+const AcceptedPaymentCardsBadges = () => (
+  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
+    {/* PIX */}
+    <div title="Pix" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#32BCAD', color: '#ffffff', padding: '3px 8px', borderRadius: '5px', fontSize: '11px', fontWeight: 800 }}>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2L4 10L12 18L20 10L12 2ZM7 10L12 5L17 10L12 15L7 10Z"/>
+      </svg>
+      <span>PIX</span>
+    </div>
+
+    {/* VISA */}
+    <div title="Visa" style={{ display: 'inline-flex', alignItems: 'center', backgroundColor: '#1A1F71', color: '#ffffff', padding: '3px 8px', borderRadius: '5px', fontSize: '11px', fontWeight: 900, fontStyle: 'italic', letterSpacing: '0.05em' }}>
+      VISA
+    </div>
+
+    {/* MASTERCARD */}
+    <div title="Mastercard" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#1F2937', color: '#ffffff', padding: '3px 8px', borderRadius: '5px', fontSize: '10px', fontWeight: 700 }}>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#EB001B', marginRight: '-4px' }}></div>
+        <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#FF5F00', opacity: 0.95 }}></div>
+      </div>
+      <span>mastercard</span>
+    </div>
+
+    {/* ELO */}
+    <div title="Elo" style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', backgroundColor: '#000000', color: '#ffffff', padding: '3px 8px', borderRadius: '5px', fontSize: '11px', fontWeight: 900 }}>
+      <span>elo</span>
+      <div style={{ display: 'flex', gap: '1px' }}>
+        <span style={{ width: '3px', height: '3px', borderRadius: '50%', backgroundColor: '#FF0000' }}></span>
+        <span style={{ width: '3px', height: '3px', borderRadius: '50%', backgroundColor: '#FFD700' }}></span>
+        <span style={{ width: '3px', height: '3px', borderRadius: '50%', backgroundColor: '#0066FF' }}></span>
+      </div>
+    </div>
+
+    {/* HIPERCARD */}
+    <div title="Hipercard" style={{ display: 'inline-flex', alignItems: 'center', backgroundColor: '#B3131B', color: '#ffffff', padding: '3px 8px', borderRadius: '5px', fontSize: '10px', fontWeight: 800, fontStyle: 'italic' }}>
+      Hipercard
+    </div>
+
+    {/* AMEX */}
+    <div title="American Express" style={{ display: 'inline-flex', alignItems: 'center', backgroundColor: '#006FCF', color: '#ffffff', padding: '3px 8px', borderRadius: '5px', fontSize: '10px', fontWeight: 800 }}>
+      AMEX
+    </div>
+  </div>
+);
 
 export default function LojaCheckoutModal({
   cartItems,
@@ -168,7 +237,8 @@ export default function LojaCheckoutModal({
   const [dataAgendamento, setDataAgendamento] = useState(() => savedDraft?.dataAgendamento || nextDays[0]?.value || '');
   const [periodo, setPeriodo] = useState<'manhademanha' | 'tarde' | 'noite' | 'qualquer'>(() => savedDraft?.periodo || 'manhademanha');
   const [formaPagamento, setFormaPagamento] = useState(() => savedDraft?.formaPagamento || 'PIX');
-  const [paymentTiming, setPaymentTiming] = useState<'agora' | 'na_entrega'>(() => savedDraft?.paymentTiming || 'na_entrega');
+  const [paymentTiming, setPaymentTiming] = useState<'agora' | 'na_entrega'>(() => savedDraft?.paymentTiming || 'agora');
+  const [showDeliveryWarningModal, setShowDeliveryWarningModal] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -415,6 +485,15 @@ export default function LojaCheckoutModal({
           const checkout = await checkoutResponse.json() as { checkoutUrl?: string; error?: string };
           if (!checkoutResponse.ok || !checkout.checkoutUrl) {
             throw new Error(checkout.error || 'Não foi possível abrir o pagamento. Tente novamente.');
+          }
+          try {
+            sessionStorage.setItem(PAYMENT_RETURN_KEY, JSON.stringify({
+              checkoutToken: paymentResult.checkoutToken,
+              orderNumber: res.orderNumber,
+              createdAt: new Date().toISOString(),
+            }));
+          } catch {
+            // O retorno ainda pode usar os identificadores enviados pelo Mercado Pago.
           }
           window.location.assign(checkout.checkoutUrl);
           return;
@@ -1317,31 +1396,102 @@ export default function LojaCheckoutModal({
                       Quando deseja pagar?
                     </label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px' }}>
-                      {[
-                        { id: 'agora', label: 'Pagar agora', detail: 'Checkout seguro do Mercado Pago' },
-                        { id: 'na_entrega', label: 'Pagar na entrega', detail: 'Pix, cartão ou dinheiro' },
-                      ].map(option => (
-                        <button
-                          key={option.id}
-                          type="button"
-                          onClick={() => setPaymentTiming(option.id as 'agora' | 'na_entrega')}
-                          aria-pressed={paymentTiming === option.id}
-                          style={{
-                            padding: '13px 10px',
-                            borderRadius: '10px',
-                            border: paymentTiming === option.id ? '2px solid #009845' : '1px solid #cbd5e1',
-                            backgroundColor: paymentTiming === option.id ? '#f0fdf4' : '#ffffff',
-                            color: paymentTiming === option.id ? '#047857' : '#475569',
-                            cursor: 'pointer',
-                            textAlign: 'left',
-                          }}
-                        >
-                          <strong style={{ display: 'block', fontSize: '13px' }}>{option.label}</strong>
-                          <small>{option.detail}</small>
-                        </button>
-                      ))}
+                      {/* Opção Pagar Agora */}
+                      <button
+                        type="button"
+                        onClick={() => setPaymentTiming('agora')}
+                        aria-pressed={paymentTiming === 'agora'}
+                        style={{
+                          padding: '13px 12px',
+                          borderRadius: '12px',
+                          border: paymentTiming === 'agora' ? '2px solid #009EE3' : '1px solid #cbd5e1',
+                          backgroundColor: paymentTiming === 'agora' ? '#f0f9ff' : '#ffffff',
+                          color: paymentTiming === 'agora' ? '#0369a1' : '#475569',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          transition: 'all 0.2s ease',
+                          boxShadow: paymentTiming === 'agora' ? '0 4px 12px rgba(0, 158, 227, 0.15)' : 'none'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '3px' }}>
+                          <strong style={{ fontSize: '13px', color: paymentTiming === 'agora' ? '#0284c7' : '#0f172a' }}>Pagar agora</strong>
+                          <span style={{ fontSize: '9.5px', fontWeight: 800, backgroundColor: '#009EE3', color: '#ffffff', padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.02em' }}>Recomendado</span>
+                        </div>
+                        <small style={{ display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '6px' }}>
+                          Checkout seguro do Mercado Pago
+                        </small>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', opacity: 0.95 }}>
+                          <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#009EE3' }}></div>
+                          <span style={{ fontSize: '10px', fontWeight: 700, color: '#009EE3' }}>Pix &amp; Cartões (Visa, Master, Elo...)</span>
+                        </div>
+                      </button>
+
+                      {/* Opção Pagar na Entrega */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (paymentTiming !== 'na_entrega') {
+                            setShowDeliveryWarningModal(true);
+                          }
+                        }}
+                        aria-pressed={paymentTiming === 'na_entrega'}
+                        style={{
+                          padding: '13px 12px',
+                          borderRadius: '12px',
+                          border: paymentTiming === 'na_entrega' ? '2px solid #009845' : '1px solid #cbd5e1',
+                          backgroundColor: paymentTiming === 'na_entrega' ? '#f0fdf4' : '#ffffff',
+                          color: paymentTiming === 'na_entrega' ? '#047857' : '#475569',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <strong style={{ display: 'block', fontSize: '13px', color: paymentTiming === 'na_entrega' ? '#047857' : '#0f172a', marginBottom: '3px' }}>
+                          Pagar na entrega
+                        </strong>
+                        <small style={{ display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '6px' }}>
+                          Pix, cartão ou dinheiro ao receber
+                        </small>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#d97706', fontSize: '10px', fontWeight: 700 }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>home_pin</span>
+                          <span>Requer presença no local</span>
+                        </div>
+                      </button>
                     </div>
                   </div>
+
+                  {/* Banner Detalhado com Selo do Mercado Pago e Bandeiras Aceitas */}
+                  {paymentTiming === 'agora' && (
+                    <div style={{
+                      backgroundColor: '#f0f9ff',
+                      border: '1.5px solid #7dd3fc',
+                      borderRadius: '12px',
+                      padding: '14px 16px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px',
+                      marginTop: '4px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                        <MercadoPagoLogoBadge />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#0284c7', fontSize: '12px', fontWeight: 700 }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>lock</span>
+                          <span>Ambiente 100% Seguro</span>
+                        </div>
+                      </div>
+
+                      <p style={{ margin: 0, fontSize: '12px', color: '#334155', fontWeight: 500, lineHeight: 1.4 }}>
+                        Pague antecipadamente com PIX ou Cartão em até 12x com a garantia de segurança do Mercado Pago.
+                      </p>
+
+                      <div style={{ borderTop: '1px solid #e0f2fe', paddingTop: '8px' }}>
+                        <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block' }}>
+                          Formas de pagamento aceitas pelo Mercado Pago:
+                        </span>
+                        <AcceptedPaymentCardsBadges />
+                      </div>
+                    </div>
+                  )}
 
                   {/* Forma de Pagamento na Entrega */}
                   {paymentTiming === 'na_entrega' && <div>
@@ -1546,6 +1696,159 @@ export default function LojaCheckoutModal({
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* SUB-MODAL DE ALERTA: PRESENÇA NA ENTREGA */}
+      {showDeliveryWarningModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(5, 15, 32, 0.8)',
+          backdropFilter: 'blur(8px)',
+          zIndex: 5000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }} onClick={() => setShowDeliveryWarningModal(false)}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '24px',
+            maxWidth: '480px',
+            width: '100%',
+            padding: '28px 24px 24px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+            textAlign: 'center',
+            position: 'relative'
+          }} onClick={e => e.stopPropagation()}>
+
+            <button
+              onClick={() => setShowDeliveryWarningModal(false)}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: '#f1f5f9',
+                border: 'none',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#64748b',
+                cursor: 'pointer'
+              }}
+            >
+              <X size={18} />
+            </button>
+
+            {/* Icon Banner */}
+            <div style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              backgroundColor: '#fef3c7',
+              border: '2px solid #f59e0b',
+              color: '#d97706',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+              boxShadow: '0 4px 14px rgba(245, 158, 11, 0.25)'
+            }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '36px' }}>home_pin</span>
+            </div>
+
+            <h3 style={{ margin: '0 0 10px', fontSize: '20px', fontWeight: 800, color: '#0f172a' }}>
+              Atenção: Presença no Local
+            </h3>
+
+            <p style={{ margin: '0 0 16px', fontSize: '13.5px', color: '#475569', lineHeight: 1.5 }}>
+              Ao escolher <strong>Pagar na entrega</strong>, é <strong>obrigatório que você ou alguém responsável esteja no endereço</strong> para receber os produtos e efetuar o pagamento.
+            </p>
+
+            {/* Resume Box */}
+            <div style={{
+              backgroundColor: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '14px',
+              padding: '14px 16px',
+              margin: '0 0 20px',
+              textAlign: 'left',
+              fontSize: '13px',
+              color: '#334155',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#009845' }}>calendar_today</span>
+                <span><strong>Data de Entrega:</strong> {nextDays.find(d => d.value === dataAgendamento)?.label || dataAgendamento}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#009845' }}>schedule</span>
+                <span><strong>Período:</strong> {
+                  periodo === 'manhademanha' ? 'Manhã (09:00 - 12:00)' :
+                  periodo === 'tarde' ? 'Tarde (14:00 - 18:00)' :
+                  periodo === 'noite' ? 'Noite (18:30 - 21:00)' : 'Qualquer horário'
+                }</span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setPaymentTiming('na_entrega');
+                  setShowDeliveryWarningModal(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '14px 20px',
+                  backgroundColor: '#009845',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontWeight: 800,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(0, 152, 69, 0.35)'
+                }}
+              >
+                Estarei no local para receber
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setPaymentTiming('agora');
+                  setShowDeliveryWarningModal(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px 20px',
+                  backgroundColor: '#f0f9ff',
+                  color: '#009EE3',
+                  border: '1.5px solid #009EE3',
+                  borderRadius: '12px',
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px'
+                }}
+              >
+                <MercadoPagoLogoBadge />
+                <span>Preferir Pagar Agora</span>
+              </button>
+            </div>
+
           </div>
         </div>
       )}

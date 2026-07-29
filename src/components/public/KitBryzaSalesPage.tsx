@@ -230,6 +230,13 @@ export function KitBryzaSalesPage({ ambassador, products }: KitBryzaSalesPagePro
           });
           const checkout = await checkoutResponse.json() as { checkoutUrl?: string; error?: string };
           if (!checkoutResponse.ok || !checkout.checkoutUrl) throw new Error(checkout.error || 'Não foi possível abrir o pagamento.');
+          try {
+            sessionStorage.setItem('bryza_mp_checkout', JSON.stringify({
+              checkoutToken: paymentData.checkout_token,
+            }));
+          } catch {
+            // O retorno ainda pode usar os identificadores enviados pelo Mercado Pago.
+          }
           window.location.assign(checkout.checkoutUrl);
           return;
         } catch (checkoutError) {

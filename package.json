@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/lib/ambassadors/earnings-calculation.test.ts src/lib/ambassadors/portal-financial-data.test.ts src/lib/logistica/payment-check.test.ts src/lib/mercado-pago/signature.test.ts"
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/lib/ambassadors/earnings-calculation.test.ts src/lib/ambassadors/portal-financial-data.test.ts src/lib/logistica/payment-check.test.ts src/lib/mercado-pago/payment-status.test.ts src/lib/mercado-pago/signature.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",
