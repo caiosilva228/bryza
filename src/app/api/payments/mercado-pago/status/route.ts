@@ -18,6 +18,7 @@ type IntentRow = {
   expected_amount: number | string;
   currency: string;
   status: string;
+  agendamento_id: string | null;
   pedido_id: string | null;
   pedido: { numero_pedido: string } | { numero_pedido: string }[] | null;
 };
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
       .from('payment_intents')
       .select(`
         id, checkout_token, external_reference, expected_amount, currency,
-        status, pedido_id, pedido:pedido_id(numero_pedido)
+        status, agendamento_id, pedido_id, pedido:pedido_id(numero_pedido)
       `);
     intentQuery = identity.checkoutToken
       ? intentQuery.eq('checkout_token', identity.checkoutToken)
@@ -106,7 +107,7 @@ export async function POST(request: Request) {
       .from('payment_intents')
       .select(`
         id, checkout_token, external_reference, expected_amount, currency,
-        status, pedido_id, pedido:pedido_id(numero_pedido)
+        status, agendamento_id, pedido_id, pedido:pedido_id(numero_pedido)
       `)
       .eq('id', intent.id)
       .single();
@@ -115,9 +116,52 @@ export async function POST(request: Request) {
     }
 
     const currentIntent = refreshed as IntentRow;
+
+    let totalValue = Number(currentIntent.expected_amount || 0);
+    let items: Array<{ nome: string; quantidade: number; preco: number }> = [];
+    let fetchedOrderNumber = orderNumberOf(currentIntent);
+    let whatsappUrl: string | null = null;
+
+    if (currentIntent.agendamento_id) {
+      const { data: agendamento } = await admin
+        .from('agendamentos')
+        .select(`
+          numero_agendamento, valor_total, nome_cliente, telefone_cliente,
+          agendamento_itens (
+            quantidade, preco_unitario,
+            produtos ( nome_produto )
+          )
+        `)
+        .eq('id', currentIntent.agendamento_id)
+        .maybeSingle();
+
+      if (agendamento) {
+        if (agendamento.numero_agendamento) fetchedOrderNumber = agendamento.numero_agendamento;
+        if (agendamento.valor_total) totalValue = Number(agendamento.valor_total);
+        const rawItens = Array.isArray(agendamento.agendamento_itens) ? agendamento.agendamento_itens : [];
+        items = rawItens.map((i: any) => ({
+          nome: i.produtos?.nome_produto || 'Produto',
+          quantidade: Number(i.quantidade || 1),
+          preco: Number(i.preco_unitario || 0),
+        }));
+
+        const cleanPhone = '556132462117';
+        const numAgendamento = fetchedOrderNumber || 'NOVO';
+        const message = `*CONFIRMAÇÃO DE PEDIDO BRYZA* ✨\n\n` +
+          `• *Pedido Nº:* #${numAgendamento}\n` +
+          `• *Cliente:* ${agendamento.nome_cliente || ''}\n` +
+          `• *Valor Total:* R$ ${totalValue.toFixed(2).replace('.', ',')}\n\n` +
+          `Gostaria de confirmar o meu pedido e obter os detalhes do envio!`;
+        whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+      }
+    }
+
     return NextResponse.json({
       status: currentIntent.status,
-      orderNumber: orderNumberOf(currentIntent),
+      orderNumber: fetchedOrderNumber,
+      totalValue,
+      items,
+      whatsappUrl,
     });
   } catch (error) {
     console.error('Erro ao consultar pagamento do Mercado Pago:', error);
