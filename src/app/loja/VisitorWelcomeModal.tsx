@@ -306,6 +306,49 @@ export default function VisitorWelcomeModal({
               <LoginSubmitButton label="Entrar" />
             </form>
 
+            {/* BOTÃO PARA CADASTRAR-SE / CRIAR CONTA */}
+            <div style={{
+              marginTop: '16px',
+              paddingTop: '16px',
+              borderTop: '1px solid #e2e8f0',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              alignItems: 'center',
+              width: '100%'
+            }}>
+              <span style={{ fontSize: '12.5px', color: '#64748b', fontWeight: 600 }}>
+                Ainda não tem uma conta?
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  dismissForSession();
+                  onCreateAccount();
+                }}
+                style={{
+                  width: '100%',
+                  minHeight: '46px',
+                  borderRadius: '12px',
+                  border: '1.5px solid #009845',
+                  backgroundColor: '#f0fdf4',
+                  color: '#08783e',
+                  fontSize: '13.5px',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  boxShadow: '0 2px 8px rgba(0, 152, 69, 0.08)',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
+                <span>Criar minha conta de cliente</span>
+              </button>
+            </div>
+
             <p className={styles.privacyNote}>
               Uma única credencial para a loja e para o Portal do Embaixador.
             </p>
