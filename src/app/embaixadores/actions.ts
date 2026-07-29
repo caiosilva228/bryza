@@ -309,7 +309,7 @@ export async function redefinirAcesso(ambassadorId: string): Promise<
 
   const { data: currentProfile, error: currentProfileError } = await adminClient
     .from('profiles')
-    .select('must_change_password, ativo, username, email, telefone')
+    .select('must_change_password, ativo')
     .eq('id', userId)
     .single();
 
@@ -320,13 +320,11 @@ export async function redefinirAcesso(ambassadorId: string): Promise<
     };
   }
 
-  // 1. Sincronizar o perfil usado pelos resolvedores de login.
+  // 1. Restaurar somente o estado de acesso. Os identificadores já foram
+  // sincronizados no provisionamento canônico e são protegidos por trigger.
   const { error: profileError } = await adminClient
     .from('profiles')
     .update({
-      username: amb.username,
-      email: syntheticEmail,
-      telefone: cleanPhone,
       must_change_password: true,
       ativo: true
     })
@@ -351,9 +349,6 @@ export async function redefinirAcesso(ambassadorId: string): Promise<
     await adminClient
       .from('profiles')
       .update({
-        username: currentProfile.username,
-        email: currentProfile.email,
-        telefone: currentProfile.telefone,
         must_change_password: currentProfile.must_change_password,
         ativo: currentProfile.ativo
       })

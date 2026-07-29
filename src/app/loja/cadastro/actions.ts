@@ -170,13 +170,14 @@ export async function registerStoreCustomerAmbassador(
       .eq('singleton', true)
       .maybeSingle();
 
-    // Verificar se já existe ambassador inativo sem auth user (cadastro incompleto anterior)
-    // para reaproveitar o registro e evitar UNIQUE VIOLATION no CPF/telefone
+    // Reaproveitar qualquer cadastro sem Auth deixado por uma tentativa interrompida.
+    // A falha pode acontecer depois de o embaixador já ter sido ativado.
     const { data: existingIncomplete } = await admin
       .from('ambassadors')
       .select('id, username, referral_code')
       .or(`cpf.eq.${cpf},phone.eq.${phone}`)
-      .eq('status', 'inativo')
+      .in('status', ['ativo', 'inativo'])
+      .eq('lifecycle_status', 'active')
       .is('user_id', null)
       .limit(1)
       .maybeSingle();
@@ -264,6 +265,11 @@ export async function registerStoreCustomerAmbassador(
 
     if (authError || !authData.user) {
       console.error('Falha ao criar acesso Auth pela loja:', authError);
+      await admin
+        .from('ambassadors')
+        .update({ status: 'inativo' })
+        .eq('id', ambassador.id)
+        .is('user_id', null);
       return { success: false, message: 'Não foi possível criar seu acesso seguro.' };
     }
 
@@ -286,6 +292,11 @@ export async function registerStoreCustomerAmbassador(
         provision,
       });
       await admin.auth.admin.deleteUser(authData.user.id);
+      await admin
+        .from('ambassadors')
+        .update({ status: 'inativo' })
+        .eq('id', ambassador.id)
+        .is('user_id', null);
       return {
         success: false,
         message: 'O cadastro não pôde ser vinculado com segurança. Tente novamente.',
@@ -298,9 +309,17 @@ export async function registerStoreCustomerAmbassador(
       password: input.password,
     });
 
+    if (signInError) {
+      console.error('Cadastro concluído, mas a sessão automática falhou:', signInError);
+      return {
+        success: false,
+        message: 'Seu cadastro foi concluído, mas não foi possível iniciar a sessão. Use a opção Entrar.',
+      };
+    }
+
     return {
       success: true,
-      signedIn: !signInError,
+      signedIn: true,
       username: ambassador.username,
       referralCode: ambassador.referral_code,
     };
