@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { Agendamento, Cliente, Produto, Usuario } from '@/models/types';
 import {
   getAgendamentosAction,
@@ -1298,8 +1299,95 @@ export default function AgendamentoClientPage({
               }}>
                 Status: {selectedAgendamento.status === 'convertido' ? 'Convertido em Pedido' : selectedAgendamento.status === 'cancelado' ? 'Cancelado' : 'Agendado'}
               </span>
+
+              {(selectedAgendamento.pedido?.numero_pedido || selectedAgendamento.pedido_id) && (
+                <Link
+                  href={`/vendas/pedidos?search=${encodeURIComponent(selectedAgendamento.pedido?.numero_pedido || selectedAgendamento.pedido_id || '')}`}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '999px',
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    backgroundColor: '#0284c7',
+                    color: '#ffffff',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 2px 8px rgba(2, 132, 199, 0.3)',
+                    cursor: 'pointer'
+                  }}
+                  title="Clique para ir direto para o Pedido Oficial"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>shopping_bag</span>
+                  <span>Pedido: #{selectedAgendamento.pedido?.numero_pedido || 'Ver Pedido'}</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>arrow_forward</span>
+                </Link>
+              )}
+
               <SchedulingPaymentBadges agendamento={selectedAgendamento} />
             </div>
+
+            {/* CARD DESTACADO QUANDO CONVERTIDO EM PEDIDO */}
+            {(selectedAgendamento.status === 'convertido' || selectedAgendamento.pedido_id || selectedAgendamento.pedido) && (
+              <div style={{
+                backgroundColor: '#f0fdf4',
+                padding: '16px',
+                borderRadius: '16px',
+                border: '1.5px solid #bbf7d0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '12px',
+                boxShadow: '0 4px 12px rgba(34, 197, 94, 0.12)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '50%',
+                    backgroundColor: '#dcfce7',
+                    color: '#15803d',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>shopping_cart_checkout</span>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#166534', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Pedido Oficial Gerado
+                    </span>
+                    <div style={{ fontSize: '17px', fontWeight: 800, color: '#0f172a', marginTop: '2px' }}>
+                      #{selectedAgendamento.pedido?.numero_pedido || 'Pedido Vinculado'}
+                    </div>
+                  </div>
+                </div>
+
+                <Link
+                  href={`/vendas/pedidos?search=${encodeURIComponent(selectedAgendamento.pedido?.numero_pedido || selectedAgendamento.pedido_id || '')}`}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '10px 18px',
+                    borderRadius: '12px',
+                    backgroundColor: '#009845',
+                    color: '#ffffff',
+                    fontSize: '13.5px',
+                    fontWeight: 800,
+                    textDecoration: 'none',
+                    boxShadow: '0 4px 14px rgba(0, 152, 69, 0.3)',
+                    transition: 'all 0.2s ease',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  <span>Ir para o Pedido</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>open_in_new</span>
+                </Link>
+              </div>
+            )}
 
             {/* Dados do Cliente */}
             <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '14px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '8px' }}>

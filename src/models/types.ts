@@ -709,6 +709,7 @@ export interface Agendamento {
   // Relacionais
   cliente?: { nome: string; telefone: string; endereco?: string; bairro?: string; cidade?: string; estado?: string };
   vendedor?: { nome: string };
+  pedido?: { id: string; numero_pedido?: string | null } | null;
   itens?: AgendamentoItem[];
   agendamento_itens?: AgendamentoItem[];
 }

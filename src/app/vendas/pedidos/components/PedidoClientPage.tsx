@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Pedido, PedidoStats as PedidoStatsType, Cliente, Produto, Usuario, AmbassadorAssignmentOption } from '@/models/types';
 import PedidoStats from './PedidoStats';
 import PedidoTable from './PedidoTable';
@@ -42,10 +43,16 @@ export default function PedidoClientPage({
   vendedores,
   ambassadors
 }: Props) {
+  const searchParams = useSearchParams();
   const [pedidos, setPedidos] = useState<Pedido[]>(initialPedidos);
   const [stats, setStats] = useState<PedidoStatsType>(initialStats);
   const [localProdutos, setLocalProdutos] = useState<Produto[]>(produtos);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(() => searchParams?.get('search') || searchParams?.get('q') || '');
+
+  useEffect(() => {
+    const q = searchParams?.get('search') || searchParams?.get('q');
+    if (q) setSearch(q);
+  }, [searchParams]);
   const [statusFilter, setStatusFilter] = useState('todos');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');

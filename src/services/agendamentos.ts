@@ -5,6 +5,7 @@ const AGENDAMENTO_SELECT = `
   *,
   cliente:clientes(nome, telefone),
   vendedor:profiles(nome),
+  pedido:pedidos!pedido_id(id, numero_pedido),
   itens:agendamento_itens(
     *,
     produto:produtos(nome_produto, codigo_produto)
