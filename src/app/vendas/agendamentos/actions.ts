@@ -113,3 +113,45 @@ export async function updateAgendamentoAction(
     throw new Error('Falha ao atualizar agendamento.');
   }
 }
+
+export async function converterAgendamentosEmLoteAction(agendamentoIds: string[]) {
+  try {
+    const results = [];
+    const errors = [];
+    for (const id of agendamentoIds) {
+      try {
+        const res = await converterAgendamentoEmPedido(id);
+        results.push(res);
+      } catch (err: any) {
+        errors.push({ id, error: err.message || 'Erro ao converter' });
+      }
+    }
+    revalidatePath('/vendas/agendamentos');
+    revalidatePath('/vendas/pedidos');
+    revalidatePath('/estoque');
+    revalidatePath('/');
+    return { success: true, convertedCount: results.length, errorCount: errors.length, errors };
+  } catch (error) {
+    console.error('Erro ao converter agendamentos em lote:', error);
+    throw new Error('Falha ao converter agendamentos em lote.');
+  }
+}
+
+export async function cancelarAgendamentosEmLoteAction(agendamentoIds: string[]) {
+  try {
+    let successCount = 0;
+    for (const id of agendamentoIds) {
+      try {
+        await cancelarAgendamento(id);
+        successCount++;
+      } catch (err) {
+        console.error(`Erro ao cancelar agendamento ${id}:`, err);
+      }
+    }
+    revalidatePath('/vendas/agendamentos');
+    return { success: true, canceledCount: successCount };
+  } catch (error) {
+    console.error('Erro ao cancelar agendamentos em lote:', error);
+    throw new Error('Falha ao cancelar agendamentos em lote.');
+  }
+}

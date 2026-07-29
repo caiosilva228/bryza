@@ -325,6 +325,7 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
       vendedor_id: null,
       valor_total: valorTotal,
       forma_pagamento: normalizedFormaPagamento,
+      attribution_source: 'smart_link',
       observacoes: payload.notes ? `[Loja Virtual - Período: ${payload.period}] ${payload.notes}` : `[Agendamento via Loja Virtual - Período: ${payload.period}]`,
       nome_cliente: clientName,
       telefone_cliente: clientPhone,

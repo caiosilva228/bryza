@@ -575,6 +575,100 @@ export interface AgendamentoItem {
   preco_unitario: number;
   subtotal: number;
   desconto_tipo?: TipoDesconto;
+  attributed_at?: string | null;
+  attribution_source?: string | null;
+  commission_plan_id_snapshot?: string | null;
+  commission_percentage_snapshot?: number | null;
+  commission_levels_snapshot?: Array<{
+    level_number: number;
+    name: string;
+    percentage: number;
+  }> | null;
+  qualification_snapshot?: {
+    qualification_id?: string | null;
+    status?: string | null;
+    rule_code?: string | null;
+    period_start?: string | null;
+    period_end?: string | null;
+    rule_snapshot?: Record<string, unknown> | null;
+    exception_id?: string | null;
+    evaluated_at?: string | null;
+  } | null;
+  
+  // Relacionais (opcionais para quando houver join)
+  cliente?: {
+    nome: string;
+    telefone: string;
+    bairro: string;
+    cidade: string;
+    estado: string;
+    endereco: string;
+    numero: string;
+    latitude?: number | null;
+    longitude?: number | null;
+  };
+  vendedor?: {
+    nome: string;
+  };
+  ambassador?: {
+    id: string;
+    full_name: string;
+    referral_code: string;
+    status: string;
+  } | null;
+  // Itens do pedido (presente quando há join com pedido_itens)
+  itens?: PedidoItem[];
+
+  // ── Campos de Logística (opcionais — requerem ALTER TABLE no Supabase) ──────
+  // ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS motorista TEXT;
+  // ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS rota TEXT;
+  // ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS delivery_started_at TIMESTAMPTZ;
+  // ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS delivered_at TIMESTAMPTZ;
+  // ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS finalized_at TIMESTAMPTZ;
+  // ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS payment_check_status TEXT DEFAULT 'pendente';
+  // ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS amount_received NUMERIC;
+  // ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS delivery_problem_type TEXT;
+  // ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS delivery_notes TEXT;
+  motorista?: string | null;
+  rota?: string | null;
+  delivery_started_at?: string | null;
+  delivered_at?: string | null;
+  finalized_at?: string | null;
+  payment_check_status?: PaymentCheckStatus | null;
+  amount_received?: number | null;
+  delivery_problem_type?: DeliveryProblemType | null;
+  delivery_notes?: string | null;
+}
+
+
+export interface PedidoItem {
+  id: string;
+  pedido_id: string;
+  produto_id: string;
+  quantidade: number;
+  preco_unitario: number;
+  desconto_tipo?: TipoDesconto;
+  desconto_valor?: number;
+  desconto_aplicado?: number;
+  subtotal: number;
+  created_at?: string;
+  
+  // Relacional
+  produto?: {
+    codigo_produto?: number | string;
+    nome_produto: string;
+  };
+}
+
+
+
+// ── Agendamento ───────────────────────────────────────────────────────────────
+export interface AgendamentoItem {
+  produto_id: string;
+  quantidade: number;
+  preco_unitario: number;
+  subtotal: number;
+  desconto_tipo?: TipoDesconto;
   desconto_valor?: number;
   desconto_aplicado?: number;
   produto?: { nome_produto: string; codigo_produto?: number | string };
@@ -582,7 +676,9 @@ export interface AgendamentoItem {
 
 export interface Agendamento {
   id: string;
+  numero_agendamento?: string | null;
   data_agendamento: string;   // ISO datetime — data/hora agendada
+  periodo?: 'manhademanha' | 'tarde' | 'noite' | 'qualquer' | string | null;
   status: StatusAgendamento;
   cliente_id: string;
   vendedor_id: string;
@@ -590,9 +686,10 @@ export interface Agendamento {
   desconto_tipo?: TipoDesconto;
   desconto_valor?: number;
   desconto_aplicado?: number;
-  forma_pagamento: 'dinheiro' | 'pix' | 'cartao';
+  forma_pagamento: 'dinheiro' | 'pix' | 'cartao' | string;
   payment_timing?: PaymentTiming | null;
   payment_status?: OnlinePaymentStatus | string | null;
+  attribution_source?: string | null;
   observacoes?: string | null;
   created_at: string;
   updated_at: string;
@@ -610,8 +707,8 @@ export interface Agendamento {
   codigo_vendedor?: number;
 
   // Relacionais
-  cliente?: { nome: string; telefone: string };
+  cliente?: { nome: string; telefone: string; endereco?: string; bairro?: string; cidade?: string; estado?: string };
   vendedor?: { nome: string };
   itens?: AgendamentoItem[];
+  agendamento_itens?: AgendamentoItem[];
 }
-
