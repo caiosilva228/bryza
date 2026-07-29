@@ -11,6 +11,12 @@ import {
   type PaymentStatus,
   type PaymentTiming,
 } from '@/lib/payments/payment-intents';
+import {
+  findCustomerByCanonicalIdentity,
+  normalizeCustomerCpf,
+  normalizeCustomerPhone,
+  upsertPublicCustomerCanonical,
+} from '@/lib/customers/canonical-identity';
 
 export interface StoreCartItem {
   produto: Produto;
@@ -138,22 +144,11 @@ export async function getStoreUserInfoAction(): Promise<{
       cli = data;
     }
 
-    if (!cli && userPhone) {
-      const { data } = await admin
-        .from('clientes')
-        .select('*')
-        .eq('telefone', userPhone)
-        .maybeSingle();
-      cli = data;
-    }
-
-    if (!cli && userCpf) {
-      const { data } = await admin
-        .from('clientes')
-        .select('*')
-        .eq('cpf', userCpf)
-        .maybeSingle();
-      cli = data;
+    if (!cli && (userPhone || userCpf)) {
+      cli = await findCustomerByCanonicalIdentity(admin, {
+        phone: userPhone,
+        cpf: userCpf,
+      });
     }
 
     if (!cli && amb?.id) {
@@ -212,7 +207,7 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
     const { data: { user } } = await supabase.auth.getUser();
 
     let clientName = payload.clientName?.trim();
-    let clientPhone = payload.clientPhone?.trim();
+    let clientPhone = normalizeCustomerPhone(payload.clientPhone);
     let ambassadorId: string | null = null;
 
     if (user) {
@@ -225,12 +220,19 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
       if (amb) {
         ambassadorId = amb.id;
         if (!clientName) clientName = amb.full_name;
-        if (!clientPhone) clientPhone = amb.phone;
+        if (!clientPhone) clientPhone = normalizeCustomerPhone(amb.phone);
       }
     }
 
     if (!clientName || !clientPhone) {
       return { success: false, error: 'Por favor, informe seu Nome Completo e Telefone / WhatsApp.' };
+    }
+    if (!/^\d{10,11}$/.test(clientPhone)) {
+      return { success: false, error: 'Informe um telefone válido com DDD.' };
+    }
+    const clientCpf = normalizeCustomerCpf(payload.cpf);
+    if (payload.cpf && !/^\d{11}$/.test(clientCpf || '')) {
+      return { success: false, error: 'Informe um CPF válido com 11 dígitos.' };
     }
 
     if (!payload.items || payload.items.length === 0) {
@@ -240,44 +242,26 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
       return { success: false, error: 'Selecione quando deseja realizar o pagamento.' };
     }
 
-    // Criar ou atualizar cliente no cadastro público/loja
-    let customerId: string | null = null;
-    const { data: existingCustomer } = await admin
-      .from('clientes')
-      .select('id, own_ambassador_id')
-      .eq('telefone', clientPhone)
-      .maybeSingle();
-
-    if (existingCustomer) {
-      customerId = existingCustomer.id;
-      if (ambassadorId && existingCustomer.own_ambassador_id !== ambassadorId) {
-        await admin
-          .from('clientes')
-          .update({ own_ambassador_id: ambassadorId })
-          .eq('id', existingCustomer.id);
-      }
-    } else {
-      const { data: newCustomer } = await admin
+    // Resolver a pessoa pelo mesmo caminho canônico usado nas demais entradas públicas.
+    const canonicalCustomer = await upsertPublicCustomerCanonical(admin, {
+      fullName: clientName,
+      phone: clientPhone,
+      cpf: clientCpf,
+      address: payload.address,
+      number: payload.number,
+      neighborhood: payload.neighborhood,
+      city: payload.city || 'Brasília',
+      state: payload.state || 'DF',
+      cep: payload.cep,
+      origin: 'loja_virtual_publica',
+      source: 'smart_link',
+    });
+    const customerId = canonicalCustomer.customerId;
+    if (ambassadorId) {
+      await admin
         .from('clientes')
-        .insert({
-          nome: clientName,
-          telefone: clientPhone,
-          endereco: payload.address,
-          numero: payload.number || null,
-          bairro: payload.neighborhood,
-          cidade: payload.city || 'Brasília',
-          estado: payload.state || 'DF',
-          cep: payload.cep || null,
-          origem: 'loja_virtual_publica',
-          status_cliente: 'lead',
-          own_ambassador_id: ambassadorId,
-        })
-        .select('id')
-        .single();
-
-      if (newCustomer) {
-        customerId = newCustomer.id;
-      }
+        .update({ own_ambassador_id: ambassadorId })
+        .eq('id', customerId);
     }
 
     // Calcular totais
@@ -384,6 +368,12 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
     };
   } catch (err: any) {
     console.error('Erro ao criar pedido na loja:', err);
+    if (String(err?.message || '').includes('customer_identity_review_required')) {
+      return {
+        success: false,
+        error: 'Os dados de CPF e telefone pertencem a cadastros diferentes. Fale com a equipe Bryza para revisar seu cadastro.',
+      };
+    }
     return { success: false, error: err.message || 'Falha ao finalizar pedido na loja.' };
   }
 }

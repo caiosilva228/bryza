@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { AmbassadorAssignmentOption, Cliente } from '@/models/types';
+import { normalizeCustomerIdentity } from '@/lib/customers/canonical-identity';
 
 export const getClientes = async (): Promise<Cliente[]> => {
   const supabase = await createClient();
@@ -84,12 +85,17 @@ export const getActiveAmbassadorsForCustomerAssignment = async (): Promise<Ambas
 
 export const createCliente = async (cliente: Partial<Cliente>): Promise<Cliente | null> => {
   const supabase = await createClient();
+  const identity = normalizeCustomerIdentity({
+    phone: cliente.telefone,
+    cpf: cliente.cpf,
+    email: cliente.email,
+  });
   const { data, error } = await supabase.rpc('fn_upsert_customer_canonical', {
     p_customer_id: null,
     p_full_name: cliente.nome || '',
-    p_phone: cliente.telefone || '',
-    p_email: cliente.email || null,
-    p_cpf: cliente.cpf || null,
+    p_phone: identity.phone,
+    p_email: identity.email,
+    p_cpf: identity.cpf,
     p_cep: cliente.cep || null,
     p_address: cliente.endereco || '',
     p_number: cliente.numero || null,
@@ -111,9 +117,10 @@ export const createCliente = async (cliente: Partial<Cliente>): Promise<Cliente 
     return null;
   }
 
-  const result = data as { status?: string; customer_id?: string };
-  if (!result.customer_id || result.status === 'manual_review_required') return null;
-  return getClienteById(result.customer_id);
+  const result = data as { status?: string; customer_id?: string; entity_id?: string };
+  const customerId = result.entity_id || result.customer_id;
+  if (!customerId || result.status === 'manual_review_required') return null;
+  return getClienteById(customerId);
 };
 
 export const updateCliente = async (id: string, cliente: Partial<Cliente>): Promise<Cliente | null> => {
@@ -121,12 +128,17 @@ export const updateCliente = async (id: string, cliente: Partial<Cliente>): Prom
   const current = await getClienteById(id);
   if (!current) return null;
   const merged = { ...current, ...cliente };
+  const identity = normalizeCustomerIdentity({
+    phone: merged.telefone,
+    cpf: merged.cpf,
+    email: merged.email,
+  });
   const { data, error } = await supabase.rpc('fn_upsert_customer_canonical', {
     p_customer_id: id,
     p_full_name: merged.nome,
-    p_phone: merged.telefone,
-    p_email: merged.email || null,
-    p_cpf: merged.cpf || null,
+    p_phone: identity.phone,
+    p_email: identity.email,
+    p_cpf: identity.cpf,
     p_cep: merged.cep || null,
     p_address: merged.endereco,
     p_number: merged.numero || null,
@@ -148,7 +160,7 @@ export const updateCliente = async (id: string, cliente: Partial<Cliente>): Prom
     return null;
   }
 
-  const result = data as { status?: string; customer_id?: string };
+  const result = data as { status?: string; customer_id?: string; entity_id?: string };
   if (result.status === 'manual_review_required') return null;
-  return getClienteById(result.customer_id || id);
+  return getClienteById(result.entity_id || result.customer_id || id);
 };

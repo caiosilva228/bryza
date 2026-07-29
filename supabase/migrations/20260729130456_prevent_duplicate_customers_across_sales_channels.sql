@@ -1,0 +1,3 @@
+-- Historical migration slot for the first service-role public customer
+-- resolver. Its final, customer-role-aware definition is installed by
+-- 20260729131728_reconcile_public_customer_role_identity.sql.

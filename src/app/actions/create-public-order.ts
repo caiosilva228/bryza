@@ -5,6 +5,10 @@ import { createClient } from '@supabase/supabase-js';
 import { verifyAndParseReferralCookie, COOKIE_NAME } from '@/lib/referral/cookie';
 import { getSyntheticEmail } from '@/utils/env';
 import {
+  findAmbassadorByCanonicalIdentity,
+  normalizeCustomerIdentity,
+} from '@/lib/customers/canonical-identity';
+import {
   configureSchedulingPayment,
   type PaymentStatus,
   type PaymentTiming,
@@ -133,8 +137,12 @@ export async function createPublicSchedulingAction(
     }
 
     const nome = cleanText(input.nome, 160);
-    const cpf = onlyDigits(input.cpf);
-    const telefone = onlyDigits(input.telefone);
+    const identity = normalizeCustomerIdentity({
+      cpf: input.cpf,
+      phone: input.telefone,
+    });
+    const cpf = identity.cpf || '';
+    const telefone = identity.phone;
     const endereco = cleanText(input.endereco, 200);
     const numero = cleanText(input.numero, 20);
     const complemento = cleanText(input.complemento, 100);
@@ -283,11 +291,10 @@ export async function createPublicSchedulingAction(
 
     // Criar/Promover automaticamente para Embaixador Ativo se ainda não possuir conta
     try {
-      const { data: existingAmb } = await supabaseAdmin
-        .from('ambassadors')
-        .select('id, username, referral_code')
-        .or(`cpf.eq.${cpf},phone.eq.${telefone}`)
-        .maybeSingle();
+      const existingAmb = await findAmbassadorByCanonicalIdentity(supabaseAdmin, {
+        cpf,
+        phone: telefone,
+      });
 
       if (!existingAmb) {
         // Obter embaixador patrocinador vinculado
@@ -332,11 +339,18 @@ export async function createPublicSchedulingAction(
           .maybeSingle();
 
         if (newAmbassador) {
-          // Atualizar vínculo de embaixador próprio no cliente
-          await supabaseAdmin
-            .from('clientes')
-            .update({ own_ambassador_id: newAmbassador.id })
-            .or(`cpf.eq.${cpf},telefone.eq.${telefone}`);
+          // O agendamento já resolveu a identidade canônica; vincular por ID evita nova comparação raw.
+          const { data: schedulingCustomer } = await supabaseAdmin
+            .from('agendamentos')
+            .select('cliente_id')
+            .eq('id', normalizedResult.agendamento_id)
+            .single();
+          if (schedulingCustomer?.cliente_id) {
+            await supabaseAdmin
+              .from('clientes')
+              .update({ own_ambassador_id: newAmbassador.id })
+              .eq('id', schedulingCustomer.cliente_id);
+          }
 
           // Provisionar conta Auth (Login e Senha inicial = telefone)
           const syntheticEmail = getSyntheticEmail(newAmbassador.username);

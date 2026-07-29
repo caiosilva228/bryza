@@ -2,6 +2,11 @@
 
 import { createAdminClient } from '@/utils/supabase/admin';
 import { getSyntheticEmail } from '@/utils/env';
+import {
+  findAmbassadorByCanonicalIdentity,
+  normalizeCustomerIdentity,
+  upsertPublicCustomerCanonical,
+} from '@/lib/customers/canonical-identity';
 
 export interface CadastroEmbaixadorInput {
   sponsorCode: string;
@@ -53,9 +58,14 @@ export async function cadastrarEmbaixadorPorConvite(
     }
 
     // Sanitizar campos
-    const cleanPhone = (input.phone || '').replace(/\D/g, '');
-    const cleanCpf = (input.cpf || '').replace(/\D/g, '');
-    const cleanEmail = (input.email || '').trim().toLowerCase();
+    const identity = normalizeCustomerIdentity({
+      phone: input.phone,
+      cpf: input.cpf,
+      email: input.email,
+    });
+    const cleanPhone = identity.phone;
+    const cleanCpf = identity.cpf || '';
+    const cleanEmail = identity.email || '';
     const cleanFullName = (input.fullName || '').trim();
 
     if (cleanFullName.length < 3) {
@@ -72,72 +82,35 @@ export async function cadastrarEmbaixadorPorConvite(
     }
 
     // 2. Verificar se CPF ou Telefone já estão em uso na tabela ambassadors
-    const { data: existingAmb } = await adminClient
-      .from('ambassadors')
-      .select('id, phone, cpf')
-      .or(`cpf.eq.${cleanCpf},phone.eq.${cleanPhone}`)
-      .maybeSingle();
+    const existingAmb = await findAmbassadorByCanonicalIdentity(adminClient, {
+      cpf: cleanCpf,
+      phone: cleanPhone,
+    });
 
     if (existingAmb) {
-      if (existingAmb.cpf === cleanCpf) {
+      if (normalizeCustomerIdentity({ cpf: existingAmb.cpf }).cpf === cleanCpf) {
         return { success: false, message: 'Este CPF já está cadastrado no Programa de Embaixadores.' };
       }
       return { success: false, message: 'Este número de telefone já está cadastrado no sistema.' };
     }
 
-    // 3. Obter ou Criar Cliente Canônico com Vínculo ao Embaixador Patrocinador
-    let customerId: string | null = null;
-    const { data: existingCustomer } = await adminClient
-      .from('clientes')
-      .select('id')
-      .or(`cpf.eq.${cleanCpf},telefone.eq.${cleanPhone}`)
-      .maybeSingle();
-
-    if (existingCustomer) {
-      customerId = existingCustomer.id;
-      // Atualizar atribuição de indicação do patrocinador no cliente existente
-      await adminClient
-        .from('clientes')
-        .update({
-          ambassador_id: sponsorAmb.id,
-          commissionable_ambassador_id: sponsorAmb.id,
-          referral_code: sponsorAmb.referral_code,
-          referral_source: 'smart_link',
-          referral_attributed_at: new Date().toISOString(),
-        })
-        .eq('id', customerId);
-    } else {
-      const { data: newCustomer, error: createCustomerError } = await adminClient
-        .from('clientes')
-        .insert({
-          nome: cleanFullName.toUpperCase(),
-          telefone: cleanPhone,
-          email: cleanEmail,
-          cpf: cleanCpf,
-          cep: input.cep || '',
-          endereco: input.address || '',
-          numero: input.number || '',
-          bairro: input.neighborhood || '',
-          cidade: input.city || '',
-          estado: input.state ? input.state.toUpperCase() : '',
-          origem: 'cadastro_convite_embaixador',
-          status_cliente: 'lead',
-          lifecycle_status: 'active',
-          ambassador_id: sponsorAmb.id,
-          commissionable_ambassador_id: sponsorAmb.id,
-          referral_code: sponsorAmb.referral_code,
-          referral_source: 'smart_link',
-          referral_attributed_at: new Date().toISOString(),
-        })
-        .select('id')
-        .single();
-
-      if (createCustomerError || !newCustomer) {
-        console.error('Erro ao criar cliente para novo embaixador:', createCustomerError);
-        return { success: false, message: 'Não foi possível cadastrar seus dados de cliente.' };
-      }
-      customerId = newCustomer.id;
-    }
+    // 3. Obter ou criar cliente pelo resolvedor canônico, sem comparação raw de CPF/telefone.
+    const canonicalCustomer = await upsertPublicCustomerCanonical(adminClient, {
+      fullName: cleanFullName.toUpperCase(),
+      phone: cleanPhone,
+      cpf: cleanCpf,
+      email: cleanEmail,
+      cep: input.cep,
+      address: input.address,
+      number: input.number,
+      neighborhood: input.neighborhood,
+      city: input.city,
+      state: input.state,
+      origin: 'cadastro_convite_embaixador',
+      referralCode: sponsorAmb.referral_code,
+      source: 'smart_link',
+    });
+    const customerId = canonicalCustomer.customerId;
 
     // 3.5. Obter Plano de Comissão Padrão do Programa
     const { data: progSettings } = await adminClient
@@ -221,30 +194,6 @@ export async function cadastrarEmbaixadorPorConvite(
 
     if (profileError) {
       console.error('Erro ao criar profile do embaixador:', profileError);
-    }
-
-    // 7. Registrar Atribuição em customer_ambassador_assignments
-    if (customerId) {
-      try {
-        await adminClient
-          .schema('private')
-          .from('customer_ambassador_assignments')
-          .insert({
-            customer_id: customerId,
-            ambassador_id: sponsorAmb.id,
-            source: 'smart_link',
-            evidence_code: sponsorAmb.referral_code,
-            status: 'active',
-            is_validated: true,
-            is_commissionable: true,
-            assigned_by: sponsorAmb.id,
-            reason: `Convite aceito via link /cadastro/${rawSponsorCode}`,
-          })
-          .select()
-          .maybeSingle();
-      } catch (assignErr) {
-        console.error('Aviso ao registrar atribuição em private:', assignErr);
-      }
     }
 
     return {

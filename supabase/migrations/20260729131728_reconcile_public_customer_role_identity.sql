@@ -1,0 +1,3 @@
+-- Historical migration slot for the customer-role-aware public resolver.
+-- The write-scope-safe final definition is installed by
+-- 20260729131833_restore_canonical_write_scope_after_public_resolution.sql.

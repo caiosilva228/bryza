@@ -3,8 +3,8 @@
 import { createCliente, updateCliente } from '@/services/clientes';
 import { getVendasByCliente } from '@/services/vendas';
 import { getCurrentProfile } from '@/services/profiles';
-import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { normalizeCustomerIdentity } from '@/lib/customers/canonical-identity';
 
 interface ClienteActionState {
   success: boolean;
@@ -36,9 +36,13 @@ export async function salvarCliente(
       vendedorId = profile.id;
     }
 
+    const identity = normalizeCustomerIdentity({
+      phone: formData.get('telefone')?.toString(),
+      cpf: formData.get('cpf')?.toString(),
+    });
     const payload = {
       nome: formData.get('nome')?.toString() || '',
-      telefone: formData.get('telefone')?.toString() || '',
+      telefone: identity.phone,
       cep: formData.get('cep')?.toString() || '',
       endereco: formData.get('endereco')?.toString() || '',
       numero: formData.get('numero')?.toString() || '',
@@ -48,16 +52,8 @@ export async function salvarCliente(
       origem: formData.get('origem')?.toString() || 'indicação',
       status_cliente: 'lead' as any,
       vendedor_responsavel_id: vendedorId || profile.id,
-      cpf: formData.get('cpf')?.toString().replace(/\D/g, '') || null,
+      cpf: identity.cpf,
     };
-
-    const duplicate = await hasDuplicateCliente(payload.nome, payload.telefone);
-    if (duplicate) {
-      return {
-        success: false,
-        message: 'Já existe um cliente com esse nome e telefone. Verifique antes de salvar novamente.',
-      };
-    }
 
     const newClient = await createCliente(payload);
 
@@ -99,9 +95,13 @@ export async function atualizarCliente(
       };
     }
 
+    const identity = normalizeCustomerIdentity({
+      phone: formData.get('telefone')?.toString(),
+      cpf: formData.get('cpf')?.toString(),
+    });
     const payload = {
       nome: formData.get('nome')?.toString() || '',
-      telefone: formData.get('telefone')?.toString() || '',
+      telefone: identity.phone,
       cep: formData.get('cep')?.toString() || '',
       endereco: formData.get('endereco')?.toString() || '',
       numero: formData.get('numero')?.toString() || '',
@@ -111,7 +111,7 @@ export async function atualizarCliente(
       origem: formData.get('origem')?.toString() || 'indicação',
       status_cliente: formData.get('status_cliente')?.toString() as any,
       vendedor_responsavel_id: formData.get('vendedor_responsavel_id')?.toString() || undefined,
-      cpf: formData.get('cpf')?.toString().replace(/\D/g, '') || null,
+      cpf: identity.cpf,
     };
 
     const updated = await updateCliente(clienteId, payload);
@@ -141,21 +141,4 @@ export async function atualizarCliente(
 
 export async function getVendasPorClienteAction(clienteId: string) {
   return await getVendasByCliente(clienteId);
-}
-
-async function hasDuplicateCliente(nome: string, telefone: string) {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('clientes')
-    .select('id')
-    .eq('nome', nome)
-    .eq('telefone', telefone)
-    .limit(1);
-
-  if (error) {
-    console.error('Erro ao verificar duplicidade do cliente:', error);
-    return false;
-  }
-
-  return (data?.length || 0) > 0;
 }

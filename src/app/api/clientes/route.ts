@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { createClient as createAuthClient } from '@/utils/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { normalizeCustomerIdentity } from '@/lib/customers/canonical-identity';
 
 function createServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -45,9 +46,15 @@ function buildPayload(formData: FormData, profileRole: 'admin' | 'vendedor' | 'l
     ? userId
     : formData.get('vendedor_responsavel_id')?.toString() || userId;
 
+  const identity = normalizeCustomerIdentity({
+    phone: formData.get('telefone')?.toString(),
+    cpf: formData.get('cpf')?.toString(),
+    email: formData.get('email')?.toString(),
+  });
+
   return {
     nome: formData.get('nome')?.toString() || '',
-    telefone: formData.get('telefone')?.toString() || '',
+    telefone: identity.phone,
     cep: formData.get('cep')?.toString() || '',
     endereco: formData.get('endereco')?.toString() || '',
     numero: formData.get('numero')?.toString() || '',
@@ -57,8 +64,8 @@ function buildPayload(formData: FormData, profileRole: 'admin' | 'vendedor' | 'l
     origem: formData.get('origem')?.toString() || 'indicação',
     status_cliente: formData.get('status_cliente')?.toString() || 'lead',
     vendedor_responsavel_id: vendedorResponsavelId,
-    cpf: formData.get('cpf')?.toString().replace(/\D/g, '') || null,
-    email: formData.get('email')?.toString().trim().toLowerCase() || null,
+    cpf: identity.cpf,
+    email: identity.email,
     latitude: formData.get('latitude') ? Number(formData.get('latitude')) : null,
     longitude: formData.get('longitude') ? Number(formData.get('longitude')) : null,
     ambassador_id: formData.get('ambassador_id')?.toString() || null,
