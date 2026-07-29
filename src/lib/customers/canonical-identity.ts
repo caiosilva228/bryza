@@ -74,6 +74,8 @@ export async function findAmbassadorByCanonicalIdentity(
       .from('ambassadors')
       .select('*')
       .or(filters.join(','))
+      .eq('status', 'ativo')
+      .not('user_id', 'is', null)
       .limit(1)
       .maybeSingle();
     if (error) throw error;
@@ -85,6 +87,8 @@ export async function findAmbassadorByCanonicalIdentity(
     .from('ambassadors')
     .select('*')
     .eq('email', identity.email)
+    .eq('status', 'ativo')
+    .not('user_id', 'is', null)
     .limit(1)
     .maybeSingle();
   if (error) throw error;

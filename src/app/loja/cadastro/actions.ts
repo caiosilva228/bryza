@@ -200,16 +200,6 @@ export async function registerStoreCustomerAmbassador(
       return { success: false, message: 'Não foi possível criar o cadastro de embaixador.' };
     }
 
-    if (canonicalCustomer.personId) {
-      await (admin as any).schema('private').from('person_business_roles').upsert({
-        person_id: canonicalCustomer.personId,
-        role_type: 'ambassador',
-        source_entity_id: ambassador.id,
-        status: 'active',
-        activated_at: new Date().toISOString(),
-      }, { onConflict: 'person_id,role_type' });
-    }
-
     await admin
       .from('clientes')
       .update({ own_ambassador_id: ambassador.id })
@@ -225,15 +215,18 @@ export async function registerStoreCustomerAmbassador(
 
     if (authError || !authData.user) {
       console.error('Falha ao criar acesso Auth pela loja:', authError);
-      await admin.from('ambassadors').delete().eq('id', ambassador.id);
       return { success: false, message: 'Não foi possível criar seu acesso seguro.' };
     }
 
+    // Função SQL dedicada que provisiona atomicamente:
+    // person_business_roles (customer + ambassador), person_accounts,
+    // profiles, person_access_permissions e atualiza ambassadors.user_id
     const { data: provisionData, error: provisionError } = await admin.rpc(
-      'fn_service_provision_public_ambassador_access',
+      'fn_service_provision_store_ambassador',
       {
         p_ambassador_id: ambassador.id,
         p_auth_user_id: authData.user.id,
+        p_person_id: canonicalCustomer.personId,
       },
     );
     const provision = provisionData as { status?: string } | null;
@@ -244,7 +237,6 @@ export async function registerStoreCustomerAmbassador(
         provision,
       });
       await admin.auth.admin.deleteUser(authData.user.id);
-      await admin.from('ambassadors').delete().eq('id', ambassador.id);
       return {
         success: false,
         message: 'O cadastro não pôde ser vinculado com segurança. Tente novamente.',
