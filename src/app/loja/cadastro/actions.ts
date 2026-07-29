@@ -170,35 +170,84 @@ export async function registerStoreCustomerAmbassador(
       .eq('singleton', true)
       .maybeSingle();
 
-    const { data: ambassador, error: ambassadorError } = await admin
+    // Verificar se já existe ambassador inativo sem auth user (cadastro incompleto anterior)
+    // para reaproveitar o registro e evitar UNIQUE VIOLATION no CPF/telefone
+    const { data: existingIncomplete } = await admin
       .from('ambassadors')
-      .insert({
-        person_id: canonicalCustomer.personId || null,
-        full_name: fullName,
-        display_name: fullName,
-        phone,
-        email,
-        cpf,
-        parent_ambassador_id: sponsor?.id || null,
-        commission_plan_id: settings?.default_commission_plan_id || null,
-        status: 'ativo',
-        cep: input.cep,
-        address: input.address.trim(),
-        number: input.number.trim(),
-        neighborhood: input.neighborhood.trim(),
-        city: input.city.trim(),
-        state,
-        notes: sponsor
-          ? `Cadastro realizado pela loja com indicação ${sponsor.referral_code}`
-          : 'Cadastro realizado pela loja sem indicação',
-      })
       .select('id, username, referral_code')
-      .single();
+      .or(`cpf.eq.${cpf},phone.eq.${phone}`)
+      .eq('status', 'inativo')
+      .is('user_id', null)
+      .limit(1)
+      .maybeSingle();
 
-    if (ambassadorError || !ambassador) {
-      console.error('Falha ao criar embaixador pela loja:', ambassadorError);
-      return { success: false, message: 'Não foi possível criar o cadastro de embaixador.' };
+    let ambassador: { id: string; username: string; referral_code: string } | null = null;
+
+    if (existingIncomplete) {
+      // Reativar o registro incompleto anterior com os dados atuais
+      const { data: reactivated, error: reactivateError } = await admin
+        .from('ambassadors')
+        .update({
+          person_id: canonicalCustomer.personId || null,
+          full_name: fullName,
+          display_name: fullName,
+          phone,
+          email,
+          cpf,
+          status: 'ativo',
+          cep: input.cep,
+          address: input.address.trim(),
+          number: input.number.trim(),
+          neighborhood: input.neighborhood.trim(),
+          city: input.city.trim(),
+          state,
+          notes: sponsor
+            ? `Cadastro reativado com indicação ${sponsor.referral_code}`
+            : 'Cadastro reativado pela loja',
+        })
+        .eq('id', existingIncomplete.id)
+        .select('id, username, referral_code')
+        .single();
+
+      if (reactivateError || !reactivated) {
+        console.error('Falha ao reativar embaixador:', reactivateError);
+        return { success: false, message: 'Não foi possível recuperar seu cadastro anterior.' };
+      }
+      ambassador = reactivated;
+    } else {
+      // Criar novo ambassador
+      const { data: newAmbassador, error: ambassadorError } = await admin
+        .from('ambassadors')
+        .insert({
+          person_id: canonicalCustomer.personId || null,
+          full_name: fullName,
+          display_name: fullName,
+          phone,
+          email,
+          cpf,
+          parent_ambassador_id: sponsor?.id || null,
+          commission_plan_id: settings?.default_commission_plan_id || null,
+          status: 'ativo',
+          cep: input.cep,
+          address: input.address.trim(),
+          number: input.number.trim(),
+          neighborhood: input.neighborhood.trim(),
+          city: input.city.trim(),
+          state,
+          notes: sponsor
+            ? `Cadastro realizado pela loja com indicação ${sponsor.referral_code}`
+            : 'Cadastro realizado pela loja sem indicação',
+        })
+        .select('id, username, referral_code')
+        .single();
+
+      if (ambassadorError || !newAmbassador) {
+        console.error('Falha ao criar embaixador pela loja:', ambassadorError);
+        return { success: false, message: 'Não foi possível criar o cadastro de embaixador.' };
+      }
+      ambassador = newAmbassador;
     }
+
 
     await admin
       .from('clientes')
