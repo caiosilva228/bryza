@@ -60,7 +60,7 @@ export async function login(formData: FormData) {
   let resolvedEmail = normalizedUsername;
   const digitsOnly = normalizedUsername.replace(/\D/g, '');
 
-  if (digitsOnly.length === 11) {
+  if (digitsOnly.length === 10 || digitsOnly.length === 11) {
     // 2a. Tentar resolver por Telefone
     const { data: phoneEmail } = await adminClient.rpc('fn_resolve_login_phone', {
       p_phone: digitsOnly,
@@ -68,7 +68,7 @@ export async function login(formData: FormData) {
 
     if (typeof phoneEmail === 'string' && phoneEmail) {
       resolvedEmail = phoneEmail;
-    } else {
+    } else if (digitsOnly.length === 11) {
       // 2b. Tentar resolver por CPF
       const { data: cpfEmail } = await adminClient.rpc('fn_resolve_login_cpf', {
         p_cpf: digitsOnly,
@@ -79,8 +79,10 @@ export async function login(formData: FormData) {
       } else {
         resolvedEmail = getSyntheticEmail(`identificador-invalido-${digitsOnly}`);
       }
+    } else {
+      resolvedEmail = getSyntheticEmail(`identificador-invalido-${digitsOnly}`);
     }
-  } else if (/^bryza\d+$/.test(normalizedUsername)) {
+  } else if (/^bryza\d+$/i.test(normalizedUsername)) {
     // Resolver pelo perfil evita quebrar contas legadas cujo e-mail interno
     // tenha ficado divergente do código Bryza exibido.
     const { data: usernameProfile, error: usernameProfileError } = await adminClient
