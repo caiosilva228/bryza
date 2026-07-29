@@ -242,7 +242,14 @@ export default function LojaCheckoutModal({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [result, setResult] = useState<{ orderNumber: string; whatsappUrl: string; paymentTiming?: string; paymentStatus?: string } | null>(null);
+  const [result, setResult] = useState<{
+    orderNumber: string;
+    whatsappUrl: string;
+    paymentTiming?: string;
+    paymentStatus?: string;
+    items?: typeof cartItems;
+    totalValue?: number;
+  } | null>(null);
 
   // Auto-salvar rascunho a cada alteração
   useEffect(() => {
@@ -506,6 +513,8 @@ export default function LojaCheckoutModal({
           whatsappUrl: res.whatsappUrl || '',
           paymentTiming: paymentResult.paymentTiming,
           paymentStatus: paymentResult.paymentStatus,
+          items: cartItems.map((item) => ({ ...item })),
+          totalValue: totalValue,
         };
         setResult(orderData);
         onSuccess(orderData);
@@ -692,7 +701,7 @@ export default function LojaCheckoutModal({
                 </span>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {cartItems.map(item => (
+                  {(result?.items || cartItems).map(item => (
                     <div key={item.produto.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13.5px' }}>
                       <span style={{ color: '#0f172a', fontWeight: 600 }}>
                         {item.quantidade}x {item.produto.nome_produto}
@@ -707,7 +716,7 @@ export default function LojaCheckoutModal({
                 <div style={{ borderTop: '1px dashed #cbd5e1', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: '#475569' }}>Valor Total</span>
                   <strong style={{ fontSize: '18px', color: '#009845', fontWeight: 800 }}>
-                    {formatCurrency(totalValue)}
+                    {formatCurrency(result?.totalValue ?? totalValue)}
                   </strong>
                 </div>
               </div>
