@@ -18,9 +18,30 @@ function getIpHash(reqHeaders: Headers): string {
 export async function login(formData: FormData) {
   const identifier = (formData.get('identifier') as string || '').trim();
   const password = formData.get('password') as string;
+  const isStoreLogin = formData.get('login_context') === 'store';
+  const requestedReturn = String(formData.get('return_to') || '').trim();
+  const storeReturnTo =
+    (
+      requestedReturn === '/loja'
+      || requestedReturn.startsWith('/loja/')
+      || requestedReturn.startsWith('/loja?')
+    )
+      ? requestedReturn
+      : '/loja';
+
+  function redirectWithError(code: 'InvalidCredentials' | 'BlockedUser' | 'RateLimit'): never {
+    if (isStoreLogin) {
+      const params = new URLSearchParams({
+        login_error: code,
+        retorno: storeReturnTo,
+      });
+      redirect(`/loja?${params.toString()}`);
+    }
+    redirect(`/login?error=${code}`);
+  }
 
   if (!identifier || !password) {
-    redirect('/login?error=InvalidCredentials');
+    redirectWithError('InvalidCredentials');
   }
 
   const normalizedUsername = identifier.toLowerCase();
@@ -82,7 +103,7 @@ export async function login(formData: FormData) {
   }
 
   if (isBlocked === true) {
-    redirect('/login?error=RateLimit');
+    redirectWithError('RateLimit');
   }
 
   // 3. Autenticação no Supabase Auth
@@ -105,7 +126,7 @@ export async function login(formData: FormData) {
     if (registerError) {
       console.error('Erro ao registrar tentativa de login:', registerError);
     }
-    redirect('/login?error=InvalidCredentials');
+    redirectWithError('InvalidCredentials');
   }
 
   // 5. Verificar o perfil do usuário logado
@@ -125,7 +146,7 @@ export async function login(formData: FormData) {
   if (profileError || !profile || !profile.ativo) {
     // Deslogar imediatamente se a conta estiver desativada ou não tiver perfil
     await supabase.auth.signOut();
-    redirect('/login?error=BlockedUser');
+    redirectWithError('BlockedUser');
   }
 
   // Se for embaixador, checar status na tabela ambassadors
@@ -138,7 +159,7 @@ export async function login(formData: FormData) {
 
     if (ambError || !amb || amb.status !== 'ativo') {
       await supabase.auth.signOut();
-      redirect('/login?error=BlockedUser');
+      redirectWithError('BlockedUser');
     }
   }
 
@@ -150,7 +171,15 @@ export async function login(formData: FormData) {
   }
 
   if (profile.role === 'embaixador') {
+    if (isStoreLogin) {
+      redirect(storeReturnTo);
+    }
     redirect('/embaixador/dashboard');
+  }
+
+  if (isStoreLogin) {
+    await supabase.auth.signOut();
+    redirectWithError('BlockedUser');
   }
 
   if (profile.role === 'logistica') {

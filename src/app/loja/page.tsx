@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Produto } from '@/models/types';
 import { getStoreProductsAction, getStoreUserInfoAction, createStoreOrderAction, StoreCartItem } from './actions';
 import { toast } from 'sonner';
 
 import LojaCheckoutModal from './LojaCheckoutModal';
+import VisitorWelcomeModal from './VisitorWelcomeModal';
+import StoreRegistrationModal from './cadastro/StoreRegistrationModal';
 import styles from './loja.module.css';
 
 export default function LojaVirtualPage() {
@@ -21,6 +23,9 @@ export default function LojaVirtualPage() {
   // Dados do Usuário / Embaixador
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState<any>(null);
+  const [loginModalRequest, setLoginModalRequest] = useState(0);
+  const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
+  const openRegistration = useCallback(() => setIsRegistrationOpen(true), []);
 
   // Campos do Checkout
   const [clientName, setClientName] = useState('');
@@ -332,6 +337,14 @@ export default function LojaVirtualPage() {
     }}>
       
       {/* 1. Header do Site (Design Limpo: Logo + Perfil + Ícone de Carrinho) */}
+      <VisitorWelcomeModal
+        isLoggedIn={isLoggedIn}
+        sessionResolved={!loading}
+        loginRequest={loginModalRequest}
+        loginReturnTo="/loja/minha-conta"
+        onCreateAccount={openRegistration}
+      />
+
       <header className={styles.siteHeader} style={{
         backgroundColor: '#ffffff',
         borderBottom: '1px solid #e2e8f0',
@@ -362,27 +375,53 @@ export default function LojaVirtualPage() {
           {/* Lado Direito: Botão Espaço do Embaixador & Ícone do Carrinho */}
           <div className={styles.headerActions} style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             
-            <a 
-              href="/embaixador/dashboard" 
-              className={styles.ambassadorLink}
-              style={{
-                border: '1.5px solid #051329',
-                color: '#051329',
-                backgroundColor: 'transparent',
-                padding: '8px 16px',
-                borderRadius: '8px',
-                fontWeight: 700,
-                fontSize: '13.5px',
-                textDecoration: 'none',
-                transition: 'all 0.2s ease',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>account_circle</span>
-              <span>{isLoggedIn ? (userData?.full_name?.split(' ')[0] || 'Meu Painel') : 'Espaço do Embaixador'}</span>
-            </a>
+            {isLoggedIn ? (
+              <a
+                href="/loja/minha-conta"
+                className={styles.ambassadorLink}
+                style={{
+                  border: '1.5px solid #051329',
+                  color: '#051329',
+                  backgroundColor: 'transparent',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>account_circle</span>
+                <span>{userData?.full_name?.split(' ')[0] || 'Minha conta'}</span>
+              </a>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setLoginModalRequest((current) => current + 1)}
+                className={styles.ambassadorLink}
+                style={{
+                  border: '1.5px solid #051329',
+                  color: '#051329',
+                  backgroundColor: 'transparent',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  fontFamily: 'inherit',
+                  transition: 'all 0.2s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>account_circle</span>
+                <span>Entrar</span>
+              </button>
+            )}
 
             {/* Botão de Carrinho: Apenas Ícone com Badge Superior quando > 0 */}
             <div style={{ position: 'relative' }}>
@@ -1786,6 +1825,11 @@ export default function LojaVirtualPage() {
           }}
         />
       )}
+
+      <StoreRegistrationModal
+        isOpen={isRegistrationOpen}
+        onClose={() => setIsRegistrationOpen(false)}
+      />
 
       {/* 8. Rodapé E-Commerce Completo Bryza (Fundo Escuro #051329) */}
       <footer className={styles.footer} style={{

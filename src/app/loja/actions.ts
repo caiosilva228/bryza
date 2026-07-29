@@ -246,6 +246,9 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
     const canonicalCustomer = await upsertPublicCustomerCanonical(admin, {
       fullName: clientName,
       phone: clientPhone,
+      // A conta do cliente só fornece e-mail ao cadastro canônico quando o
+      // próprio Supabase Auth já o confirmou.
+      email: user?.email_confirmed_at ? user.email : undefined,
       cpf: clientCpf,
       address: payload.address,
       number: payload.number,
@@ -257,6 +260,22 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
       source: 'smart_link',
     });
     const customerId = canonicalCustomer.customerId;
+
+    // Depois que telefone/CPF do checkout e o e-mail verificado convergiram
+    // na identidade canônica, a compra passa a aparecer em "Meus pedidos".
+    if (user?.email_confirmed_at) {
+      const { error: accountLinkError } = await admin.rpc(
+        'fn_service_link_customer_auth_account',
+        { p_auth_user_id: user.id },
+      );
+      if (accountLinkError) {
+        console.error(
+          'Pedido criado, mas a conta do cliente não pôde ser vinculada:',
+          accountLinkError.message,
+        );
+      }
+    }
+
     if (ambassadorId) {
       await admin
         .from('clientes')

@@ -1,0 +1,234 @@
+.page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(0, 168, 89, 0.13), transparent 32%),
+    linear-gradient(145deg, #f7faf8 0%, #eef5f1 100%);
+  color: #14221b;
+}
+
+.card {
+  width: min(100%, 520px);
+  min-width: 0;
+  padding: 30px;
+  border: 1px solid #dce9e1;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 24px 70px rgba(13, 59, 37, 0.14);
+}
+
+.backLink,
+.guestLink,
+.switchMode a {
+  color: #087a45;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.backLink {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.brandMark {
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  margin: 12px auto 18px;
+  border-radius: 20px;
+  color: white;
+  background: linear-gradient(145deg, #00a859, #007b45);
+  font-size: 30px;
+  font-weight: 900;
+  box-shadow: 0 12px 28px rgba(0, 143, 78, 0.24);
+}
+
+.heading {
+  text-align: center;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #087a45;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.heading h1 {
+  margin: 10px 0 8px;
+  color: #102218;
+  font-size: clamp(28px, 7vw, 38px);
+  line-height: 1.08;
+}
+
+.heading p {
+  max-width: 430px;
+  margin: 0 auto;
+  color: #53665c;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.form {
+  display: grid;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.form label {
+  color: #263c30;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.inputWrap {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 15px;
+  border: 1.5px solid #cbdcd2;
+  border-radius: 14px;
+  background: #fbfdfc;
+  color: #4a6757;
+}
+
+.inputWrap:focus-within {
+  border-color: #009a53;
+  box-shadow: 0 0 0 4px rgba(0, 154, 83, 0.12);
+}
+
+.inputWrap input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #16251d;
+  font: inherit;
+  font-size: 16px;
+}
+
+.primaryButton,
+.primaryLink {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 54px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 0;
+  border-radius: 14px;
+  color: white;
+  background: linear-gradient(135deg, #00a859, #00884c);
+  box-shadow: 0 10px 24px rgba(0, 145, 79, 0.2);
+  font: inherit;
+  font-weight: 850;
+  text-decoration: none;
+  cursor: pointer;
+  padding-inline: 12px;
+  text-align: center;
+  white-space: normal;
+}
+
+.primaryButton:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+.securityNote,
+.smallText {
+  margin: 0;
+  color: #6b7b72;
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.error {
+  margin: 0;
+  padding: 11px 13px;
+  border-radius: 10px;
+  color: #9f231e;
+  background: #fff1f0;
+  font-size: 14px;
+}
+
+.successPanel {
+  display: grid;
+  gap: 10px;
+  margin-top: 26px;
+  padding: 22px;
+  border: 1px solid #bce8cd;
+  border-radius: 18px;
+  color: #0b7943;
+  background: #effcf4;
+  text-align: center;
+}
+
+.successPanel > svg {
+  margin: 0 auto;
+}
+
+.successPanel h2,
+.successPanel p {
+  margin: 0;
+}
+
+.switchMode {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 24px;
+  color: #5d6e64;
+  font-size: 14px;
+}
+
+.guestLink {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+@media (max-width: 560px) {
+  .page {
+    align-items: stretch;
+    padding: 0;
+    background: #fff;
+  }
+
+  .card {
+    width: 100%;
+    min-height: 100dvh;
+    padding: max(18px, env(safe-area-inset-top)) 18px
+      max(22px, env(safe-area-inset-bottom));
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .brandMark {
+    margin-top: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primaryButton,
+  .primaryLink,
+  .inputWrap {
+    transition: none;
+  }
+}
