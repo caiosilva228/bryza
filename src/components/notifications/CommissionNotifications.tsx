@@ -30,9 +30,11 @@ type PushConfig = {
 
 type CommissionNotification = {
   id: string;
+  notification_type?: 'commission_released' | 'admin_message';
   title: string;
   body: string;
-  amount: number | string;
+  amount?: number | string | null;
+  sound_type?: 'none' | 'money';
   target_url?: string;
 };
 
@@ -132,17 +134,25 @@ export function CommissionNotificationProvider({ children }: { children: ReactNo
   const announce = useCallback((notification: CommissionNotification) => {
     if (!notification.id || seenIds.current.has(notification.id)) return;
     seenIds.current.add(notification.id);
-    playCommissionSound();
+    const isCommission = notification.notification_type !== 'admin_message';
+    if (notification.sound_type === 'money' || (isCommission && !notification.sound_type)) {
+      playCommissionSound();
+    }
     toast.success(notification.title || 'Nova comissão liberada!', {
-      description: `${formatCommission(notification.amount)} disponível para saque.`,
+      description: isCommission
+        ? `${formatCommission(notification.amount || 0)} disponível para saque.`
+        : notification.body,
       duration: 9000,
       action: {
-        label: 'Ver comissão',
+        label: isCommission ? 'Ver comissão' : 'Abrir',
         onClick: () => window.location.assign(
           notification.target_url || '/embaixador/comissoes',
         ),
       },
     });
+    window.dispatchEvent(new CustomEvent('bryza:notification-received', {
+      detail: notification,
+    }));
   }, []);
 
   const saveSubscription = useCallback(async (subscription: PushSubscription) => {
@@ -258,16 +268,20 @@ export function CommissionNotificationProvider({ children }: { children: ReactNo
       if (event.data?.source !== 'bryza-push') return;
       const payload = event.data.payload as {
         id?: string;
+        type?: 'commission_released' | 'admin_message';
         title?: string;
         body?: string;
-        amount?: number;
+        amount?: number | null;
+        sound?: 'none' | 'money';
         url?: string;
       };
       announce({
         id: payload.id || crypto.randomUUID(),
+        notification_type: payload.type,
         title: payload.title || 'Nova comissão liberada!',
         body: payload.body || '',
-        amount: payload.amount || 0,
+        amount: payload.amount,
+        sound_type: payload.sound,
         target_url: payload.url,
       });
     };

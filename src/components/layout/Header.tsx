@@ -2,16 +2,22 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import styles from './layout.module.css';
 import { Agendamento } from '@/models/types';
 import { formatCurrency } from '@/utils/format';
+import { AmbassadorNotificationBell } from '@/components/notifications/AmbassadorNotificationBell';
 
 export const Header = () => {
+  const pathname = usePathname();
   const [notifications, setNotifications] = useState<Agendamento[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const isAmbassadorPortal = pathname.startsWith('/embaixador/');
 
   useEffect(() => {
+    if (isAmbassadorPortal) return;
+
     const fetchNotifications = async () => {
       try {
         // Obter data de hoje no formato local YYYY-MM-DD
@@ -35,7 +41,7 @@ export const Header = () => {
     // Atualizar a cada 5 minutos
     const interval = setInterval(fetchNotifications, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isAmbassadorPortal]);
 
   // Fechar o dropdown ao clicar fora
   useEffect(() => {
@@ -77,7 +83,11 @@ export const Header = () => {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', position: 'relative' }} ref={dropdownRef}>
-        <button 
+        {isAmbassadorPortal ? (
+          <AmbassadorNotificationBell />
+        ) : (
+          <>
+          <button
           onClick={() => setIsOpen(!isOpen)}
           style={{ 
             background: 'none', border: 'none', cursor: 'pointer',
@@ -114,7 +124,7 @@ export const Header = () => {
           )}
         </button>
 
-        {isOpen && (
+          {isOpen && (
           <div style={{
             position: 'absolute',
             top: '48px',
@@ -237,6 +247,8 @@ export const Header = () => {
               </Link>
             </div>
           </div>
+          )}
+          </>
         )}
       </div>
     </header>

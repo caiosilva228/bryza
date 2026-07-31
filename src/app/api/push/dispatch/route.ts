@@ -69,7 +69,9 @@ export async function POST(request: Request) {
     const push = getWebPush();
     const { data: notification, error: notificationError } = await admin
       .from('ambassador_notifications')
-      .select('id, ambassador_id, title, body, amount, target_url, dispatch_status, dispatch_attempts, created_at')
+      .select(
+        'id, ambassador_id, notification_type, title, body, amount, target_url, sound_type, dispatch_status, dispatch_attempts, created_at',
+      )
       .eq('id', id)
       .eq('dispatch_token', token)
       .maybeSingle();
@@ -114,10 +116,11 @@ export async function POST(request: Request) {
 
     const message = JSON.stringify({
       id: notification.id,
-      type: 'commission_released',
+      type: notification.notification_type,
       title: notification.title,
       body: notification.body,
-      amount: Number(notification.amount),
+      amount: notification.amount === null ? null : Number(notification.amount),
+      sound: notification.sound_type,
       url: notification.target_url,
       createdAt: notification.created_at,
     });
@@ -167,6 +170,8 @@ export async function POST(request: Request) {
       .update({
         dispatch_status: failed ? 'failed' : 'sent',
         dispatched_at: failed ? null : new Date().toISOString(),
+        delivered_devices: delivered,
+        removed_subscriptions: expiredIds.length,
         last_error: errors.length ? errors.join(',').slice(0, 500) : null,
       })
       .eq('id', notification.id);

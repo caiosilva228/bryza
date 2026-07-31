@@ -111,6 +111,11 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
     ];
 
     if (role === 'admin') {
+      baseRoutes.splice(1, 0, {
+        label: 'Notificações',
+        path: '/notificacoes',
+        icon: 'notifications_active',
+      });
       baseRoutes.push({
         label: 'Programa de Embaixadores',
         icon: 'loyalty',

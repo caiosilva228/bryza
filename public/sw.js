@@ -46,7 +46,7 @@ self.addEventListener('push', (event) => {
         body: payload.body || 'Você recebeu uma nova comissão.',
         icon: '/app-icon-192.png',
         badge: '/app-icon-192.png',
-        tag: payload.id ? `commission-${payload.id}` : 'bryza-commission',
+        tag: payload.id ? `bryza-${payload.id}` : 'bryza-notification',
         renotify: true,
         requireInteraction: false,
         vibrate: [180, 80, 180, 80, 260],

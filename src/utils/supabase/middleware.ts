@@ -251,6 +251,7 @@ export async function updateSession(request: NextRequest) {
       '/motoristas',
       '/logistica',
       '/metas',
+      '/notificacoes',
       '/embaixadores'
     ].some(prefix => pathname.startsWith(prefix));
 
