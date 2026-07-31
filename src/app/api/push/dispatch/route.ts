@@ -20,6 +20,26 @@ type WebhookPayload = {
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+function describePushError(error: unknown) {
+  const pushError = error as {
+    name?: string;
+    message?: string;
+    code?: string;
+    statusCode?: number;
+    cause?: { code?: string; message?: string };
+  };
+
+  return [
+    pushError.statusCode ? `http_${pushError.statusCode}` : null,
+    pushError.code || pushError.cause?.code || null,
+    pushError.name || null,
+    pushError.message || pushError.cause?.message || null,
+  ]
+    .filter(Boolean)
+    .join(':')
+    .slice(0, 500) || 'push_error';
+}
+
 export async function POST(request: Request) {
   let payload: WebhookPayload;
   try {
@@ -117,7 +137,7 @@ export async function POST(request: Request) {
         }, message, {
           TTL: 60 * 60,
           urgency: 'high',
-          topic: `commission-${notification.id}`,
+          topic: `c-${notification.id.replaceAll('-', '').slice(0, 30)}`,
         });
         delivered += 1;
       } catch (error) {
@@ -128,7 +148,12 @@ export async function POST(request: Request) {
           expiredIds.push(subscription.id);
           return;
         }
-        errors.push(statusCode ? `push_${statusCode}` : 'push_error');
+        const pushError = describePushError(error);
+        errors.push(pushError);
+        console.error('Falha no provedor Web Push:', {
+          subscriptionId: subscription.id,
+          error: pushError,
+        });
       }
     }));
 
