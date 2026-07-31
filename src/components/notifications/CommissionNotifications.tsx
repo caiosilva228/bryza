@@ -44,6 +44,7 @@ type NotificationContextValue = {
 
 const NotificationContext = createContext<NotificationContextValue | null>(null);
 const OPT_OUT_KEY = 'bryza-push-opt-out';
+const COMMISSION_SOUND_URL = '/sounds/commission-money.mp3';
 
 function base64UrlToUint8Array(value: string) {
   const padding = '='.repeat((4 - (value.length % 4)) % 4);
@@ -52,89 +53,54 @@ function base64UrlToUint8Array(value: string) {
   return Uint8Array.from(decoded, (character) => character.charCodeAt(0));
 }
 
-let audioContext: AudioContext | null = null;
+let commissionAudio: HTMLAudioElement | null = null;
+let commissionAudioUnlocked = false;
+
+function getCommissionAudio() {
+  if (typeof window === 'undefined') return null;
+  if (!commissionAudio) {
+    commissionAudio = new Audio(COMMISSION_SOUND_URL);
+    commissionAudio.preload = 'auto';
+    commissionAudio.volume = 0.9;
+  }
+  return commissionAudio;
+}
 
 function unlockAudio() {
-  const AudioContextConstructor = window.AudioContext
-    || (window as typeof window & { webkitAudioContext?: typeof AudioContext })
-      .webkitAudioContext;
-  if (!AudioContextConstructor) return;
-  audioContext ||= new AudioContextConstructor();
-  if (audioContext.state === 'suspended') void audioContext.resume();
+  if (commissionAudioUnlocked) return;
+  const audio = getCommissionAudio();
+  if (!audio) return;
+
+  audio.volume = 0.001;
+  const playback = audio.play();
+  if (!playback) return;
+
+  void playback
+    .then(() => {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.volume = 0.9;
+      commissionAudioUnlocked = true;
+    })
+    .catch(() => {
+      audio.volume = 0.9;
+    });
 }
 
 function playCommissionSound() {
-  unlockAudio();
-  if (!audioContext || audioContext.state !== 'running') return;
+  const audio = getCommissionAudio();
+  if (!audio) return;
 
-  const now = audioContext.currentTime;
-  const master = audioContext.createGain();
-  master.gain.setValueAtTime(0.0001, now);
-  master.gain.exponentialRampToValueAtTime(0.34, now + 0.012);
-  master.gain.setValueAtTime(0.34, now + 0.72);
-  master.gain.exponentialRampToValueAtTime(0.0001, now + 1.22);
-  master.connect(audioContext.destination);
-
-  const coinHits = [
-    { delay: 0, frequency: 1760, pan: -0.65 },
-    { delay: 0.07, frequency: 2349.32, pan: 0.45 },
-    { delay: 0.14, frequency: 1975.53, pan: -0.2 },
-    { delay: 0.22, frequency: 2637.02, pan: 0.7 },
-    { delay: 0.31, frequency: 2093, pan: -0.5 },
-    { delay: 0.41, frequency: 2793.83, pan: 0.25 },
-    { delay: 0.52, frequency: 2349.32, pan: -0.1 },
-  ];
-
-  coinHits.forEach(({ delay, frequency, pan }, hitIndex) => {
-    const start = now + delay;
-    const coinGain = audioContext!.createGain();
-    const panner = audioContext!.createStereoPanner();
-    coinGain.gain.setValueAtTime(0.0001, start);
-    coinGain.gain.exponentialRampToValueAtTime(
-      hitIndex < 2 ? 0.44 : 0.3,
-      start + 0.004,
-    );
-    coinGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.19);
-    panner.pan.setValueAtTime(pan, start);
-    coinGain.connect(panner);
-    panner.connect(master);
-
-    [1, 1.48, 2.17].forEach((harmonic, harmonicIndex) => {
-      const oscillator = audioContext!.createOscillator();
-      const harmonicGain = audioContext!.createGain();
-      oscillator.type = harmonicIndex === 0 ? 'triangle' : 'sine';
-      oscillator.frequency.setValueAtTime(frequency * harmonic, start);
-      oscillator.frequency.exponentialRampToValueAtTime(
-        frequency * harmonic * 0.91,
-        start + 0.16,
-      );
-      harmonicGain.gain.setValueAtTime(
-        harmonicIndex === 0 ? 0.7 : 0.24 / harmonicIndex,
-        start,
-      );
-      oscillator.connect(harmonicGain);
-      harmonicGain.connect(coinGain);
-      oscillator.start(start);
-      oscillator.stop(start + 0.2);
+  audio.pause();
+  audio.currentTime = 0;
+  audio.volume = 0.9;
+  void audio.play()
+    .then(() => {
+      commissionAudioUnlocked = true;
+    })
+    .catch((error) => {
+      console.warn('O navegador bloqueou o toque da comissão:', error);
     });
-  });
-
-  // The final two-tone register bell makes the cue unmistakably monetary.
-  [1318.51, 2093].forEach((frequency, index) => {
-    const start = now + 0.64 + index * 0.1;
-    const oscillator = audioContext!.createOscillator();
-    const bellGain = audioContext!.createGain();
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(frequency, start);
-    oscillator.frequency.exponentialRampToValueAtTime(frequency * 1.015, start + 0.32);
-    bellGain.gain.setValueAtTime(0.0001, start);
-    bellGain.gain.exponentialRampToValueAtTime(0.72, start + 0.006);
-    bellGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.42);
-    oscillator.connect(bellGain);
-    bellGain.connect(master);
-    oscillator.start(start);
-    oscillator.stop(start + 0.44);
-  });
 }
 
 function getSubscriptionPayload(subscription: PushSubscription) {
