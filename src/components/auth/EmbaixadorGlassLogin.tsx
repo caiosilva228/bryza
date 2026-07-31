@@ -6,9 +6,10 @@ import { LoginSubmitButton } from './LoginSubmitButton';
 
 interface EmbaixadorGlassLoginProps {
   errorMessage?: string;
+  initialIdentifier?: string;
 }
 
-export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ errorMessage }) => {
+export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ errorMessage, initialIdentifier = '' }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -383,6 +384,7 @@ export const EmbaixadorGlassLogin: React.FC<EmbaixadorGlassLoginProps> = ({ erro
                   id="identifier"
                   name="identifier"
                   required
+                  defaultValue={initialIdentifier}
                   placeholder="Código Bryza, E-mail, CPF ou Telefone"
                   autoComplete="username"
                   autoCapitalize="none"

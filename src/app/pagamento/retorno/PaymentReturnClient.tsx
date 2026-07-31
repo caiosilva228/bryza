@@ -2,6 +2,10 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  AmbassadorAccessPrompt,
+  type AmbassadorAccessInfo,
+} from '@/components/public/AmbassadorAccessPrompt';
 import styles from './payment-return.module.css';
 
 const PAYMENT_RETURN_KEY = 'bryza_mp_checkout';
@@ -23,6 +27,8 @@ type ViewState = 'processing' | 'confirmed' | 'thanks' | 'declined' | 'cancelled
 
 type StoredCheckout = {
   checkoutToken?: string;
+  source?: 'kit_bryza' | 'store';
+  ambassadorAccess?: AmbassadorAccessInfo;
   orderNumber?: string;
   whatsappUrl?: string;
   items?: Array<{
@@ -135,6 +141,7 @@ export default function PaymentReturnClient({
   const [orderItems, setOrderItems] = useState<Array<{ nome: string; quantidade: number; preco: number }>>([]);
   const [totalValue, setTotalValue] = useState<number | null>(null);
   const [whatsappUrl, setWhatsappUrl] = useState<string | null>(null);
+  const [ambassadorAccess, setAmbassadorAccess] = useState<AmbassadorAccessInfo | null>(null);
 
   const [attempts, setAttempts] = useState(0);
   const [checking, setChecking] = useState(true);
@@ -148,6 +155,9 @@ export default function PaymentReturnClient({
     if (stored.items && stored.items.length > 0) setOrderItems(stored.items);
     if (stored.totalValue !== undefined) setTotalValue(stored.totalValue);
     if (stored.whatsappUrl) setWhatsappUrl(stored.whatsappUrl);
+    if (stored.source === 'kit_bryza' && stored.ambassadorAccess?.available) {
+      setAmbassadorAccess(stored.ambassadorAccess);
+    }
 
     if (!stored.checkoutToken && !(paymentId && externalReference)) {
       setChecking(false);
@@ -329,6 +339,10 @@ export default function PaymentReturnClient({
               </div>
             )}
           </div>
+        )}
+
+        {isConfirmedOrThanks && ambassadorAccess && (
+          <AmbassadorAccessPrompt access={ambassadorAccess} />
         )}
 
         {/* ALERTA DE OBRIGATORIEDADE DE CLIQUE NO WHATSAPP */}

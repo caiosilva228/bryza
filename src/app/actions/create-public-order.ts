@@ -54,6 +54,11 @@ export interface PublicSchedulingResult {
   data_agendamento: string;
   valor_total: number;
   program_invitation_available: boolean;
+  ambassador_access: {
+    available: boolean;
+    login: string | null;
+    temporary_password_is_phone: boolean;
+  };
   payment_timing: PaymentTiming;
   payment_status: PaymentStatus;
   checkout_token: string | null;
@@ -98,7 +103,7 @@ function isRealDate(value: string): boolean {
 
 type BaseSchedulingResult = Omit<
   PublicSchedulingResult,
-  'payment_timing' | 'payment_status' | 'checkout_token'
+  'ambassador_access' | 'payment_timing' | 'payment_status' | 'checkout_token'
 >;
 
 function normalizeRpcResult(value: unknown): BaseSchedulingResult | null {
@@ -282,50 +287,107 @@ export async function createPublicSchedulingAction(
       normalizedResult.valor_total,
       input.payment_timing,
     );
-    const resultWithPayment: PublicSchedulingResult = {
-      ...normalizedResult,
-      payment_timing: input.payment_timing,
-      payment_status: payment.paymentStatus,
-      checkout_token: payment.checkoutToken,
+    let ambassadorAccess: PublicSchedulingResult['ambassador_access'] = {
+      available: false,
+      login: null,
+      temporary_password_is_phone: false,
     };
 
-    // Criar/Promover automaticamente para Embaixador Ativo se ainda não possuir conta
+    // O front-end só recebe o acesso depois que Auth, perfil e permissão de
+    // embaixador foram confirmados. O pedido continua válido se essa etapa
+    // acessória precisar de revisão operacional.
     try {
-      const existingAmb = await findAmbassadorByCanonicalIdentity(supabaseAdmin, {
-        cpf,
-        phone: telefone,
-      });
+      const { data: schedulingLink, error: schedulingLinkError } = await supabaseAdmin
+        .from('agendamentos')
+        .select('cliente_id')
+        .eq('id', normalizedResult.agendamento_id)
+        .single();
+      if (schedulingLinkError || !schedulingLink?.cliente_id) {
+        throw new Error('scheduling_customer_missing');
+      }
 
-      if (!existingAmb) {
-        // Obter embaixador patrocinador vinculado
-        const { data: sponsorAmb } = await supabaseAdmin
+      const { data: customer, error: customerError } = await supabaseAdmin
+        .from('clientes')
+        .select('id, person_id, own_ambassador_id')
+        .eq('id', schedulingLink.cliente_id)
+        .single();
+      if (customerError || !customer?.person_id) {
+        throw new Error('canonical_customer_missing');
+      }
+
+      type AccessAmbassador = {
+        id: string;
+        username: string;
+        referral_code: string | null;
+        user_id: string | null;
+        person_id: string | null;
+      };
+
+      let ambassador: AccessAmbassador | null = null;
+      let createdAmbassador = false;
+
+      if (customer.own_ambassador_id) {
+        const { data } = await supabaseAdmin
           .from('ambassadors')
-          .select('id, referral_code')
-          .ilike('referral_code', verifiedReferral.referral_code)
+          .select('id, username, referral_code, user_id, person_id')
+          .eq('id', customer.own_ambassador_id)
+          .eq('status', 'ativo')
           .maybeSingle();
+        ambassador = data as AccessAmbassador | null;
+      }
 
-        const sponsorId = sponsorAmb?.id || null;
-
-        // Obter plano de comissão padrão do programa
-        const { data: progSettings } = await supabaseAdmin
-          .from('ambassador_program_settings')
-          .select('default_commission_plan_id')
-          .eq('singleton', true)
+      if (!ambassador) {
+        const { data } = await supabaseAdmin
+          .from('ambassadors')
+          .select('id, username, referral_code, user_id, person_id')
+          .eq('person_id', customer.person_id)
+          .eq('status', 'ativo')
+          .limit(1)
           .maybeSingle();
+        ambassador = data as AccessAmbassador | null;
+      }
 
-        const defaultPlanId = progSettings?.default_commission_plan_id || null;
+      if (!ambassador) {
+        const legacyAmbassador = await findAmbassadorByCanonicalIdentity(supabaseAdmin, {
+          cpf,
+          phone: telefone,
+        });
+        if (legacyAmbassador) {
+          ambassador = {
+            id: legacyAmbassador.id,
+            username: legacyAmbassador.username,
+            referral_code: legacyAmbassador.referral_code,
+            user_id: legacyAmbassador.user_id,
+            person_id: legacyAmbassador.person_id,
+          };
+        }
+      }
 
-        // Inserir novo embaixador ativo
-        const { data: newAmbassador } = await supabaseAdmin
+      if (!ambassador) {
+        const [{ data: sponsorAmb }, { data: progSettings }] = await Promise.all([
+          supabaseAdmin
+            .from('ambassadors')
+            .select('id')
+            .ilike('referral_code', verifiedReferral.referral_code)
+            .maybeSingle(),
+          supabaseAdmin
+            .from('ambassador_program_settings')
+            .select('default_commission_plan_id')
+            .eq('singleton', true)
+            .maybeSingle(),
+        ]);
+
+        const { data: newAmbassador, error: newAmbassadorError } = await supabaseAdmin
           .from('ambassadors')
           .insert({
+            person_id: customer.person_id,
             full_name: nome,
             display_name: nome,
             phone: telefone,
             email: `${cpf}@cliente.bryza`,
-            cpf: cpf,
-            parent_ambassador_id: sponsorId,
-            commission_plan_id: defaultPlanId,
+            cpf,
+            parent_ambassador_id: sponsorAmb?.id || null,
+            commission_plan_id: progSettings?.default_commission_plan_id || null,
             status: 'ativo',
             cep: cep || null,
             address: endereco || null,
@@ -335,56 +397,92 @@ export async function createPublicSchedulingAction(
             state: estado || null,
             notes: 'Cadastrado automaticamente como embaixador ativo via agendamento Kit Bryza.',
           })
-          .select('id, username, referral_code')
+          .select('id, username, referral_code, user_id, person_id')
+          .single();
+        if (newAmbassadorError || !newAmbassador) {
+          throw new Error(`ambassador_create_failed:${newAmbassadorError?.code || 'unknown'}`);
+        }
+        ambassador = newAmbassador as AccessAmbassador;
+        createdAmbassador = true;
+      }
+
+      const { error: customerLinkError } = await supabaseAdmin
+        .from('clientes')
+        .update({ own_ambassador_id: ambassador.id })
+        .eq('id', customer.id);
+      if (customerLinkError) throw new Error(`customer_link_failed:${customerLinkError.code}`);
+
+      if (ambassador.user_id) {
+        const { data: profile } = await supabaseAdmin
+          .from('profiles')
+          .select('role, ativo, must_change_password')
+          .eq('id', ambassador.user_id)
           .maybeSingle();
+        if (profile?.role === 'embaixador' && profile.ativo) {
+          ambassadorAccess = {
+            available: true,
+            login: telefone,
+            temporary_password_is_phone: profile.must_change_password === true,
+          };
+        }
+      } else {
+        const syntheticEmail = getSyntheticEmail(ambassador.username);
+        const { data: authData, error: createAuthError } = await supabaseAdmin.auth.admin.createUser({
+          email: syntheticEmail,
+          password: telefone,
+          email_confirm: true,
+          user_metadata: { nome },
+        });
+        if (createAuthError || !authData.user) {
+          throw new Error(`auth_create_failed:${createAuthError?.code || 'unknown'}`);
+        }
 
-        if (newAmbassador) {
-          // O agendamento já resolveu a identidade canônica; vincular por ID evita nova comparação raw.
-          const { data: schedulingCustomer } = await supabaseAdmin
-            .from('agendamentos')
-            .select('cliente_id')
-            .eq('id', normalizedResult.agendamento_id)
-            .single();
-          if (schedulingCustomer?.cliente_id) {
-            await supabaseAdmin
-              .from('clientes')
-              .update({ own_ambassador_id: newAmbassador.id })
-              .eq('id', schedulingCustomer.cliente_id);
-          }
-
-          // Provisionar conta Auth (Login e Senha inicial = telefone)
-          const syntheticEmail = getSyntheticEmail(newAmbassador.username);
-          const { data: authData } = await supabaseAdmin.auth.admin.createUser({
-            email: syntheticEmail,
-            password: telefone,
-            email_confirm: true,
-            user_metadata: { nome },
-          });
-
-          if (authData?.user) {
-            const authUserId = authData.user.id;
-
+        const { data: provisionData, error: provisionError } = await supabaseAdmin.rpc(
+          'fn_service_provision_store_ambassador',
+          {
+            p_ambassador_id: ambassador.id,
+            p_auth_user_id: authData.user.id,
+            p_person_id: customer.person_id,
+          },
+        );
+        const provision = provisionData as { status?: string } | null;
+        if (provisionError || provision?.status !== 'linked') {
+          await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+          if (createdAmbassador) {
             await supabaseAdmin
               .from('ambassadors')
-              .update({ user_id: authUserId })
-              .eq('id', newAmbassador.id);
-
-            await supabaseAdmin.from('profiles').insert({
-              id: authUserId,
-              nome,
-              email: syntheticEmail,
-              telefone,
-              role: 'embaixador',
-              username: newAmbassador.username,
-              must_change_password: true,
-              ativo: true,
-            });
+              .update({ status: 'inativo' })
+              .eq('id', ambassador.id)
+              .is('user_id', null);
           }
+          throw new Error(`access_provision_failed:${provisionError?.code || provision?.status || 'unknown'}`);
         }
+
+        const { error: firstAccessError } = await supabaseAdmin
+          .from('profiles')
+          .update({ must_change_password: true })
+          .eq('id', authData.user.id);
+        if (firstAccessError) {
+          throw new Error(`first_access_flag_failed:${firstAccessError.code}`);
+        }
+
+        ambassadorAccess = {
+          available: true,
+          login: telefone,
+          temporary_password_is_phone: true,
+        };
       }
     } catch (ambErr) {
       console.error('Aviso ao provisionar embaixador ativo no agendamento público:', ambErr);
     }
+
+    const resultWithPayment: PublicSchedulingResult = {
+      ...normalizedResult,
+      ambassador_access: ambassadorAccess,
+      payment_timing: input.payment_timing,
+      payment_status: payment.paymentStatus,
+      checkout_token: payment.checkoutToken,
+    };
 
     return { success: true, data: resultWithPayment };
   } catch (error) {

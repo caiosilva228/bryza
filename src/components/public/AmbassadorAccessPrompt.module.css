@@ -1,0 +1,244 @@
+.benefitCard {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto 18px;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px 14px;
+  border: 1px solid #b9dc63;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f7fee7 0%, #ecfccb 100%);
+  color: #18320a;
+  text-align: left;
+  box-shadow: 0 10px 28px rgba(90, 130, 22, 0.12);
+}
+
+.giftIcon,
+.shieldIcon {
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: #5a8216;
+  box-shadow: 0 6px 16px rgba(90, 130, 22, 0.28);
+}
+
+.giftIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+}
+
+.benefitCopy h4 {
+  margin: 2px 0 6px;
+  color: #163006;
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.benefitCopy p {
+  margin: 0;
+  color: #49612d;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.eyebrow,
+.modalEyebrow {
+  color: #5a8216;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.accessButton,
+.panelButton {
+  border: 0;
+  color: #fff;
+  background: #5a8216;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.accessButton {
+  grid-column: 1 / -1;
+  min-height: 46px;
+  padding: 11px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 11px;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 7000;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(5, 19, 41, 0.82);
+  backdrop-filter: blur(8px);
+}
+
+.modal {
+  position: relative;
+  width: min(100%, 470px);
+  max-height: calc(100dvh - 36px);
+  overflow-y: auto;
+  padding: 30px 24px 24px;
+  border-radius: 24px;
+  background: #fff;
+  color: #0f172a;
+  text-align: center;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+}
+
+.closeButton {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: #526174;
+  background: #f1f5f9;
+  cursor: pointer;
+}
+
+.shieldIcon {
+  width: 66px;
+  height: 66px;
+  margin: 0 auto 15px;
+  border-radius: 50%;
+}
+
+.modal h3 {
+  margin: 7px 0 9px;
+  font-size: 23px;
+  line-height: 1.2;
+}
+
+.modalDescription {
+  margin: 0 auto 20px;
+  color: #64748b;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.credentials {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.credentialRow {
+  min-height: 74px;
+  padding: 13px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #dbe4cc;
+  border-radius: 13px;
+  background: #f8faf5;
+  text-align: left;
+}
+
+.credentialRow div {
+  min-width: 0;
+}
+
+.credentialRow span {
+  display: block;
+  margin-bottom: 4px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.credentialRow strong {
+  color: #142705;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 17px;
+  overflow-wrap: anywhere;
+}
+
+.credentialRow button {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #9aba5e;
+  border-radius: 9px;
+  color: #446510;
+  background: #fff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.securityNote {
+  margin: 14px 0 18px;
+  padding: 12px 13px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  border-radius: 11px;
+  color: #365314;
+  background: #f7fee7;
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.securityNote svg {
+  flex: 0 0 auto;
+}
+
+.panelButton {
+  width: 100%;
+  min-height: 50px;
+  padding: 12px 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px;
+  box-shadow: 0 8px 22px rgba(90, 130, 22, 0.26);
+}
+
+@media (max-width: 420px) {
+  .benefitCard {
+    grid-template-columns: 1fr;
+  }
+
+  .giftIcon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .modal {
+    padding: 28px 17px 20px;
+    border-radius: 20px;
+  }
+
+  .credentialRow {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .credentialRow button {
+    justify-content: center;
+  }
+}

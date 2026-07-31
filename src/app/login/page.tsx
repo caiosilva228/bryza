@@ -6,13 +6,16 @@ import { EmbaixadorGlassLogin } from '@/components/auth/EmbaixadorGlassLogin';
 import { AdminGlassLogin } from '@/components/auth/AdminGlassLogin';
 
 interface PageProps {
-  searchParams: Promise<{ error?: string; type?: string }>;
+  searchParams: Promise<{ error?: string; type?: string; identifier?: string }>;
 }
 
 export default async function LoginPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const error = params.error;
   const typeParam = params.type;
+  const initialIdentifier = /^\d{10,11}$/.test(params.identifier || '')
+    ? params.identifier
+    : '';
 
   const reqHeaders = await headers();
   const host = reqHeaders.get('x-forwarded-host') || reqHeaders.get('host');
@@ -29,7 +32,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
 
   // Renderiza EV Embaixadores
   if (subdomain === 'ev' || typeParam === 'ev') {
-    return <EmbaixadorGlassLogin errorMessage={errorMessage} />;
+    return <EmbaixadorGlassLogin errorMessage={errorMessage} initialIdentifier={initialIdentifier} />;
   }
 
   // Default: Central Administrativa

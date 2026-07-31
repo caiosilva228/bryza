@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Check, X, LockKeyhole, ArrowRight, ArrowLeft, Search, MapPin, CheckCircle2, XCircle, MessageCircle } from 'lucide-react';
+import { Check, X, LockKeyhole, ArrowRight, ArrowLeft, Search, MapPin, CheckCircle2, XCircle, MessageCircle, CalendarDays, Clock3 } from 'lucide-react';
 import { createPublicSchedulingAction, type PublicSchedulingResult } from '@/app/actions/create-public-order';
+import { AmbassadorAccessPrompt } from './AmbassadorAccessPrompt';
 import type { AmbassadorPublicInfo, ProductOffer } from './kit-bryza-types';
 import styles from './KitBryzaSalesPage.module.css';
 
@@ -130,7 +131,7 @@ const initialForm = (city?: string | null): OrderForm => ({
   data: tomorrowStr(),
   periodo: 'qualquer',
   formaPagamento: 'pix',
-  paymentTiming: 'na_entrega',
+  paymentTiming: 'agora',
 });
 
 export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalProps) {
@@ -160,6 +161,7 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
   }>>([]);
   const [isSearchingAddress, setIsSearchingAddress] = useState(false);
   const [cepSearchError, setCepSearchError] = useState('');
+  const [showDeliveryWarningModal, setShowDeliveryWarningModal] = useState(false);
 
   const modalRef = useRef<HTMLElement>(null);
   const idempotencyKeyRef = useRef(crypto.randomUUID());
@@ -169,7 +171,9 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
     document.body.style.overflow = 'hidden';
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && !loading) {
-        if (isCepModalOpen) {
+        if (showDeliveryWarningModal) {
+          setShowDeliveryWarningModal(false);
+        } else if (isCepModalOpen) {
           setIsCepModalOpen(false);
         } else {
           onClose();
@@ -181,7 +185,7 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
       document.body.style.overflow = previousOverflow;
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [loading, isCepModalOpen, onClose]);
+  }, [loading, isCepModalOpen, onClose, showDeliveryWarningModal]);
 
   const setField = <Key extends keyof OrderForm>(key: Key, value: OrderForm[Key]) =>
     setForm(current => ({ ...current, [key]: value }));
@@ -422,6 +426,8 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
           try {
             sessionStorage.setItem('bryza_mp_checkout', JSON.stringify({
               checkoutToken: paymentData.checkout_token,
+              source: 'kit_bryza',
+              ambassadorAccess: paymentData.ambassador_access,
             }));
           } catch {
             // O retorno ainda pode usar os identificadores enviados pelo Mercado Pago.
@@ -559,6 +565,8 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
                 </div>
               </div>
             </div>
+
+            <AmbassadorAccessPrompt access={result.ambassador_access} />
 
             {/* BOTÃO CONFIRMAR VIA WHATSAPP */}
             {(() => {
@@ -1016,7 +1024,13 @@ Aguardo a confirmação da entrega!`;
                           <button
                             key={option.value}
                             type="button"
-                            onClick={() => setField('paymentTiming', option.value)}
+                            onClick={() => {
+                              if (option.value === 'na_entrega' && form.paymentTiming !== 'na_entrega') {
+                                setShowDeliveryWarningModal(true);
+                                return;
+                              }
+                              setField('paymentTiming', option.value);
+                            }}
                             aria-pressed={selected}
                             style={{
                               padding: '14px',
@@ -1286,6 +1300,153 @@ Aguardo a confirmação da entrega!`;
               )}
             </form>
           </div>
+        </div>
+      )}
+
+      {showDeliveryWarningModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 6000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+            backgroundColor: 'rgba(5, 15, 32, 0.82)',
+            backdropFilter: 'blur(8px)',
+          }}
+          onMouseDown={event => {
+            if (event.target === event.currentTarget) setShowDeliveryWarningModal(false);
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delivery-warning-title"
+            style={{
+              position: 'relative',
+              width: 'min(100%, 480px)',
+              padding: '28px 24px 24px',
+              borderRadius: '24px',
+              backgroundColor: '#fff',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+              textAlign: 'center',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setShowDeliveryWarningModal(false)}
+              aria-label="Fechar aviso de pagamento na entrega"
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                width: '34px',
+                height: '34px',
+                display: 'grid',
+                placeItems: 'center',
+                border: 0,
+                borderRadius: '50%',
+                color: '#64748b',
+                background: '#f1f5f9',
+                cursor: 'pointer',
+              }}
+            >
+              <X size={18} />
+            </button>
+
+            <span style={{
+              width: '64px',
+              height: '64px',
+              margin: '0 auto 16px',
+              display: 'grid',
+              placeItems: 'center',
+              border: '2px solid #f59e0b',
+              borderRadius: '50%',
+              color: '#d97706',
+              background: '#fef3c7',
+              boxShadow: '0 4px 14px rgba(245, 158, 11, 0.25)',
+            }}>
+              <MapPin size={34} />
+            </span>
+
+            <h3 id="delivery-warning-title" style={{ margin: '0 0 10px', color: '#0f172a', fontSize: '20px', fontWeight: 800 }}>
+              Atenção: presença no local
+            </h3>
+            <p style={{ margin: '0 0 16px', color: '#475569', fontSize: '13.5px', lineHeight: 1.55 }}>
+              Ao escolher <strong>Pagar na entrega</strong>, é <strong>obrigatório que você ou alguém responsável esteja no endereço</strong> para receber os produtos e efetuar o pagamento.
+            </p>
+
+            <div style={{
+              marginBottom: '20px',
+              padding: '14px 16px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '9px',
+              border: '1px solid #e2e8f0',
+              borderRadius: '14px',
+              color: '#334155',
+              background: '#f8fafc',
+              fontSize: '13px',
+              textAlign: 'left',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CalendarDays size={18} color="#5a8216" />
+                <span><strong>Data:</strong> {getNext5Days().find(day => day.value === form.data)?.label || form.data}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Clock3 size={18} color="#5a8216" />
+                <span><strong>Período:</strong> {
+                  form.periodo === 'manha' ? 'Manhã (09:00 - 12:00)' :
+                  form.periodo === 'tarde' ? 'Tarde (14:00 - 18:00)' :
+                  form.periodo === 'noite' ? 'Noite (18:30 - 21:00)' : 'Qualquer horário'
+                }</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setField('paymentTiming', 'na_entrega');
+                  setShowDeliveryWarningModal(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '14px 20px',
+                  border: 0,
+                  borderRadius: '12px',
+                  color: '#fff',
+                  background: '#5a8216',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(90, 130, 22, 0.3)',
+                }}
+              >
+                Estarei no local para receber
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setField('paymentTiming', 'agora');
+                  setShowDeliveryWarningModal(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px 20px',
+                  border: '1.5px solid #009ee3',
+                  borderRadius: '12px',
+                  color: '#0284c7',
+                  background: '#f0f9ff',
+                  fontWeight: 750,
+                  cursor: 'pointer',
+                }}
+              >
+                Prefiro pagar agora pelo Mercado Pago
+              </button>
+            </div>
+          </section>
         </div>
       )}
     </div>
