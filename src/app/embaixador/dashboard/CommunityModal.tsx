@@ -9,7 +9,7 @@ interface CommunityModalProps {
   communityUrl?: string;
 }
 
-export function CommunityModal({ communityUrl = 'https://chat.whatsapp.com/bryza-comunidade' }: CommunityModalProps) {
+export function CommunityModal({ communityUrl = 'https://chat.whatsapp.com/ErK5wa5vbS9DEOtsWMFyG2' }: CommunityModalProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
