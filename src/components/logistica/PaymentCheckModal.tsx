@@ -25,10 +25,17 @@ interface Props {
 }
 
 export default function PaymentCheckModal({ pedido, open, onClose, onConfirm, loading }: Props) {
-  const [receivedAmount, setReceivedAmount] = useState('');
+  const [receivedAmount, setReceivedAmount] = useState<string>(pedido?.valor_total ? pedido.valor_total.toString() : '');
   const [paymentMethod, setPaymentMethod] = useState<string>(pedido?.forma_pagamento ?? 'pix');
   const [notes, setNotes] = useState('');
   const [showDivergenceWarning, setShowDivergenceWarning] = useState(false);
+
+  React.useEffect(() => {
+    if (open && pedido) {
+      setReceivedAmount(pedido.valor_total ? pedido.valor_total.toString() : '');
+      setPaymentMethod(pedido.forma_pagamento ?? 'pix');
+    }
+  }, [open, pedido]);
 
   if (!open || !pedido) return null;
 
