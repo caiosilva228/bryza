@@ -12,10 +12,17 @@ export const Header = () => {
   const pathname = usePathname();
   const [notifications, setNotifications] = useState<Agendamento[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const isAmbassadorPortal = pathname.startsWith('/embaixador/');
 
+  // Aguarda hidratação para evitar flash de botões admin no portal do embaixador
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     if (isAmbassadorPortal) return;
 
     const fetchNotifications = async () => {
@@ -83,7 +90,10 @@ export const Header = () => {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', position: 'relative' }} ref={dropdownRef}>
-        {isAmbassadorPortal ? (
+        {!mounted ? (
+          // Placeholder neutro durante hidratação — evita flash de botões admin no portal do embaixador
+          <div style={{ width: 40, height: 40 }} />
+        ) : isAmbassadorPortal ? (
           <AmbassadorNotificationBell />
         ) : (
           <>

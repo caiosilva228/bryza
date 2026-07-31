@@ -86,6 +86,7 @@ export async function getStoreUserInfoAction(): Promise<{
     state: string;
     cep: string;
     ambassador_id?: string;
+    is_ambassador?: boolean;
   };
 }> {
   try {
@@ -181,6 +182,7 @@ export async function getStoreUserInfoAction(): Promise<{
         state,
         cep,
         ambassador_id: amb?.id,
+        is_ambassador: !!amb || prof?.role === 'embaixador',
       }
     };
   } catch (err) {

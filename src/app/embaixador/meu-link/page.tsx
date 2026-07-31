@@ -5,6 +5,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { getReferralUrl } from '@/utils/env';
 import { getPortalDashboardData } from '../actions';
 import { toast } from 'sonner';
+import styles from './meu-link.module.css';
 
 export default function MeuLinkPage() {
   const [data, setData] = useState<any>(null);
@@ -38,63 +39,33 @@ export default function MeuLinkPage() {
 
   return (
     <MainLayout>
-      <div style={{ maxWidth: '800px', margin: '0 auto 40px' }}>
-        <header style={{ marginBottom: '24px' }}>
-          <h1 style={{ color: 'var(--color-primary)', fontSize: '28px', fontFamily: 'var(--font-headline)', fontWeight: 700, margin: 0 }}>
+      <div className={styles.container}>
+        <header className={styles.header}>
+          <h1 className={styles.title}>
             Meu Link de Indicação
           </h1>
-          <p style={{ color: 'var(--color-on-surface-variant)', fontSize: '14px', marginTop: '4px' }}>
+          <p className={styles.subtitle}>
             Divulgue seu código, link de vendas ou convite de cadastro e ganhe comissão pelas suas indicações.
           </p>
         </header>
 
-        <div style={{
-          backgroundColor: 'var(--color-surface-container-low)',
-          padding: '32px',
-          borderRadius: '20px',
-          border: '1px solid var(--color-outline-variant)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '28px'
-        }}>
+        <div className={styles.card}>
           {/* Código Imutável */}
           <div>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-on-surface-variant)', marginBottom: '8px', textTransform: 'uppercase' }}>
               Seu Código Imutável
             </label>
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <div className={styles.inputRow}>
               <input
                 type="text"
                 value={code}
                 disabled
-                style={{
-                  flex: 1,
-                  padding: '12px 16px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--color-outline-variant)',
-                  backgroundColor: 'var(--color-surface-container-high)',
-                  color: 'var(--color-on-surface)',
-                  fontFamily: 'monospace',
-                  fontSize: '18px',
-                  fontWeight: 700,
-                  cursor: 'not-allowed'
-                }}
+                className={styles.inputField}
+                style={{ fontFamily: 'monospace', fontSize: '18px', fontWeight: 700 }}
               />
               <button
                 onClick={() => handleCopy(code, 'Código')}
-                style={{
-                  padding: '12px 20px',
-                  borderRadius: '10px',
-                  backgroundColor: 'var(--color-primary)',
-                  color: 'var(--color-on-primary)',
-                  border: 'none',
-                  fontWeight: 700,
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
+                className={styles.actionButton}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>content_copy</span>
                 Copiar Código
@@ -107,62 +78,25 @@ export default function MeuLinkPage() {
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-on-surface-variant)', marginBottom: '8px', textTransform: 'uppercase' }}>
               Seu Link Completo de Vendas
             </label>
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <div className={styles.inputRow}>
               <input
                 type="text"
                 value={fullUrl}
                 disabled
-                style={{
-                  flex: 1,
-                  padding: '12px 16px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--color-outline-variant)',
-                  backgroundColor: 'var(--color-surface-container-high)',
-                  color: 'var(--color-on-surface)',
-                  fontFamily: 'monospace',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: 'not-allowed'
-                }}
+                className={styles.inputField}
               />
               <a
                 href={fullUrl}
                 target="_blank"
                 rel="noreferrer"
-                style={{
-                  textDecoration: 'none',
-                  padding: '12px 20px',
-                  borderRadius: '10px',
-                  backgroundColor: 'var(--color-surface-container-highest, #e2e8f0)',
-                  color: 'var(--color-on-surface)',
-                  border: '1px solid var(--color-outline-variant)',
-                  fontWeight: 700,
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  transition: 'background-color 0.2s'
-                }}
+                className={styles.secondaryButton}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>open_in_new</span>
                 Acessar
               </a>
               <button
                 onClick={() => handleCopy(fullUrl, 'Link de Vendas')}
-                style={{
-                  padding: '12px 20px',
-                  borderRadius: '10px',
-                  backgroundColor: 'var(--color-primary)',
-                  color: 'var(--color-on-primary)',
-                  border: 'none',
-                  fontWeight: 700,
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
+                className={styles.actionButton}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>link</span>
                 Copiar Link
@@ -178,62 +112,25 @@ export default function MeuLinkPage() {
             <p style={{ color: 'var(--color-on-surface-variant)', fontSize: '13px', margin: '0 0 12px 0' }}>
               Envie este link para quem deseja cadastrar como novo Embaixador indicado da sua rede.
             </p>
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <div className={styles.inputRow}>
               <input
                 type="text"
                 value={cadastroUrl}
                 disabled
-                style={{
-                  flex: 1,
-                  padding: '12px 16px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--color-outline-variant)',
-                  backgroundColor: 'var(--color-surface-container-high)',
-                  color: 'var(--color-on-surface)',
-                  fontFamily: 'monospace',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: 'not-allowed'
-                }}
+                className={styles.inputField}
               />
               <a
                 href={cadastroUrl}
                 target="_blank"
                 rel="noreferrer"
-                style={{
-                  textDecoration: 'none',
-                  padding: '12px 20px',
-                  borderRadius: '10px',
-                  backgroundColor: 'var(--color-surface-container-highest, #e2e8f0)',
-                  color: 'var(--color-on-surface)',
-                  border: '1px solid var(--color-outline-variant)',
-                  fontWeight: 700,
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  transition: 'background-color 0.2s'
-                }}
+                className={styles.secondaryButton}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>open_in_new</span>
                 Acessar
               </a>
               <button
                 onClick={() => handleCopy(cadastroUrl, 'Link de Convite')}
-                style={{
-                  padding: '12px 20px',
-                  borderRadius: '10px',
-                  backgroundColor: 'var(--color-primary)',
-                  color: 'var(--color-on-primary)',
-                  border: 'none',
-                  fontWeight: 700,
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
+                className={styles.actionButton}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
                 Copiar Convite
@@ -250,18 +147,7 @@ export default function MeuLinkPage() {
               href={`https://wa.me/?text=${whatsappMsg}`}
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '12px 24px',
-                borderRadius: '10px',
-                backgroundColor: '#25D366',
-                color: '#FFFFFF',
-                textDecoration: 'none',
-                fontWeight: 700,
-                fontSize: '15px'
-              }}
+              className={styles.whatsappButton}
             >
               <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>chat</span>
               Compartilhar no WhatsApp
@@ -289,19 +175,7 @@ export default function MeuLinkPage() {
             <a
               href={qrCodeUrl}
               download={`qrcode-${code}.png`}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 20px',
-                borderRadius: '8px',
-                border: '1px solid var(--color-outline)',
-                backgroundColor: 'transparent',
-                color: 'var(--color-on-surface)',
-                textDecoration: 'none',
-                fontWeight: 600,
-                fontSize: '14px'
-              }}
+              className={styles.secondaryButton}
             >
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>download</span>
               Baixar Imagem do QR Code

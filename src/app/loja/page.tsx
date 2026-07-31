@@ -375,6 +375,28 @@ export default function LojaVirtualPage() {
           {/* Lado Direito: Botão Espaço do Embaixador & Ícone do Carrinho */}
           <div className={styles.headerActions} style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             
+            {userData?.is_ambassador && (
+              <a
+                href="/embaixador/dashboard"
+                style={{
+                  backgroundColor: 'var(--color-primary, #005675)',
+                  color: '#ffffff',
+                  padding: '8px 14px',
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: '0 2px 8px rgba(0,86,117,0.2)'
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>dashboard</span>
+                <span>Painel Embaixador</span>
+              </a>
+            )}
+
             {isLoggedIn ? (
               <a
                 href="/loja/minha-conta"

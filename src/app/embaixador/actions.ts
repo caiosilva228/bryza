@@ -27,6 +27,8 @@ export type NetworkMember = {
   phone: string | null;
   city: string | null;
   state: string | null;
+  neighborhood: string | null;
+  photo_path: string | null;
   status: 'pendente' | 'ativo' | 'inativo' | 'bloqueado';
   created_at: string;
   level: 1 | 2 | 3;
@@ -58,6 +60,9 @@ export type AmbassadorDashboardMetrics = {
     deadline_passed: boolean;
   };
   clientes_indicados: number;
+  rede_total: number;
+  rede_ativos: number;
+  rede_inativos: number;
   grafico_mensal: Array<{
     mes: string;
     vendas_qtd: number;
@@ -89,7 +94,7 @@ export type AmbassadorProfileData = {
 export async function getMinhaRede() {
   const { user } = await getAuthenticatedUser();
   const admin = createAdminClient();
-  const safeColumns = 'id, parent_ambassador_id, full_name, display_name, username, phone, city, state, status, created_at';
+  const safeColumns = 'id, parent_ambassador_id, full_name, display_name, username, phone, city, state, neighborhood, photo_path, status, created_at';
 
   const { data: owner, error: ownerError } = await admin
     .from('ambassadors')
@@ -129,6 +134,7 @@ export async function getMinhaRede() {
 
   const withLevel = (rows: NetworkRow[], level: 1 | 2 | 3): NetworkMember[] => rows.map((item) => ({
     ...item,
+    phone: level === 1 ? item.phone : null, // Oculta WhatsApp dos níveis 2 e 3 por privacidade
     level,
     sponsor_name: item.parent_ambassador_id ? names.get(item.parent_ambassador_id) || 'Patrocinador' : '—',
   }));
@@ -153,11 +159,45 @@ export async function getMinhaRede() {
 // 1. Dashboard e Métricas do Embaixador
 export async function getPortalDashboardData() {
   const { supabase } = await getAuthenticatedUser();
+  const admin = createAdminClient();
   const { data, error } = await supabase.rpc('fn_get_embaixador_dashboard_metrics');
 
   if (error) {
     console.error('Erro na RPC de dashboard do embaixador:', error);
     throw new Error(error.message || 'Erro ao carregar métricas do painel');
+  }
+
+  // Busca resumo da rede do embaixador (3 níveis)
+  const { data: userAmbassador } = await supabase
+    .from('ambassadors')
+    .select('id')
+    .single();
+
+  let rede_total = 0;
+  let rede_ativos = 0;
+  let rede_inativos = 0;
+
+  if (userAmbassador?.id) {
+    const { data: l1 } = await admin
+      .from('ambassadors')
+      .select('id, status')
+      .eq('parent_ambassador_id', userAmbassador.id);
+    const l1Data = l1 || [];
+    const l1Ids = l1Data.map((r) => r.id);
+
+    const l2Data = l1Ids.length > 0
+      ? (await admin.from('ambassadors').select('id, status').in('parent_ambassador_id', l1Ids)).data || []
+      : [];
+    const l2Ids = l2Data.map((r) => r.id);
+
+    const l3Data = l2Ids.length > 0
+      ? (await admin.from('ambassadors').select('id, status').in('parent_ambassador_id', l2Ids)).data || []
+      : [];
+
+    const all = [...l1Data, ...l2Data, ...l3Data];
+    rede_total = all.length;
+    rede_ativos = all.filter((m) => m.status === 'ativo').length;
+    rede_inativos = all.filter((m) => m.status !== 'ativo').length;
   }
 
   const raw = data as AmbassadorDashboardMetrics & {
@@ -175,6 +215,9 @@ export async function getPortalDashboardData() {
   return {
     ...safeData,
     grafico_mensal: normalizeCommissionChart(raw.grafico_mensal),
+    rede_total,
+    rede_ativos,
+    rede_inativos,
   } as AmbassadorDashboardMetrics;
 }
 
@@ -350,7 +393,7 @@ export async function getMeusPedidos(
 
 export async function getMinhasComissoes(params?: { page?: number; limit?: number; status?: string }) {
   const { supabase } = await getAuthenticatedUser();
-  const limit = Math.min(Math.max(params?.limit || 10, 1), 50);
+  const limit = Math.min(Math.max(params?.limit || 10, 1), 100);
   const page = Math.max(params?.page || 1, 1);
   const offset = (page - 1) * limit;
 

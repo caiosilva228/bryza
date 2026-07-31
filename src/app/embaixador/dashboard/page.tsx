@@ -13,6 +13,7 @@ import {
   getCommissionChartMaximum,
   getCurrentCommission,
 } from '@/lib/ambassadors/portal-financial-data';
+import { CommunityModal } from './CommunityModal';
 
 export default function EmbaixadorDashboardPage() {
   const [data, setData] = useState<AmbassadorDashboardMetrics | null>(null);
@@ -86,6 +87,9 @@ export default function EmbaixadorDashboardPage() {
     lost_commission_month,
     activation,
     clientes_indicados,
+    rede_total,
+    rede_ativos,
+    rede_inativos,
     grafico_mensal
   } = data;
 
@@ -106,8 +110,10 @@ export default function EmbaixadorDashboardPage() {
   const maxGrafico = getCommissionChartMaximum(grafico_mensal);
 
   return (
-    <MainLayout>
-      <div style={{ maxWidth: '1200px', margin: '0 auto 40px' }}>
+    <>
+      <CommunityModal />
+      <MainLayout>
+        <div style={{ maxWidth: '1200px', margin: '0 auto 40px' }}>
         
         {/* Banner de Boas-vindas */}
         <header style={{
@@ -289,6 +295,39 @@ export default function EmbaixadorDashboardPage() {
           </div>
         </div>
 
+        {/* Seção: Sua Rede */}
+        <div style={{ marginBottom: '32px' }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: '16px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
+            <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginRight: '8px', fontSize: '20px', color: 'var(--color-primary)' }}>account_tree</span>
+            Sua Rede
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+            {[
+              { label: 'Total na Rede', value: rede_total, icon: 'groups', color: 'var(--color-primary)', bg: 'var(--color-primary-container)' },
+              { label: 'Ativos', value: rede_ativos, icon: 'person_check', color: '#176b35', bg: 'rgba(36, 145, 74, 0.12)' },
+              { label: 'Inativos / Pendentes', value: rede_inativos, icon: 'person_off', color: '#7a5500', bg: 'rgba(164, 114, 0, 0.12)' },
+            ].map(({ label, value, icon, color, bg }) => (
+              <div key={label} style={{
+                backgroundColor: 'var(--color-surface-container-low)',
+                border: '1px solid var(--color-outline-variant)',
+                borderRadius: '16px',
+                padding: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+              }}>
+                <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span className="material-symbols-outlined" style={{ color, fontSize: '22px' }}>{icon}</span>
+                </div>
+                <div>
+                  <p style={{ margin: 0, fontSize: '12px', fontWeight: 600, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: '28px', fontWeight: 800, color: 'var(--color-on-surface)', lineHeight: 1.2 }}>{value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Gráfico Mensal em SVG/CSS Responsivo */}
         <div style={{
           backgroundColor: 'var(--color-surface-container-low)',
@@ -383,8 +422,8 @@ export default function EmbaixadorDashboardPage() {
             <span className="material-symbols-outlined" style={{ color: 'var(--color-primary)' }}>arrow_forward</span>
           </Link>
         </div>
-
       </div>
     </MainLayout>
+    </>
   );
 }
