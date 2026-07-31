@@ -53,7 +53,9 @@ export async function updateSession(request: NextRequest) {
   const isAmbassadorAcceptance = pathname.startsWith('/programa/embaixadores/aceitar');
   
   // Ignorar assets estáticos comuns
-  const isStaticAsset = pathname.match(/\.(svg|png|jpg|jpeg|gif|webp|ico|css|js)$/) || pathname.includes('_next/');
+  const isStaticAsset = pathname.match(
+    /\.(svg|png|jpg|jpeg|gif|webp|ico|css|js|mp3|wav|m4a|ogg)$/,
+  ) || pathname.includes('_next/');
 
   if (
     isStaticAsset
