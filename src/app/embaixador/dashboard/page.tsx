@@ -301,27 +301,19 @@ export default function EmbaixadorDashboardPage() {
             <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginRight: '8px', fontSize: '20px', color: 'var(--color-primary)' }}>account_tree</span>
             Sua Rede
           </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+          <div className="rede-cards-grid">
             {[
               { label: 'Total na Rede', value: rede_total, icon: 'groups', color: 'var(--color-primary)', bg: 'var(--color-primary-container)' },
               { label: 'Ativos', value: rede_ativos, icon: 'person_check', color: '#176b35', bg: 'rgba(36, 145, 74, 0.12)' },
               { label: 'Inativos / Pendentes', value: rede_inativos, icon: 'person_off', color: '#7a5500', bg: 'rgba(164, 114, 0, 0.12)' },
             ].map(({ label, value, icon, color, bg }) => (
-              <div key={label} style={{
-                backgroundColor: 'var(--color-surface-container-low)',
-                border: '1px solid var(--color-outline-variant)',
-                borderRadius: '16px',
-                padding: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px',
-              }}>
-                <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <span className="material-symbols-outlined" style={{ color, fontSize: '22px' }}>{icon}</span>
+              <div key={label} className="rede-card">
+                <div className="rede-card-icon" style={{ backgroundColor: bg }}>
+                  <span className="material-symbols-outlined" style={{ color }}>{icon}</span>
                 </div>
                 <div>
-                  <p style={{ margin: 0, fontSize: '12px', fontWeight: 600, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</p>
-                  <p style={{ margin: '2px 0 0', fontSize: '28px', fontWeight: 800, color: 'var(--color-on-surface)', lineHeight: 1.2 }}>{value}</p>
+                  <p className="rede-card-label">{label}</p>
+                  <p className="rede-card-value">{value}</p>
                 </div>
               </div>
             ))}
