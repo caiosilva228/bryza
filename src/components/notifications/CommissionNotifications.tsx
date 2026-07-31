@@ -70,24 +70,70 @@ function playCommissionSound() {
   const now = audioContext.currentTime;
   const master = audioContext.createGain();
   master.gain.setValueAtTime(0.0001, now);
-  master.gain.exponentialRampToValueAtTime(0.22, now + 0.012);
-  master.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);
+  master.gain.exponentialRampToValueAtTime(0.34, now + 0.012);
+  master.gain.setValueAtTime(0.34, now + 0.72);
+  master.gain.exponentialRampToValueAtTime(0.0001, now + 1.22);
   master.connect(audioContext.destination);
 
-  [1318.51, 1760, 2093].forEach((frequency, index) => {
+  const coinHits = [
+    { delay: 0, frequency: 1760, pan: -0.65 },
+    { delay: 0.07, frequency: 2349.32, pan: 0.45 },
+    { delay: 0.14, frequency: 1975.53, pan: -0.2 },
+    { delay: 0.22, frequency: 2637.02, pan: 0.7 },
+    { delay: 0.31, frequency: 2093, pan: -0.5 },
+    { delay: 0.41, frequency: 2793.83, pan: 0.25 },
+    { delay: 0.52, frequency: 2349.32, pan: -0.1 },
+  ];
+
+  coinHits.forEach(({ delay, frequency, pan }, hitIndex) => {
+    const start = now + delay;
+    const coinGain = audioContext!.createGain();
+    const panner = audioContext!.createStereoPanner();
+    coinGain.gain.setValueAtTime(0.0001, start);
+    coinGain.gain.exponentialRampToValueAtTime(
+      hitIndex < 2 ? 0.44 : 0.3,
+      start + 0.004,
+    );
+    coinGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.19);
+    panner.pan.setValueAtTime(pan, start);
+    coinGain.connect(panner);
+    panner.connect(master);
+
+    [1, 1.48, 2.17].forEach((harmonic, harmonicIndex) => {
+      const oscillator = audioContext!.createOscillator();
+      const harmonicGain = audioContext!.createGain();
+      oscillator.type = harmonicIndex === 0 ? 'triangle' : 'sine';
+      oscillator.frequency.setValueAtTime(frequency * harmonic, start);
+      oscillator.frequency.exponentialRampToValueAtTime(
+        frequency * harmonic * 0.91,
+        start + 0.16,
+      );
+      harmonicGain.gain.setValueAtTime(
+        harmonicIndex === 0 ? 0.7 : 0.24 / harmonicIndex,
+        start,
+      );
+      oscillator.connect(harmonicGain);
+      harmonicGain.connect(coinGain);
+      oscillator.start(start);
+      oscillator.stop(start + 0.2);
+    });
+  });
+
+  // The final two-tone register bell makes the cue unmistakably monetary.
+  [1318.51, 2093].forEach((frequency, index) => {
+    const start = now + 0.64 + index * 0.1;
     const oscillator = audioContext!.createOscillator();
-    const gain = audioContext!.createGain();
-    const start = now + index * 0.11;
-    oscillator.type = index === 2 ? 'sine' : 'triangle';
+    const bellGain = audioContext!.createGain();
+    oscillator.type = 'sine';
     oscillator.frequency.setValueAtTime(frequency, start);
-    oscillator.frequency.exponentialRampToValueAtTime(frequency * 1.04, start + 0.18);
-    gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(0.65, start + 0.008);
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.25);
-    oscillator.connect(gain);
-    gain.connect(master);
+    oscillator.frequency.exponentialRampToValueAtTime(frequency * 1.015, start + 0.32);
+    bellGain.gain.setValueAtTime(0.0001, start);
+    bellGain.gain.exponentialRampToValueAtTime(0.72, start + 0.006);
+    bellGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.42);
+    oscillator.connect(bellGain);
+    bellGain.connect(master);
     oscillator.start(start);
-    oscillator.stop(start + 0.27);
+    oscillator.stop(start + 0.44);
   });
 }
 
