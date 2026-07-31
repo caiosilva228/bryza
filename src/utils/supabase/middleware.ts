@@ -49,6 +49,7 @@ export async function updateSession(request: NextRequest) {
     pathname === '/api/payments/mercado-pago/preference'
     || pathname === '/api/payments/mercado-pago/webhook'
     || pathname === '/api/payments/mercado-pago/status';
+  const isPublicPushEndpoint = pathname === '/api/push/dispatch';
   const isAmbassadorAcceptance = pathname.startsWith('/programa/embaixadores/aceitar');
   
   // Ignorar assets estáticos comuns
@@ -63,6 +64,7 @@ export async function updateSession(request: NextRequest) {
     || isPublicLojaPage
     || isPublicPaymentReturn
     || isPublicPaymentEndpoint
+    || isPublicPushEndpoint
   ) {
     return supabaseResponse;
   }

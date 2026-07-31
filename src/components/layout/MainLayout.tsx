@@ -1,6 +1,7 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
+import { type ReactNode, useState } from 'react';
+import { CommissionNotificationProvider } from '@/components/notifications/CommissionNotifications';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { BottomNav } from './BottomNav';
@@ -15,23 +16,23 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   return (
-    <div className={styles.appContainer}>
-      {/* Desktop only — hidden via CSS media query on mobile */}
-      <Sidebar />
-      <Header />
+    <CommissionNotificationProvider>
+      <div className={styles.appContainer}>
+        <Sidebar />
+        <Header />
 
-      <main className={styles.mainContent}>
-        {children}
-      </main>
+        <main className={styles.mainContent}>
+          {children}
+        </main>
 
-      {/* Mobile only — hidden via CSS on desktop */}
-      <div className="hide-desktop">
-        <BottomNav onMenuOpen={() => setIsDrawerOpen(true)} />
-        <MobileDrawer
-          isOpen={isDrawerOpen}
-          onClose={() => setIsDrawerOpen(false)}
-        />
+        <div className="hide-desktop">
+          <BottomNav onMenuOpen={() => setIsDrawerOpen(true)} />
+          <MobileDrawer
+            isOpen={isDrawerOpen}
+            onClose={() => setIsDrawerOpen(false)}
+          />
+        </div>
       </div>
-    </div>
+    </CommissionNotificationProvider>
   );
 };

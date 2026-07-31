@@ -8,6 +8,7 @@ import { formatCurrency } from '@/utils/format';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { InstallAppButton } from '@/components/pwa/InstallAppButton';
+import { CommissionNotificationButton } from '@/components/notifications/CommissionNotifications';
 import {
   getCommissionChartMaximum,
   getCurrentCommission,
@@ -131,6 +132,7 @@ export default function EmbaixadorDashboardPage() {
           </div>
 
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', flex: '0 1 auto' }}>
+            <CommissionNotificationButton />
             <InstallAppButton />
             <Link href="/embaixador/meu-link" style={{
               display: 'flex',
