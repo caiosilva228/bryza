@@ -51,6 +51,15 @@ export async function updateSession(request: NextRequest) {
     || pathname === '/api/payments/mercado-pago/status';
   const isPublicPushEndpoint = pathname === '/api/push/dispatch';
   const isAmbassadorAcceptance = pathname.startsWith('/programa/embaixadores/aceitar');
+  // Estes endpoints possuem autenticação própria ou são metadados públicos. O
+  // proxy não pode exigir um cookie para o MCP, pois clientes de IA usam Bearer.
+  const isMcpInfrastructureRoute =
+    pathname === '/api/mcp'
+    || pathname === '/.well-known/oauth-protected-resource'
+    || pathname === '/oauth/consent'
+    || pathname === '/api/oauth/decision'
+    || pathname === '/mcp/confirm'
+    || pathname === '/api/mcp/confirm';
   
   // Ignorar assets estáticos comuns
   const isStaticAsset = pathname.match(
@@ -59,6 +68,7 @@ export async function updateSession(request: NextRequest) {
 
   if (
     isStaticAsset
+    || isMcpInfrastructureRoute
     || isPublicIndication
     || isPublicSalesPage
     || isPublicEarningsCalculator

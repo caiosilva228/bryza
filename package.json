@@ -2,24 +2,30 @@
   "name": "bryza",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20 <21"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/lib/ambassadors/earnings-calculation.test.ts src/lib/ambassadors/portal-financial-data.test.ts src/lib/customer-identity/identity-rules.test.ts src/lib/customers/canonical-identity.test.ts src/lib/logistica/payment-check.test.ts src/lib/mercado-pago/payment-status.test.ts src/lib/mercado-pago/signature.test.ts"
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/lib/ambassadors/earnings-calculation.test.ts src/lib/ambassadors/portal-financial-data.test.ts src/lib/customer-identity/identity-rules.test.ts src/lib/customers/canonical-identity.test.ts src/lib/logistica/payment-check.test.ts src/lib/mercado-pago/payment-status.test.ts src/lib/mercado-pago/signature.test.ts src/lib/mcp/security.test.ts src/lib/mcp/protocol.test.ts src/lib/mcp/auth.integration.test.ts"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.104.0",
     "date-fns": "^4.1.0",
+    "jose": "6.2.7",
     "lucide-react": "^1.8.0",
-    "next": "^16.2.4",
+    "next": "16.2.12",
     "qrcode": "^1.5.4",
     "react": "19.2.5",
     "react-dom": "19.2.5",
     "sonner": "^2.0.7",
-    "web-push": "3.6.7"
+    "web-push": "3.6.7",
+    "zod": "4.4.3"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
@@ -28,7 +34,14 @@
     "@types/react-dom": "^19",
     "@types/web-push": "3.6.4",
     "eslint": "^10.2.1",
-    "eslint-config-next": "^16.2.4",
+    "eslint-config-next": "16.2.12",
     "typescript": "^6.0.3"
+  },
+  "overrides": {
+    "@babel/core": "7.29.7",
+    "brace-expansion": "5.0.9",
+    "postcss": "8.5.25",
+    "sharp": "0.35.3",
+    "ws": "8.21.1"
   }
 }
