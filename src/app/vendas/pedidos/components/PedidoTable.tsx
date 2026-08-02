@@ -23,8 +23,10 @@ interface Props {
 
 function PaymentBadges({ pedido }: { pedido: Pedido }) {
   const timing = pedido.payment_timing === 'agora' ? 'Pagamento online' : 'Pagamento na entrega';
-  const statusValue = pedido.payment_status || (pedido.payment_check_status === 'confirmado' ? 'aprovado' : 'pendente');
-  const approved = ['aprovado', 'confirmado', 'pago'].includes(statusValue);
+  const approved = ['aprovado', 'confirmado', 'pago'].includes(pedido.payment_status || '') ||
+                   pedido.payment_check_status === 'confirmado' ||
+                   pedido.status_pedido === 'finalizado';
+  const statusValue = approved ? 'aprovado' : (pedido.payment_status || 'pendente');
   const statusLabel = approved ? 'Pago' : statusValue === 'processando' ? 'Processando' : statusValue === 'recusado' ? 'Recusado' : 'Não pago';
 
   return (

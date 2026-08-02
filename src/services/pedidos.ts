@@ -270,6 +270,8 @@ export const confirmOrderPayment = async (params: {
   const updateData: Record<string, unknown> = {
     amount_received: receivedAmount,
     payment_check_status: (isDivergent ? 'divergente' : 'confirmado') as PaymentCheckStatus,
+    payment_status: isDivergent ? 'recusado' : 'aprovado',
+    paid_at: isDivergent ? null : new Date().toISOString(),
     delivery_notes: notes || null,
     forma_pagamento: paymentMethod as 'dinheiro' | 'pix' | 'cartao',
     updated_at: new Date().toISOString(),

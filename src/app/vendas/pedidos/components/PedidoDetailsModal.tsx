@@ -272,11 +272,13 @@ export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onCl
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
                   <span style={{ color: 'var(--color-on-surface-variant)' }}>Situação do pagamento:</span>
                   {(() => {
-                    const paymentStatus = pedido.payment_status || (pedido.payment_check_status === 'confirmado' ? 'aprovado' : 'pendente');
-                    const approved = ['aprovado', 'confirmado', 'pago'].includes(paymentStatus);
+                    const approved = ['aprovado', 'confirmado', 'pago'].includes(pedido.payment_status || '') ||
+                                     pedido.payment_check_status === 'confirmado' ||
+                                     pedido.status_pedido === 'finalizado';
+                    const statusValue = approved ? 'aprovado' : (pedido.payment_status || 'pendente');
                     return (
                       <span style={{ padding: '4px 9px', borderRadius: '999px', fontSize: '11px', fontWeight: 800, background: approved ? '#dcfce7' : '#fef3c7', color: approved ? '#166534' : '#92400e' }}>
-                        {approved ? 'Pago' : paymentStatus === 'processando' ? 'Processando' : paymentStatus === 'recusado' ? 'Recusado' : 'Não pago'}
+                        {approved ? 'Pago' : statusValue === 'processando' ? 'Processando' : statusValue === 'recusado' ? 'Recusado' : 'Não pago'}
                       </span>
                     );
                   })()}
