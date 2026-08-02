@@ -43,7 +43,7 @@ const benefitIcons = {
   shield: ShieldCheck,
 };
 
-function OrderButton({ onClick, inverse = false, children = 'Agendar meu pedido agora' }: {
+function OrderButton({ onClick, inverse = false, children = 'Comprar agora' }: {
   onClick: () => void;
   inverse?: boolean;
   children?: React.ReactNode;
@@ -280,7 +280,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
 
               <div className={styles.heroCtaBlock}>
                 <button type="button" className={styles.heroCtaBtn} onClick={onOrder}>
-                  <span>AGENDAR MEU PEDIDO</span>
+                  <span>COMPRAR AGORA</span>
                   <ArrowRight size={18} aria-hidden="true" />
                 </button>
                 <div className={styles.heroSecurityNote}>
@@ -767,7 +767,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
                 </div>
 
                 <button type="button" className={styles.comparisonCtaBtn} onClick={onOrder}>
-                  <span>QUERO AGENDAR MEU KIT BRYZA</span>
+                  <span>COMPRAR AGORA</span>
                   <ArrowRight size={18} aria-hidden="true" />
                 </button>
 
@@ -876,7 +876,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
 
           <div className={styles.stepsCtaBlock}>
             <button type="button" className={styles.stepsCtaBtn} onClick={onOrder}>
-              <span>AGENDAR MEU KIT BRYZA</span>
+              <span>COMPRAR AGORA</span>
               <ArrowRight size={18} aria-hidden="true" />
             </button>
             <p className={styles.stepsCtaNote}>
@@ -1091,7 +1091,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
                     onOrder();
                   }}
                 >
-                  <span>AGENDAR MEU PEDIDO AGORA</span>
+                  <span>COMPRAR AGORA</span>
                   <ArrowRight size={18} aria-hidden="true" />
                 </button>
 
@@ -1269,7 +1269,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
             </div>
           </div>
           <button type="button" onClick={onOrder}>
-            AGENDAR
+            COMPRAR AGORA
           </button>
         </div>
       )}

@@ -229,7 +229,7 @@ export async function createPublicSchedulingAction(
       return { success: false, error: 'Sua indicação expirou. Recarregue a página e tente novamente.' };
     }
 
-    const { data: rpcData, error } = await supabaseAdmin.rpc('fn_criar_agendamento_publico', {
+    const { data: rpcData, error } = await supabaseAdmin.rpc('fn_criar_agendamento_publico_kit', {
       p_cliente_data: {
         nome,
         cpf,
@@ -254,7 +254,7 @@ export async function createPublicSchedulingAction(
     });
 
     if (error) {
-      console.error('Erro na RPC fn_criar_agendamento_publico:', {
+      console.error('Erro na RPC fn_criar_agendamento_publico_kit:', {
         code: error.code,
         message: error.message,
       });
@@ -277,7 +277,7 @@ export async function createPublicSchedulingAction(
 
     const normalizedResult = normalizeRpcResult(rpcData);
     if (!normalizedResult) {
-      console.error('Resposta inválida da RPC fn_criar_agendamento_publico.');
+      console.error('Resposta inválida da RPC fn_criar_agendamento_publico_kit.');
       return { success: false, error: 'O agendamento foi processado, mas a confirmação não pôde ser exibida. Entre em contato com a Bryza.' };
     }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Check, X, LockKeyhole, ArrowRight, ArrowLeft, Search, MapPin, CheckCircle2, XCircle, MessageCircle, CalendarDays, Clock3 } from 'lucide-react';
+import { Check, X, LockKeyhole, ArrowRight, ArrowLeft, Search, MapPin, CheckCircle2, XCircle, MessageCircle, CalendarDays, Clock3, Gift, Minus, Package, Plus, ShoppingCart } from 'lucide-react';
 import { createPublicSchedulingAction, type PublicSchedulingResult } from '@/app/actions/create-public-order';
 import { AmbassadorAccessPrompt } from './AmbassadorAccessPrompt';
 import type { AmbassadorPublicInfo, ProductOffer } from './kit-bryza-types';
@@ -67,6 +67,17 @@ const periodTimes: Record<OrderForm['periodo'], string> = {
   noite: '18:30',
   qualquer: '12:00',
 };
+
+const KIT_UNIT_PRICE = 79.8;
+const MAX_KIT_QUANTITY = 50;
+const SOAP_PRODUCT_ID = '957cdbc9-fea6-466e-b6e8-050dfb2359f5';
+const SOFTENER_PRODUCT_ID = '7cfdcdb0-ac5a-4421-812d-2de8e99fd28e';
+const CLOTH_PRODUCT_ID = '664d141e-e52c-43c9-bd1a-e5848c6490a6';
+
+const formatCurrency = (value: number) => new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+}).format(value);
 
 // Algoritmo Oficial da Receita Federal para Validação Matemática de CPF
 function isValidCPF(cpfStr: string): boolean {
@@ -135,7 +146,8 @@ const initialForm = (city?: string | null): OrderForm => ({
 });
 
 export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalProps) {
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+  const [kitQuantity, setKitQuantity] = useState(1);
   const [form, setForm] = useState<OrderForm>(() => initialForm(ambassador.city));
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PublicSchedulingResult | null>(null);
@@ -165,6 +177,15 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
 
   const modalRef = useRef<HTMLElement>(null);
   const idempotencyKeyRef = useRef(crypto.randomUUID());
+
+  const kitTotal = KIT_UNIT_PRICE * kitQuantity;
+  const soapLiters = 5 * kitQuantity;
+  const softenerLiters = 5 * kitQuantity;
+  const clothQuantity = 2 * kitQuantity;
+
+  const updateKitQuantity = (nextQuantity: number) => {
+    setKitQuantity(Math.min(MAX_KIT_QUANTITY, Math.max(1, nextQuantity)));
+  };
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -326,7 +347,7 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
   };
 
   // Navegação de Etapas
-  const handleNextStep1 = (e: React.FormEvent) => {
+  const handleContactNext = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -339,10 +360,10 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
       setError('Por favor, informe um WhatsApp válido com DDD.');
       return;
     }
-    setStep(2);
+    setStep(3);
   };
 
-  const handleNextStep2 = (e: React.FormEvent) => {
+  const handleCpfNext = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -355,10 +376,10 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
       setError('O CPF digitado não é válido segundo a Receita Federal. Por favor, verifique os números.');
       return;
     }
-    setStep(3);
+    setStep(4);
   };
 
-  const handleNextStep3 = (e: React.FormEvent) => {
+  const handleAddressNext = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -374,7 +395,7 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
       setError('Por favor, preencha todos os campos do endereço (Endereço, Número, Bairro, Cidade e UF).');
       return;
     }
-    setStep(4);
+    setStep(5);
   };
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
@@ -400,9 +421,9 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
         payment_timing: form.paymentTiming,
         idempotency_key: idempotencyKeyRef.current,
         itens: [
-          { produto_id: '957cdbc9-fea6-466e-b6e8-050dfb2359f5', quantidade: 1, desconto_aplicado: 0 },
-          { produto_id: '7cfdcdb0-ac5a-4421-812d-2de8e99fd28e', quantidade: 1, desconto_aplicado: 0 },
-          { produto_id: '664d141e-e52c-43c9-bd1a-e5848c6490a6', quantidade: 2, desconto_aplicado: 25.98 },
+          { produto_id: SOAP_PRODUCT_ID, quantidade: kitQuantity },
+          { produto_id: SOFTENER_PRODUCT_ID, quantidade: kitQuantity },
+          { produto_id: CLOTH_PRODUCT_ID, quantidade: clothQuantity },
         ],
       };
       const response = await createPublicSchedulingAction(schedulingPayload);
@@ -462,16 +483,20 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
               {result
                 ? 'Pedido recebido!'
                 : step === 1
-                ? 'Seus dados de contato'
+                ? 'Monte o seu pedido'
                 : step === 2
-                ? 'Validação de documento (CPF)'
+                ? 'Seus dados de contato'
                 : step === 3
+                ? 'Validação de documento (CPF)'
+                : step === 4
                 ? 'Endereço de entrega'
                 : 'Agendamento e pagamento'}
             </h2>
             <p>
               {result
                 ? 'Sua solicitação de agendamento foi registrada com sucesso.'
+                : step === 1
+                ? 'Escolha quantos kits deseja e confira tudo o que receberá.'
                 : 'Escolha pagar agora com Mercado Pago ou somente quando receber.'}
             </p>
           </div>
@@ -482,22 +507,23 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
 
         {/* Barra de Progresso / Indicadores de Etapa */}
         {!result && (
-          <div style={{ padding: '0 24px 16px 24px', background: '#051329', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className={styles.orderProgress}>
             <div style={{ height: '4px', background: 'rgba(255,255,255,0.15)', borderRadius: '2px', overflow: 'hidden', marginBottom: '12px' }}>
               <div
                 style={{
                   height: '100%',
                   background: '#5a8216',
-                  width: step === 1 ? '25%' : step === 2 ? '50%' : step === 3 ? '75%' : '100%',
+                  width: `${step * 20}%`,
                   transition: 'width 0.3s ease',
                 }}
               />
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 700, color: '#94a3b8' }}>
-              <span style={{ color: step >= 1 ? '#ffffff' : '#64748b' }}>1. Contato</span>
-              <span style={{ color: step >= 2 ? '#ffffff' : '#64748b' }}>2. Documento</span>
-              <span style={{ color: step >= 3 ? '#ffffff' : '#64748b' }}>3. Endereço</span>
-              <span style={{ color: step >= 4 ? '#ffffff' : '#64748b' }}>4. Agendamento</span>
+            <div className={styles.orderProgressLabels}>
+              <span style={{ color: step >= 1 ? '#ffffff' : '#64748b' }}>1. Kit</span>
+              <span style={{ color: step >= 2 ? '#ffffff' : '#64748b' }}>2. Contato</span>
+              <span style={{ color: step >= 3 ? '#ffffff' : '#64748b' }}>3. CPF</span>
+              <span style={{ color: step >= 4 ? '#ffffff' : '#64748b' }}>4. Entrega</span>
+              <span style={{ color: step >= 5 ? '#ffffff' : '#64748b' }}>5. Pagamento</span>
             </div>
           </div>
         )}
@@ -530,9 +556,9 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <span style={{ fontSize: '12px', fontWeight: 700, color: '#334155', textTransform: 'uppercase' }}>Itens do Kit Bryza:</span>
                 <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '13px', color: '#475569', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <li>1x Lava Roupas Concentrado Bryza - 5L</li>
-                  <li>1x Amaciante Brisa Intense - Concentrado</li>
-                  <li>2x Pano Premium Xadrez 45x70 <strong style={{ color: '#16a34a' }}>(Brinde Grátis)</strong></li>
+                  <li>{kitQuantity}x Lava Roupas Concentrado Bryza - 5L ({soapLiters}L)</li>
+                  <li>{kitQuantity}x Amaciante Brisa Intense - Concentrado ({softenerLiters}L)</li>
+                  <li>{clothQuantity}x Pano Premium Xadrez 45x70 <strong style={{ color: '#16a34a' }}>(Brinde Grátis)</strong></li>
                 </ul>
               </div>
 
@@ -585,6 +611,8 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
 
 • *Número do Pedido:* #${result.numero_agendamento}
 • *Nome:* ${form.nome}
+• *Quantidade:* ${kitQuantity} ${kitQuantity === 1 ? 'Kit Bryza' : 'Kits Bryza'}
+• *Itens:* ${kitQuantity} Sabão 5L, ${kitQuantity} Amaciante 5L e ${clothQuantity} Panos Xadrez
 • *Endereço:* ${fullAddressStr}
 • *Data do Agendamento:* ${formattedDate} (${periodoStr})
 • *Valor Total:* ${valorFormatted}
@@ -644,8 +672,88 @@ Aguardo a confirmação da entrega!`;
           <form className={styles.orderForm} aria-busy={loading}>
             {error && <div className={styles.formError}>{error}</div>}
 
-            {/* ETAPA 1: Dados Pessoais / Contato */}
+            {/* ETAPA 1: Carrinho / Quantidade do Kit */}
             {step === 1 && (
+              <fieldset className={styles.cartStep}>
+                <legend>Quantidade de kits</legend>
+
+                <div className={styles.cartProductCard}>
+                  <div className={styles.cartProductIcon} aria-hidden="true">
+                    <Package size={30} />
+                  </div>
+                  <div className={styles.cartProductInfo}>
+                    <span>Oferta Kit Bryza</span>
+                    <strong>Kit Casa Perfumada — 10L + brindes</strong>
+                    <small>{formatCurrency(KIT_UNIT_PRICE)} por kit</small>
+                  </div>
+                  <div className={styles.quantitySelector} aria-label="Quantidade de kits">
+                    <button
+                      type="button"
+                      onClick={() => updateKitQuantity(kitQuantity - 1)}
+                      disabled={kitQuantity === 1}
+                      aria-label="Diminuir quantidade de kits"
+                    >
+                      <Minus size={19} />
+                    </button>
+                    <output aria-live="polite" aria-label={`${kitQuantity} ${kitQuantity === 1 ? 'kit' : 'kits'}`}>
+                      {kitQuantity}
+                    </output>
+                    <button
+                      type="button"
+                      onClick={() => updateKitQuantity(kitQuantity + 1)}
+                      disabled={kitQuantity === MAX_KIT_QUANTITY}
+                      aria-label="Aumentar quantidade de kits"
+                    >
+                      <Plus size={19} />
+                    </button>
+                  </div>
+                </div>
+
+                <section className={styles.cartContents} aria-labelledby="cart-contents-title">
+                  <div className={styles.cartContentsHeader}>
+                    <div>
+                      <ShoppingCart size={18} aria-hidden="true" />
+                      <strong id="cart-contents-title">Você recebe</strong>
+                    </div>
+                    <span>{kitQuantity} {kitQuantity === 1 ? 'kit' : 'kits'}</span>
+                  </div>
+
+                  <ul>
+                    <li>
+                      <span className={styles.cartItemQuantity}>{kitQuantity}×</span>
+                      <div><strong>Sabão Líquido Concentrado</strong><small>Galão de 5 litros cada</small></div>
+                      <b>{soapLiters}L</b>
+                    </li>
+                    <li>
+                      <span className={styles.cartItemQuantity}>{kitQuantity}×</span>
+                      <div><strong>Amaciante Microencapsulado</strong><small>Galão de 5 litros cada</small></div>
+                      <b>{softenerLiters}L</b>
+                    </li>
+                    <li>
+                      <span className={`${styles.cartItemQuantity} ${styles.cartGiftQuantity}`}>{clothQuantity}×</span>
+                      <div><strong>Pano Xadrez de Alta Absorção</strong><small>45 × 70 cm</small></div>
+                      <b className={styles.cartGiftLabel}><Gift size={14} /> Brinde</b>
+                    </li>
+                  </ul>
+
+                  <div className={styles.cartTotals}>
+                    <span>Total do pedido</span>
+                    <strong>{formatCurrency(kitTotal)}</strong>
+                  </div>
+                </section>
+
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className={styles.submitOrder}
+                >
+                  Continuar compra <ArrowRight size={18} />
+                </button>
+              </fieldset>
+            )}
+
+            {/* ETAPA 2: Dados Pessoais / Contato */}
+            {step === 2 && (
               <fieldset>
                 <legend>Seus dados de contato</legend>
                 <div className={styles.formGrid}>
@@ -685,10 +793,17 @@ Aguardo a confirmação da entrega!`;
                     />
                   </label>
                 </div>
-                <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
+                <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
                   <button
                     type="button"
-                    onClick={handleNextStep1}
+                    onClick={() => setStep(1)}
+                    className={styles.backButton}
+                  >
+                    <ArrowLeft size={16} /> Voltar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleContactNext}
                     className={styles.submitOrder}
                     style={{ width: 'auto', minWidth: '180px' }}
                   >
@@ -698,8 +813,8 @@ Aguardo a confirmação da entrega!`;
               </fieldset>
             )}
 
-            {/* ETAPA 2: CPF com Validação Real-Time */}
-            {step === 2 && (
+            {/* ETAPA 3: CPF com Validação Real-Time */}
+            {step === 3 && (
               <fieldset>
                 <legend>Documento de Identificação (CPF)</legend>
                 <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '16px', lineHeight: 1.4 }}>
@@ -767,7 +882,7 @@ Aguardo a confirmação da entrega!`;
                 <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
                   <button
                     type="button"
-                    onClick={() => setStep(1)}
+                    onClick={() => setStep(2)}
                     style={{
                       background: 'transparent',
                       border: '1px solid #cbd5e1',
@@ -785,7 +900,7 @@ Aguardo a confirmação da entrega!`;
                   </button>
                   <button
                     type="button"
-                    onClick={handleNextStep2}
+                    onClick={handleCpfNext}
                     disabled={cpfStatus !== 'valid'}
                     className={styles.submitOrder}
                     style={{ width: 'auto', minWidth: '180px' }}
@@ -796,8 +911,8 @@ Aguardo a confirmação da entrega!`;
               </fieldset>
             )}
 
-            {/* ETAPA 3: Endereço de Entrega com ViaCEP + Sub-modal CEP */}
-            {step === 3 && (
+            {/* ETAPA 4: Endereço de Entrega com ViaCEP + Sub-modal CEP */}
+            {step === 4 && (
               <fieldset>
                 <legend>Endereço de entrega</legend>
                 <div className={styles.formGrid}>
@@ -955,7 +1070,7 @@ Aguardo a confirmação da entrega!`;
                 <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
                   <button
                     type="button"
-                    onClick={() => setStep(2)}
+                    onClick={() => setStep(3)}
                     style={{
                       background: 'transparent',
                       border: '1px solid #cbd5e1',
@@ -973,7 +1088,7 @@ Aguardo a confirmação da entrega!`;
                   </button>
                   <button
                     type="button"
-                    onClick={handleNextStep3}
+                    onClick={handleAddressNext}
                     disabled={!showAddressFields}
                     className={styles.submitOrder}
                     style={{ width: 'auto', minWidth: '180px' }}
@@ -984,8 +1099,8 @@ Aguardo a confirmação da entrega!`;
               </fieldset>
             )}
 
-            {/* ETAPA 4: Agendamento & Forma de Pagamento */}
-            {step === 4 && (
+            {/* ETAPA 5: Agendamento & Forma de Pagamento */}
+            {step === 5 && (
               <fieldset>
                 <legend>Preferência de entrega e pagamento</legend>
                 <div className={styles.formGrid}>
@@ -1072,7 +1187,7 @@ Aguardo a confirmação da entrega!`;
                 <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
                   <button
                     type="button"
-                    onClick={() => setStep(3)}
+                    onClick={() => setStep(4)}
                     disabled={loading}
                     style={{
                       background: 'transparent',
