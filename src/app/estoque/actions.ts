@@ -125,3 +125,35 @@ export async function getPedidosDoProdutoAction(produtoId: string) {
       vendedor_nome: item.pedidos?.nome_vendedor || 'Vendedor'
     }));
 }
+
+export async function getPedidoByIdOrNumberAction(idOrNumber: string) {
+  const supabase = await createClient();
+  let query = supabase
+    .from('pedidos')
+    .select(`
+      *,
+      cliente:clientes(nome, telefone, bairro, cidade, estado, endereco, numero),
+      vendedor:profiles(nome),
+      ambassador:ambassadors!pedidos_ambassador_id_fkey(id, full_name, referral_code, status),
+      itens:pedido_itens(
+        *,
+        produto:produtos(nome_produto, codigo_produto)
+      )
+    `);
+
+  const trimmed = idOrNumber.trim();
+  if (trimmed.toUpperCase().startsWith('PV')) {
+    query = query.eq('numero_pedido', trimmed.toUpperCase());
+  } else {
+    query = query.eq('id', trimmed);
+  }
+
+  const { data, error } = await query.single();
+
+  if (error) {
+    console.error('Erro ao buscar detalhes do pedido no estoque:', error);
+    return null;
+  }
+
+  return data;
+}
