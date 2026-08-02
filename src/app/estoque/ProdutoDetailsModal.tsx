@@ -376,9 +376,9 @@ export const ProdutoDetailsModal = ({ produto, onClose }: ProdutoDetailsModalPro
           pedido={selectedPedido}
           isOpen={!!selectedPedido}
           onClose={() => setSelectedPedido(null)}
+          onUpdate={() => void loadDetails()}
         />
       )}
     </>
   );
 };
-
