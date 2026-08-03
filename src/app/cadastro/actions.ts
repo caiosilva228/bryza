@@ -111,6 +111,11 @@ export async function cadastrarEmbaixadorPorConvite(
       source: 'smart_link',
     });
     const customerId = canonicalCustomer.customerId;
+    const personId = canonicalCustomer.personId;
+
+    if (!personId) {
+      return { success: false, message: 'Não foi possível vincular a identidade do cadastro.' };
+    }
 
     // 3.5. Obter Plano de Comissão Padrão do Programa
     const { data: progSettings } = await adminClient
@@ -121,26 +126,72 @@ export async function cadastrarEmbaixadorPorConvite(
 
     const defaultPlanId = progSettings?.default_commission_plan_id || null;
 
-    // 4. Inserir novo embaixador (com parent_ambassador_id e commission_plan_id)
-    const { data: newAmbassador, error: createAmbError } = await adminClient
+    // 4. Reaproveitar com segurança uma tentativa interrompida ou criar o
+    // embaixador já vinculado à pessoa canônica do cliente.
+    const { data: existingIncomplete, error: incompleteError } = await adminClient
       .from('ambassadors')
-      .insert({
-        full_name: cleanFullName,
-        display_name: cleanFullName,
-        phone: cleanPhone,
-        email: cleanEmail,
-        cpf: cleanCpf,
-        parent_ambassador_id: sponsorAmb.id,
-        commission_plan_id: defaultPlanId,
-        status: 'ativo',
-        cep: input.cep || null,
-        address: input.address || null,
-        number: input.number || null,
-        neighborhood: input.neighborhood || null,
-        city: input.city || null,
-        state: input.state ? input.state.toUpperCase() : null,
-        notes: `Cadastrado via link de convite do embaixador ${sponsorAmb.referral_code}`,
-      })
+      .select('id, username, referral_code, cpf, phone, email')
+      .or(`cpf.eq.${cleanCpf},phone.eq.${cleanPhone}`)
+      .in('status', ['ativo', 'inativo'])
+      .eq('lifecycle_status', 'active')
+      .is('user_id', null)
+      .limit(1)
+      .maybeSingle();
+
+    if (incompleteError) {
+      console.error('Erro ao consultar cadastro incompleto de embaixador:', incompleteError);
+      return { success: false, message: 'Falha ao validar uma tentativa anterior de cadastro.' };
+    }
+
+    if (existingIncomplete) {
+      const previousIdentity = normalizeCustomerIdentity({
+        cpf: existingIncomplete.cpf,
+        phone: existingIncomplete.phone,
+        email: existingIncomplete.email,
+      });
+      if (
+        previousIdentity.cpf !== cleanCpf
+        || previousIdentity.phone !== cleanPhone
+        || previousIdentity.email !== cleanEmail
+      ) {
+        return {
+          success: false,
+          message: 'Existe um cadastro incompleto com dados divergentes. Procure a gestão Bryza.',
+        };
+      }
+    }
+
+    const ambassadorWrite = {
+      person_id: personId,
+      parent_ambassador_id: sponsorAmb.id,
+      commission_plan_id: defaultPlanId,
+      status: 'ativo',
+      cep: input.cep || null,
+      address: input.address || null,
+      number: input.number || null,
+      neighborhood: input.neighborhood || null,
+      city: input.city || null,
+      state: input.state ? input.state.toUpperCase() : null,
+      notes: `Cadastrado via link de convite do embaixador ${sponsorAmb.referral_code}`,
+    };
+
+    const ambassadorMutation = existingIncomplete
+      ? adminClient
+          .from('ambassadors')
+          .update(ambassadorWrite)
+          .eq('id', existingIncomplete.id)
+      : adminClient
+          .from('ambassadors')
+          .insert({
+            ...ambassadorWrite,
+            full_name: cleanFullName,
+            display_name: cleanFullName,
+            phone: cleanPhone,
+            email: cleanEmail,
+            cpf: cleanCpf,
+          });
+
+    const { data: newAmbassador, error: createAmbError } = await ambassadorMutation
       .select('id, username, referral_code')
       .single();
 
@@ -150,11 +201,19 @@ export async function cadastrarEmbaixadorPorConvite(
     }
 
     // Vincular cliente ao embaixador próprio (own_ambassador_id)
-    if (customerId) {
+    const { error: customerLinkError } = await adminClient
+      .from('clientes')
+      .update({ own_ambassador_id: newAmbassador.id })
+      .eq('id', customerId);
+
+    if (customerLinkError) {
+      console.error('Erro ao vincular cliente ao embaixador:', customerLinkError);
       await adminClient
-        .from('clientes')
-        .update({ own_ambassador_id: newAmbassador.id })
-        .eq('id', customerId);
+        .from('ambassadors')
+        .update({ status: 'inativo' })
+        .eq('id', newAmbassador.id)
+        .is('user_id', null);
+      return { success: false, message: 'Não foi possível concluir o vínculo do cadastro.' };
     }
 
     // 5. Criar Conta Auth no Supabase
@@ -168,32 +227,50 @@ export async function cadastrarEmbaixadorPorConvite(
 
     if (createAuthError || !authData.user) {
       console.error('Erro ao criar conta Auth para o embaixador:', createAuthError);
-      await adminClient.from('ambassadors').delete().eq('id', newAmbassador.id);
+      await adminClient
+        .from('clientes')
+        .update({ own_ambassador_id: null })
+        .eq('id', customerId)
+        .eq('own_ambassador_id', newAmbassador.id);
+      await adminClient
+        .from('ambassadors')
+        .update({ status: 'inativo' })
+        .eq('id', newAmbassador.id)
+        .is('user_id', null);
       return { success: false, message: 'Não foi possível provisionar o seu acesso inicial.' };
     }
 
     const authUserId = authData.user.id;
 
-    // Vincular user_id no registro do embaixador
-    await adminClient
-      .from('ambassadors')
-      .update({ user_id: authUserId })
-      .eq('id', newAmbassador.id);
+    // 6. Provisionar de forma atômica perfil, conta canônica, permissão e
+    // vínculo do embaixador. O convite exige troca de senha no primeiro acesso.
+    const { data: provisionData, error: provisionError } = await adminClient.rpc(
+      'fn_service_provision_invited_ambassador',
+      {
+        p_ambassador_id: newAmbassador.id,
+        p_auth_user_id: authUserId,
+        p_person_id: personId,
+      }
+    );
+    const provision = provisionData as { status?: string } | null;
 
-    // 6. Criar Perfil de Acesso em public.profiles
-    const { error: profileError } = await adminClient.from('profiles').insert({
-      id: authUserId,
-      nome: cleanFullName,
-      email: syntheticEmail,
-      telefone: cleanPhone,
-      role: 'embaixador',
-      username: newAmbassador.username,
-      must_change_password: true,
-      ativo: true,
-    });
-
-    if (profileError) {
-      console.error('Erro ao criar profile do embaixador:', profileError);
+    if (provisionError || provision?.status !== 'linked') {
+      console.error('Erro ao provisionar acesso canônico do embaixador:', {
+        provisionError,
+        provision,
+      });
+      await adminClient.auth.admin.deleteUser(authUserId);
+      await adminClient
+        .from('clientes')
+        .update({ own_ambassador_id: null })
+        .eq('id', customerId)
+        .eq('own_ambassador_id', newAmbassador.id);
+      await adminClient
+        .from('ambassadors')
+        .update({ status: 'inativo' })
+        .eq('id', newAmbassador.id)
+        .is('user_id', null);
+      return { success: false, message: 'Não foi possível concluir o acesso seguro do embaixador.' };
     }
 
     return {

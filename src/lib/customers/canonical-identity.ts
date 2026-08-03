@@ -148,6 +148,7 @@ export async function upsertPublicCustomerCanonical(
   const customerId = String(result.customer_id || '');
   const personId = String(result.person_id || '');
   if (!customerId) throw new Error('canonical_customer_id_missing');
+  if (!personId) throw new Error('canonical_person_id_missing');
 
   return {
     customerId,
