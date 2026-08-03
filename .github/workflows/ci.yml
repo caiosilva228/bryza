@@ -14,7 +14,6 @@ jobs:
     env:
       NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
-      SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-role-key
       MCP_ENABLED: "false"
       MCP_WRITES_ENABLED: "false"
       MCP_RESOURCE_URL: https://admin.bryza.com.br/api/mcp
@@ -29,3 +28,4 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+
