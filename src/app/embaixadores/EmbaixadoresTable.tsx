@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useRef, useTransition } from 'react';
 import Link from 'next/link';
 import {
   getSignedPhotoUrl,
   alterarStatus,
   getEmbaixadoresNetworkStats,
   getEmbaixadoresActivationStatus,
-  ativarComissoesMensais,
+  ativarEmbaixadoresEmLote,
+  ativarComissoesMensaisEmLote,
   type AmbassadorActivationStatus,
+  type AmbassadorBulkActionResult,
 } from './actions';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toast } from 'sonner';
@@ -54,9 +56,35 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
   const [networkStats, setNetworkStats] = useState<Record<string, NetworkStat>>({});
   const [activationStats, setActivationStats] = useState<Record<string, AmbassadorActivationStatus>>({});
-  const [activationTarget, setActivationTarget] = useState<EmbaixadorItem | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [activationTargets, setActivationTargets] = useState<EmbaixadorItem[]>([]);
   const [activationReason, setActivationReason] = useState('');
+  const selectAllRef = useRef<HTMLInputElement>(null);
+  const [isBulkPending, startBulkTransition] = useTransition();
   const [isActivationPending, startActivationTransition] = useTransition();
+
+  const selectedSet = new Set(selectedIds);
+  const allSelected = lista.length > 0 && lista.every((item) => selectedSet.has(item.id));
+  const someSelected = lista.some((item) => selectedSet.has(item.id));
+  const inactiveSelected = lista.filter(
+    (item) => selectedSet.has(item.id) && item.status !== 'ativo'
+  );
+  const commissionEligibleSelected = lista.filter(
+    (item) => selectedSet.has(item.id)
+      && item.status === 'ativo'
+      && activationStats[item.id]
+      && !activationStats[item.id].qualified
+  );
+
+  useEffect(() => {
+    setSelectedIds((current) => current.filter((id) => lista.some((item) => item.id === id)));
+  }, [lista]);
+
+  useEffect(() => {
+    if (selectAllRef.current) {
+      selectAllRef.current.indeterminate = someSelected && !allSelected;
+    }
+  }, [allSelected, someSelected]);
 
   useEffect(() => {
     const fetchPhotos = async () => {
@@ -114,6 +142,54 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
     } catch (e: any) {
       toast.error(e.message || 'Erro ao alterar status.');
     }
+  };
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds((current) => (
+      current.includes(id)
+        ? current.filter((selectedId) => selectedId !== id)
+        : [...current, id]
+    ));
+  };
+
+  const toggleAll = () => {
+    setSelectedIds(allSelected ? [] : lista.map((item) => item.id));
+  };
+
+  const showBulkResult = (
+    result: AmbassadorBulkActionResult,
+    processedLabel: string,
+    alreadyLabel: string
+  ) => {
+    if (result.processed > 0) {
+      toast.success(`${result.processed} ${processedLabel}`);
+    } else if (result.alreadyActive > 0 && result.failed === 0) {
+      toast.success(`${result.alreadyActive} ${alreadyLabel}`);
+    }
+
+    const notProcessed = result.skipped + result.failed;
+    if (notProcessed > 0) {
+      toast.warning(`${notProcessed} seleção(ões) não puderam ser processadas.`);
+    }
+  };
+
+  const handleBulkStatusActivation = () => {
+    if (!selectedIds.length || isBulkPending) return;
+
+    startBulkTransition(async () => {
+      try {
+        const result = await ativarEmbaixadoresEmLote(selectedIds);
+        showBulkResult(
+          result,
+          'embaixador(es) ativado(s).',
+          'embaixador(es) já estavam ativos.'
+        );
+        setSelectedIds([]);
+        onRefresh();
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Erro ao ativar embaixadores.');
+      }
+    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -176,17 +252,25 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
   };
 
   const handleCommissionActivation = () => {
-    if (!activationTarget) return;
+    if (!activationTargets.length) return;
 
     startActivationTransition(async () => {
       try {
-        await ativarComissoesMensais(activationTarget.id, activationReason);
-        toast.success(`Comissões de ${activationTarget.full_name} ativadas até o fim do mês.`);
-        setActivationTarget(null);
+        const result = await ativarComissoesMensaisEmLote(
+          activationTargets.map((target) => target.id),
+          activationReason
+        );
+        showBulkResult(
+          result,
+          'comissão(ões) ativada(s) até o fim do mês.',
+          'comissão(ões) já estavam ativas.'
+        );
+        setActivationTargets([]);
         setActivationReason('');
+        setSelectedIds([]);
         onRefresh();
-      } catch (e: any) {
-        toast.error(e.message || 'Erro ao ativar comissões.');
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Erro ao ativar comissões.');
       }
     });
   };
@@ -233,6 +317,98 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
 
   return (
     <>
+    <div style={{
+      minHeight: '64px',
+      padding: '12px 20px',
+      borderBottom: '1px solid var(--color-outline-variant)',
+      backgroundColor: selectedIds.length ? '#F5F3FF' : 'var(--color-surface-container-low)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: '16px',
+      flexWrap: 'wrap',
+    }}>
+      <label style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '9px',
+        color: 'var(--color-on-surface)',
+        fontSize: '13px',
+        fontWeight: 700,
+        cursor: isBulkPending ? 'not-allowed' : 'pointer',
+      }}>
+        <input
+          ref={selectAllRef}
+          type="checkbox"
+          checked={allSelected}
+          onChange={toggleAll}
+          disabled={isBulkPending || isActivationPending}
+          aria-label="Selecionar todos os embaixadores desta página"
+          style={{ width: '18px', height: '18px', accentColor: 'var(--color-primary)' }}
+        />
+        Selecionar todos desta página
+        {selectedIds.length > 0 && (
+          <span style={{
+            borderRadius: '999px',
+            backgroundColor: '#6D28D9',
+            color: '#FFFFFF',
+            padding: '3px 9px',
+            fontSize: '11px',
+          }}>
+            {selectedIds.length} selecionado(s)
+          </span>
+        )}
+      </label>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+        <button
+          type="button"
+          disabled={!inactiveSelected.length || isBulkPending || isActivationPending}
+          onClick={handleBulkStatusActivation}
+          style={{
+            padding: '9px 14px',
+            borderRadius: '9px',
+            border: '1px solid rgba(5, 150, 105, 0.3)',
+            backgroundColor: '#ECFDF5',
+            color: '#047857',
+            cursor: !inactiveSelected.length || isBulkPending || isActivationPending ? 'not-allowed' : 'pointer',
+            opacity: !inactiveSelected.length || isBulkPending || isActivationPending ? 0.55 : 1,
+            fontWeight: 700,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '7px',
+          }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>check_circle</span>
+          {isBulkPending ? 'Ativando...' : `Ativar embaixador${inactiveSelected.length === 1 ? '' : 'es'}`}
+        </button>
+        <button
+          type="button"
+          disabled={!commissionEligibleSelected.length || isBulkPending || isActivationPending}
+          onClick={() => {
+            setActivationTargets(commissionEligibleSelected);
+            setActivationReason('');
+          }}
+          style={{
+            padding: '9px 14px',
+            borderRadius: '9px',
+            border: '1px solid rgba(109, 40, 217, 0.3)',
+            backgroundColor: '#F5F3FF',
+            color: '#6D28D9',
+            cursor: !commissionEligibleSelected.length || isBulkPending || isActivationPending ? 'not-allowed' : 'pointer',
+            opacity: !commissionEligibleSelected.length || isBulkPending || isActivationPending ? 0.55 : 1,
+            fontWeight: 700,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '7px',
+          }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>paid</span>
+          {commissionEligibleSelected.length > 1
+            ? `Ativar ${commissionEligibleSelected.length} comissões`
+            : 'Ativar comissão'}
+        </button>
+      </div>
+    </div>
     <div style={{ overflowX: 'auto' }}>
       <table style={{
         width: '100%',
@@ -245,6 +421,16 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
             borderBottom: '1px solid var(--color-outline-variant)',
             backgroundColor: 'var(--color-surface-container-low)'
           }}>
+            <th style={{ padding: '16px 12px', textAlign: 'center' }}>
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={toggleAll}
+                disabled={isBulkPending || isActivationPending}
+                aria-label="Selecionar todos os embaixadores desta página"
+                style={{ width: '17px', height: '17px', accentColor: 'var(--color-primary)' }}
+              />
+            </th>
             {renderTh('Foto')}
             {renderTh('Nome / Exibição', 'nome')}
             {renderTh('Usuário/Código', 'username')}
@@ -271,6 +457,16 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
                 borderBottom: '1px solid var(--color-outline-variant)',
                 transition: 'background-color 0.15s ease'
               }} className="table-row-hover">
+                <td style={{ padding: '12px', textAlign: 'center' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedSet.has(item.id)}
+                    onChange={() => toggleSelection(item.id)}
+                    disabled={isBulkPending || isActivationPending}
+                    aria-label={`Selecionar ${item.full_name}`}
+                    style={{ width: '17px', height: '17px', accentColor: 'var(--color-primary)' }}
+                  />
+                </td>
                 {/* Foto */}
                 <td style={{ padding: '12px 20px' }}>
                   <div style={{
@@ -460,7 +656,7 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
                     {item.status === 'ativo' && activationStats[item.id] && !activationStats[item.id].qualified && (
                       <button
                         onClick={() => {
-                          setActivationTarget(item);
+                          setActivationTargets([item]);
                           setActivationReason('');
                         }}
                         aria-label={`Ativar comissões de ${item.full_name}`}
@@ -506,7 +702,7 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
         </tbody>
       </table>
     </div>
-    {activationTarget && (
+    {activationTargets.length > 0 && (
       <div
         role="dialog"
         aria-modal="true"
@@ -523,7 +719,7 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
         }}
         onClick={(event) => {
           if (event.target === event.currentTarget && !isActivationPending) {
-            setActivationTarget(null);
+            setActivationTargets([]);
             setActivationReason('');
           }
         }}
@@ -550,10 +746,19 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
             <span className="material-symbols-outlined" style={{ fontSize: '28px' }}>paid</span>
           </div>
           <h2 id="activation-dialog-title" style={{ margin: '0 0 8px', fontSize: '21px' }}>
-            Ativar comissões
+            {activationTargets.length === 1 ? 'Ativar comissão' : 'Ativar comissões em lote'}
           </h2>
           <p style={{ margin: '0 0 20px', color: 'var(--color-on-surface-variant)', fontSize: '14px', lineHeight: 1.5 }}>
-            <strong>{activationTarget.full_name}</strong> ficará ativo para receber novas comissões até o último dia deste mês. Comissões anteriores não serão pagas retroativamente.
+            {activationTargets.length === 1 ? (
+              <>
+                <strong>{activationTargets[0].full_name}</strong> ficará ativo para receber novas comissões até o último dia deste mês.
+              </>
+            ) : (
+              <>
+                As comissões de <strong>{activationTargets.length} embaixadores</strong> serão ativadas até o último dia deste mês.
+              </>
+            )}
+            {' '}Comissões anteriores não serão pagas retroativamente.
           </p>
           <label htmlFor="activation-reason" style={{
             display: 'block',
@@ -593,7 +798,7 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
               type="button"
               disabled={isActivationPending}
               onClick={() => {
-                setActivationTarget(null);
+                setActivationTargets([]);
                 setActivationReason('');
               }}
               style={{
@@ -623,7 +828,11 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
                 fontWeight: 700,
               }}
             >
-              {isActivationPending ? 'Ativando...' : 'Confirmar ativação'}
+              {isActivationPending
+                ? 'Ativando...'
+                : activationTargets.length === 1
+                  ? 'Confirmar ativação'
+                  : `Ativar ${activationTargets.length} comissões`}
             </button>
           </div>
         </div>
