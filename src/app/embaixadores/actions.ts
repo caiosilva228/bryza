@@ -692,6 +692,28 @@ export type AmbassadorActivationStatus = {
   personal_purchase_amount?: number | string;
 };
 
+export type AmbassadorBulkActionResult = {
+  selected: number;
+  processed: number;
+  alreadyActive: number;
+  skipped: number;
+  failed: number;
+};
+
+function normalizeAmbassadorIds(ambassadorIds: string[]) {
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!Array.isArray(ambassadorIds)) {
+    throw new Error('Seleção de embaixadores inválida.');
+  }
+  const uniqueIds = Array.from(new Set(ambassadorIds));
+
+  if (!uniqueIds.length || uniqueIds.length > 100 || uniqueIds.some((id) => !uuidPattern.test(id))) {
+    throw new Error('Selecione entre 1 e 100 embaixadores válidos.');
+  }
+
+  return uniqueIds;
+}
+
 export async function getEmbaixadoresActivationStatus(ambassadorIds: string[]) {
   await checkAdminAccess();
   if (!ambassadorIds.length) return [];
@@ -750,6 +772,171 @@ export async function ativarComissoesMensais(
   revalidatePath('/embaixadores');
   revalidatePath('/embaixador/dashboard');
   return result;
+}
+
+export async function ativarEmbaixadoresEmLote(
+  ambassadorIds: string[]
+): Promise<AmbassadorBulkActionResult> {
+  const admin = await checkAdminAccess();
+  const ids = normalizeAmbassadorIds(ambassadorIds);
+  const adminClient = createAdminClient();
+
+  const { data: ambassadors, error: findError } = await adminClient
+    .from('ambassadors')
+    .select('id, username, status, lifecycle_status')
+    .in('id', ids);
+
+  if (findError) {
+    console.error('Erro ao consultar embaixadores para ativação em lote:', findError);
+    throw new Error('Não foi possível validar os embaixadores selecionados.');
+  }
+
+  const eligible = (ambassadors || []).filter(
+    (ambassador) => ambassador.lifecycle_status === 'active' && ambassador.status !== 'ativo'
+  );
+  const alreadyActive = (ambassadors || []).filter(
+    (ambassador) => ambassador.lifecycle_status === 'active' && ambassador.status === 'ativo'
+  ).length;
+
+  let updated: Array<{ id: string }> = [];
+  if (eligible.length) {
+    const { data, error } = await adminClient
+      .from('ambassadors')
+      .update({ status: 'ativo' })
+      .in('id', eligible.map((ambassador) => ambassador.id))
+      .eq('lifecycle_status', 'active')
+      .neq('status', 'ativo')
+      .select('id');
+
+    if (error) {
+      console.error('Erro ao ativar embaixadores em lote:', error);
+      throw new Error('Não foi possível ativar os embaixadores selecionados.');
+    }
+    updated = data || [];
+  }
+
+  if (updated.length) {
+    const reqHeaders = await headers();
+    const ipHash = getIpHash(reqHeaders);
+    const usernameById = new Map(
+      (ambassadors || []).map((ambassador) => [ambassador.id, ambassador.username || ''])
+    );
+    const { error: auditError } = await adminClient.from('audit_logs').insert(
+      updated.map((ambassador) => ({
+        actor_id: admin.id,
+        actor_role: 'admin',
+        action: 'change_ambassador_status_ativo',
+        entity_type: 'ambassadors',
+        entity_id: ambassador.id,
+        ip_hash: ipHash,
+        metadata: {
+          target_username: usernameById.get(ambassador.id) || '',
+          source: 'bulk_selection',
+          batch_size: ids.length,
+        },
+      }))
+    );
+
+    if (auditError) {
+      console.error('Erro ao registrar auditoria da ativação em lote:', auditError);
+    }
+  }
+
+  const skipped = ids.length - updated.length - alreadyActive;
+  revalidatePath('/embaixadores');
+
+  return {
+    selected: ids.length,
+    processed: updated.length,
+    alreadyActive,
+    skipped: Math.max(0, skipped),
+    failed: 0,
+  };
+}
+
+export async function ativarComissoesMensaisEmLote(
+  ambassadorIds: string[],
+  reason: string
+): Promise<AmbassadorBulkActionResult> {
+  await checkAdminAccess();
+  const ids = normalizeAmbassadorIds(ambassadorIds);
+  if (typeof reason !== 'string') {
+    throw new Error('Informe o motivo da ativação.');
+  }
+  const normalizedReason = reason.trim();
+
+  if (normalizedReason.length < 5 || normalizedReason.length > 500) {
+    throw new Error('Informe um motivo entre 5 e 500 caracteres.');
+  }
+
+  const adminClient = createAdminClient();
+  const { data: ambassadors, error: findError } = await adminClient
+    .from('ambassadors')
+    .select('id, status, lifecycle_status')
+    .in('id', ids);
+
+  if (findError) {
+    console.error('Erro ao consultar embaixadores para comissão em lote:', findError);
+    throw new Error('Não foi possível validar os embaixadores selecionados.');
+  }
+
+  const eligibleIds = (ambassadors || [])
+    .filter((ambassador) => ambassador.lifecycle_status === 'active' && ambassador.status === 'ativo')
+    .map((ambassador) => ambassador.id);
+  const skipped = ids.length - eligibleIds.length;
+  const supabase = await createClient();
+  let processed = 0;
+  let alreadyActive = 0;
+  let failed = 0;
+
+  for (let index = 0; index < eligibleIds.length; index += 10) {
+    const batch = eligibleIds.slice(index, index + 10);
+    const results = await Promise.all(
+      batch.map(async (ambassadorId) => {
+        const { data, error } = await supabase.rpc(
+          'fn_admin_activate_current_month_commissions',
+          {
+            p_ambassador_id: ambassadorId,
+            p_reason: normalizedReason,
+          }
+        );
+        return { data, error, ambassadorId };
+      })
+    );
+
+    results.forEach(({ data, error, ambassadorId }) => {
+      if (error) {
+        failed += 1;
+        console.error('Erro ao ativar comissão em lote:', { ambassadorId, error });
+        return;
+      }
+
+      const result = data as {
+        activation_result?: 'activated' | 'already_active';
+        qualified?: boolean;
+      } | null;
+      if (!result?.qualified) {
+        failed += 1;
+      } else if (result.activation_result === 'already_active') {
+        alreadyActive += 1;
+      } else {
+        processed += 1;
+      }
+    });
+  }
+
+  if (processed || alreadyActive) {
+    revalidatePath('/embaixadores');
+    revalidatePath('/embaixador/dashboard');
+  }
+
+  return {
+    selected: ids.length,
+    processed,
+    alreadyActive,
+    skipped,
+    failed,
+  };
 }
 
 // 12. Promover Cliente para Embaixador (Admin)
