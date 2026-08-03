@@ -1028,7 +1028,7 @@ export async function promoverClienteParaEmbaixador(params: {
       success: false,
       message: error.code === '42501'
         ? 'Sua sessão não possui permissão para realizar esta promoção.'
-        : 'Não foi possível promover o cliente. Tente novamente.',
+        : (error.message ? `Não foi possível promover o cliente: ${error.message}` : 'Não foi possível promover o cliente. Tente novamente.'),
     };
   }
 

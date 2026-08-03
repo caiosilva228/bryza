@@ -165,17 +165,16 @@ export async function alterarSenhaPrimeiroAcesso(prevState: any, formData: FormD
     return { success: false, error: `Erro no provedor de autenticação: ${updateAuthError.message}` };
   }
 
-  // 4. Salvar CPF (se atualizado) e marcar must_change_password = false
-  await Promise.all([
-    adminClient
-      .from('profiles')
-      .update({ cpf: finalCpf, must_change_password: false })
-      .eq('id', user.id),
-    adminClient
-      .from('ambassadors')
-      .update({ cpf: finalCpf })
-      .eq('user_id', user.id)
-  ]);
+  // 4. Salvar CPF (se atualizado) e marcar must_change_password = false usando RPC canônica
+  const { error: completeError } = await adminClient.rpc('fn_complete_first_access', {
+    p_user_id: user.id,
+    p_cpf: finalCpf || null,
+  });
+
+  if (completeError) {
+    console.error('Erro ao finalizar primeiro acesso no banco:', completeError);
+    return { success: false, error: 'Falha ao atualizar status de primeiro acesso.' };
+  }
 
   // Auditoria
   await adminClient.from('audit_logs').insert({
