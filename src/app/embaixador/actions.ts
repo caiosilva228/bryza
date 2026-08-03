@@ -579,11 +579,11 @@ export async function atualizarMeuPerfil(payload: {
     .single();
   if (currentError || !current) throw new Error('Não foi possível validar o perfil atual.');
 
-  const normalizedPhone = payload.phone !== undefined ? payload.phone.replace(/[^0-9]/g, '') : null;
+  const normalizedPhone = payload.phone && payload.phone.replace(/[^0-9]/g, '') ? payload.phone.replace(/[^0-9]/g, '') : null;
   if (normalizedPhone && !/^[0-9]{10,11}$/.test(normalizedPhone)) {
     throw new Error('Informe um telefone com DDD válido.');
   }
-  const normalizedState = payload.state !== undefined ? payload.state.trim().toUpperCase() : null;
+  const normalizedState = payload.state && payload.state.trim() ? payload.state.trim().toUpperCase() : null;
   if (normalizedState && !/^[A-Z]{2}$/.test(normalizedState)) throw new Error('Informe uma UF válida.');
   const normalizedPixType = payload.pix_type === 'pix' || payload.pix_type === 'outro'
     ? 'chave_aleatoria'
@@ -624,8 +624,8 @@ export async function atualizarMeuPerfil(payload: {
 
   const { data, error } = await supabase.rpc('fn_update_meu_perfil', {
     p_phone: null,
-    p_instagram: payload.instagram !== undefined ? payload.instagram.trim() : null,
-    p_city: payload.city !== undefined ? payload.city.trim() : null,
+    p_instagram: payload.instagram && payload.instagram.trim() ? payload.instagram.trim() : null,
+    p_city: payload.city && payload.city.trim() ? payload.city.trim() : null,
     p_state: normalizedState,
     p_pix_type: normalizedPixType,
     p_pix_key: normalizedPixKey,
@@ -640,12 +640,12 @@ export async function atualizarMeuPerfil(payload: {
   // Update additional address fields directly since the RPC doesn't cover them
   const { error: addressError } = await admin.from('ambassadors')
     .update({
-      cep: payload.cep !== undefined ? payload.cep : null,
-      address: payload.address !== undefined ? payload.address : null,
-      number: payload.number !== undefined ? payload.number : null,
-      neighborhood: payload.neighborhood !== undefined ? payload.neighborhood : null,
-      latitude: payload.latitude ? Number(payload.latitude) : null,
-      longitude: payload.longitude ? Number(payload.longitude) : null,
+      cep: payload.cep && payload.cep.trim() ? payload.cep.trim() : null,
+      address: payload.address && payload.address.trim() ? payload.address.trim() : null,
+      number: payload.number && payload.number.trim() ? payload.number.trim() : null,
+      neighborhood: payload.neighborhood && payload.neighborhood.trim() ? payload.neighborhood.trim() : null,
+      latitude: payload.latitude && !isNaN(Number(payload.latitude)) ? Number(payload.latitude) : null,
+      longitude: payload.longitude && !isNaN(Number(payload.longitude)) ? Number(payload.longitude) : null,
     })
     .eq('user_id', user.id);
 
