@@ -1154,7 +1154,7 @@ Aguardo a confirmação da entrega!`;
                     <span style={{ display: 'block', marginBottom: '8px', fontWeight: 700 }}>Quando deseja pagar? *</span>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px' }}>
                       {([
-                        { value: 'agora', title: 'Pagar agora', detail: 'Checkout seguro do Mercado Pago' },
+                        { value: 'agora', title: 'Pagar agora', detail: 'Pagamento transparente e seguro' },
                         { value: 'na_entrega', title: 'Pagar na entrega', detail: 'Escolha o meio ao receber' },
                       ] as const).map(option => {
                         const selected = form.paymentTiming === option.value;
@@ -1203,7 +1203,7 @@ Aguardo a confirmação da entrega!`;
                 <div className={styles.confirmation} style={{ marginTop: '16px' }}>
                   <LockKeyhole size={18} />
                   <span>{form.paymentTiming === 'agora'
-                    ? 'Você será direcionado ao ambiente seguro do Mercado Pago.'
+                    ? 'Você pagará nesta tela, com a proteção do Mercado Pago.'
                     : 'O pagamento será realizado somente no momento da entrega.'}</span>
                 </div>
 

@@ -902,7 +902,7 @@ export function KitBryzaLanding({ ambassador, productAvailable, onOrder }: KitBr
               </div>
               <div className={styles.securityContent}>
                 <h3>Pague agora com segurança</h3>
-                <p>Finalize com segurança pelo checkout do Mercado Pago.</p>
+                <p>Finalize com segurança na própria tela usando o checkout do Mercado Pago.</p>
               </div>
             </li>
 

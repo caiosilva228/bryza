@@ -79,7 +79,7 @@ export const faqs = [
   {
     id: 'formas-pagamento',
     question: 'Quais formas de pagamento são aceitas?',
-    answer: 'Você escolhe pagar agora pelo checkout seguro do Mercado Pago ou na entrega por Pix, dinheiro ou cartão.',
+    answer: 'Você escolhe pagar agora pelo checkout transparente do Mercado Pago ou na entrega por Pix, dinheiro ou cartão.',
   },
   {
     id: 'indicacao-preco',

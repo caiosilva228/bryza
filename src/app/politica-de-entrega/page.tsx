@@ -38,7 +38,7 @@ export default function PoliticaEntregaPage() {
           3. Opções de Pagamento
         </h2>
         <p style={{ color: 'rgba(255,255,255,0.8)', lineHeight: '1.6', marginBottom: '24px' }}>
-          Você pode pagar antecipadamente pelo checkout seguro do Mercado Pago ou optar pelo pagamento no ato da entrega. Na entrega, aceitamos Pix, dinheiro ou cartão, conforme disponibilidade operacional.
+          Você pode pagar antecipadamente pelo checkout transparente do Mercado Pago ou optar pelo pagamento no ato da entrega. Na entrega, aceitamos Pix, dinheiro ou cartão, conforme disponibilidade operacional.
         </p>
 
         <div style={{ marginTop: '40px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>

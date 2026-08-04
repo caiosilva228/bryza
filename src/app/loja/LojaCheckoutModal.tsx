@@ -1593,7 +1593,7 @@ export default function LojaCheckoutModal({
                           <span style={{ fontSize: '9.5px', fontWeight: 800, backgroundColor: '#009EE3', color: '#ffffff', padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.02em' }}>Recomendado</span>
                         </div>
                         <small style={{ display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '6px' }}>
-                          Checkout seguro do Mercado Pago
+                          Pagamento transparente e seguro
                         </small>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', opacity: 0.95 }}>
                           <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#009EE3' }}></div>
@@ -1656,12 +1656,12 @@ export default function LojaCheckoutModal({
                       </div>
 
                       <p style={{ margin: 0, fontSize: '12px', color: '#334155', fontWeight: 500, lineHeight: 1.4 }}>
-                        Pague antecipadamente com PIX ou Cartão em até 12x com a garantia de segurança do Mercado Pago.
+                        Pague nesta tela com Pix ou cartão em até 12x, com a segurança do Mercado Pago.
                       </p>
 
                       <div style={{ borderTop: '1px solid #e0f2fe', paddingTop: '8px' }}>
                         <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#0369a1', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block' }}>
-                          Formas de pagamento aceitas pelo Mercado Pago:
+                          Formas disponíveis nesta tela:
                         </span>
                         <AcceptedPaymentCardsBadges />
                       </div>
@@ -1703,7 +1703,7 @@ export default function LojaCheckoutModal({
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#475569', fontWeight: 500 }}>
                     <span className="material-symbols-outlined" style={{ color: '#009845' }}>verified_user</span>
                     <span>{paymentTiming === 'agora'
-                      ? 'Você será direcionado ao checkout seguro do Mercado Pago.'
+                      ? 'Você pagará nesta tela, com a proteção do Mercado Pago.'
                       : 'O pagamento será feito no momento da entrega dos produtos.'}</span>
                   </div>
 
