@@ -763,7 +763,7 @@ export interface Agendamento {
   id: string;
   numero_agendamento?: string | null;
   data_agendamento: string;   // ISO datetime — data/hora agendada
-  periodo?: 'manhademanha' | 'tarde' | 'noite' | 'qualquer' | string | null;
+  periodo?: 'manhademanha' | 'tarde' | 'noite' | 'qualquer' | 'ate_3_horas' | string | null;
   status: StatusAgendamento;
   cliente_id: string;
   vendedor_id: string | null;

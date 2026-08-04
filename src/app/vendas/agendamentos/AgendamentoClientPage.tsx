@@ -15,6 +15,7 @@ import { formatCurrency, formatDate } from '@/utils/format';
 import { printSummary } from '@/utils/print';
 import { toast } from 'sonner';
 import Pagination from '@/components/ui/Pagination';
+import AgendamentoControlePanel from './AgendamentoControlePanel';
 
 interface Props {
   initialAgendamentos: Agendamento[];
@@ -86,7 +87,7 @@ function SchedulingPaymentBadges({ agendamento }: { agendamento: Agendamento }) 
   );
 }
 
-export default function AgendamentoClientPage({
+function AgendamentoListPanel({
   initialAgendamentos,
 }: Props) {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>(initialAgendamentos);
@@ -1525,6 +1526,44 @@ export default function AgendamentoClientPage({
         </div>
       )}
 
+    </div>
+  );
+}
+
+export default function AgendamentoClientPage(props: Props) {
+  const [activeSubtab, setActiveSubtab] = useState<'lista' | 'controle'>('lista');
+
+  return (
+    <div style={{ backgroundColor: 'var(--color-surface)' }}>
+      <div style={{ padding: '18px 32px 0', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)' }}>
+        {[
+          { id: 'lista' as const, label: 'Agendamentos', icon: 'event_note' },
+          { id: 'controle' as const, label: 'Controle de agendamento', icon: 'tune' },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveSubtab(tab.id)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '7px',
+              padding: '11px 16px',
+              border: 'none',
+              borderBottom: activeSubtab === tab.id ? '3px solid var(--color-primary)' : '3px solid transparent',
+              backgroundColor: 'transparent',
+              color: activeSubtab === tab.id ? 'var(--color-primary)' : 'var(--color-outline)',
+              fontSize: '13px',
+              fontWeight: activeSubtab === tab.id ? 800 : 650,
+              cursor: 'pointer',
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>{tab.icon}</span>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      {activeSubtab === 'controle' ? <AgendamentoControlePanel /> : <AgendamentoListPanel {...props} />}
     </div>
   );
 }

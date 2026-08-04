@@ -2,8 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { CheckCircle2, XCircle, ArrowRight, ArrowLeft, Search, MapPin, MessageCircle, X, LockKeyhole } from 'lucide-react';
-import { StoreCartItem, StoreOrderPayload, createStoreOrderAction } from './actions';
+import {
+  StoreCartItem,
+  StoreOrderPayload,
+  createStoreOrderAction,
+  getStoreSchedulingAvailabilityAction,
+} from './actions';
 import { formatCurrency } from '@/utils/format';
+import {
+  formatBusinessDateLabel,
+  getPeriodLabel,
+  getSaoPauloDateKey,
+  StoreSchedulingAvailability,
+} from '@/lib/store-kits/scheduling-control';
 import styles from './checkout-mobile.module.css';
 
 const getStoreItemName = (item: StoreCartItem) => item.kind === 'produto' ? item.produto.nome_produto : item.kit.nome;
@@ -71,6 +82,21 @@ function getNext5Days() {
   }
   return days;
 }
+
+function getTodayDeliveryOption() {
+  const value = getSaoPauloDateKey();
+  return {
+    value,
+    label: formatBusinessDateLabel(value, true),
+  };
+}
+
+const STANDARD_DELIVERY_PERIODS = [
+  { value: 'manhademanha', label: 'Manhã (09:00 - 12:00)' },
+  { value: 'tarde', label: 'Tarde (14:00 - 18:00)' },
+  { value: 'noite', label: 'Noite (18:30 - 21:00)' },
+  { value: 'qualquer', label: 'Qualquer horário' },
+] as const;
 
 const ESTADOS_BRASIL = [
   { sigla: 'DF', nome: 'Distrito Federal' },
@@ -194,6 +220,8 @@ export default function LojaCheckoutModal({
 }: LojaCheckoutModalProps) {
   const [submissionKey] = useState(() => globalThis.crypto.randomUUID());
   const nextDays = getNext5Days();
+  const todayOption = getTodayDeliveryOption();
+  const initialDeliveryDays = [todayOption, ...nextDays];
   const savedDraft = loadDraft();
 
   // Se estiver logado, inicia direto na Etapa 4 (Resumo), senão restaura etapa salva
@@ -239,15 +267,15 @@ export default function LojaCheckoutModal({
 
   // Agendamento & Pagamento
   const [dataAgendamento, setDataAgendamento] = useState(() => {
-    const savedDate = savedDraft?.dataAgendamento;
-    return typeof savedDate === 'string' && nextDays.some(day => day.value === savedDate)
-      ? savedDate
-      : nextDays[0]?.value || '';
+    return initialDeliveryDays[0]?.value || '';
   });
-  const [periodo, setPeriodo] = useState<'manhademanha' | 'tarde' | 'noite' | 'qualquer'>(() => savedDraft?.periodo || 'manhademanha');
+  const [periodo, setPeriodo] = useState<'manhademanha' | 'tarde' | 'noite' | 'qualquer' | 'ate_3_horas'>(() => 'ate_3_horas');
   const [formaPagamento, setFormaPagamento] = useState(() => savedDraft?.formaPagamento || 'PIX');
   const [paymentTiming, setPaymentTiming] = useState<'agora' | 'na_entrega'>(() => savedDraft?.paymentTiming || 'agora');
   const [showDeliveryWarningModal, setShowDeliveryWarningModal] = useState(false);
+  const [schedulingAvailability, setSchedulingAvailability] = useState<StoreSchedulingAvailability | null>(null);
+  const [schedulingLoading, setSchedulingLoading] = useState(true);
+  const [schedulingError, setSchedulingError] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -259,6 +287,44 @@ export default function LojaCheckoutModal({
     items?: typeof cartItems;
     totalValue?: number;
   } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadSchedulingAvailability = async () => {
+      setSchedulingLoading(true);
+      const availability = await getStoreSchedulingAvailabilityAction();
+      if (cancelled) return;
+
+      setSchedulingAvailability(availability);
+      setSchedulingLoading(false);
+      if (!availability.success) {
+        setSchedulingError(availability.error || 'Não foi possível carregar as datas de entrega.');
+        return;
+      }
+
+      setSchedulingError('');
+      const selectedDay = availability.dias.find(day => day.value === dataAgendamento);
+      const firstAvailableDay = availability.dias.find(day => day.disponivel);
+      setDataAgendamento(current => selectedDay?.disponivel ? current : firstAvailableDay?.value || '');
+      setPeriodo(current => {
+        const nextSelectedDay = availability.dias.find(day => day.value === (selectedDay?.disponivel ? dataAgendamento : firstAvailableDay?.value));
+        if (nextSelectedDay?.hoje) return 'ate_3_horas';
+        return current === 'ate_3_horas' ? 'manhademanha' : current;
+      });
+    };
+
+    loadSchedulingAvailability().catch(() => {
+      if (!cancelled) {
+        setSchedulingLoading(false);
+        setSchedulingError('Não foi possível carregar as datas de entrega.');
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Auto-salvar rascunho a cada alteração
   useEffect(() => {
@@ -284,6 +350,25 @@ export default function LojaCheckoutModal({
       localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData));
     }
   }, [step, nome, telefone, email, cpf, cep, endereco, numero, complemento, bairro, cidade, estado, dataAgendamento, periodo, formaPagamento, paymentTiming, result]);
+
+  const deliveryDays = schedulingAvailability?.success
+    ? schedulingAvailability.dias
+    : initialDeliveryDays.map((day, index) => ({
+      value: day.value,
+      label: day.label,
+      quantidade: 0,
+      restante: null,
+      disponivel: true,
+      hoje: index === 0,
+      index,
+    }));
+  const selectedDeliveryDay = deliveryDays.find(day => day.value === dataAgendamento);
+  const periodOptions = selectedDeliveryDay?.hoje
+    ? [{
+      value: 'ate_3_horas' as const,
+      label: `Hoje (entrega em até ${schedulingAvailability?.antecedencia_mesmo_dia_horas || 3} horas)`,
+    }]
+    : STANDARD_DELIVERY_PERIODS;
 
   // Formatador de Telefone
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -458,6 +543,26 @@ export default function LojaCheckoutModal({
     if (!nome.trim() || !telefone.trim() || !endereco.trim() || !bairro.trim()) {
       setError('Por favor, preencha seus dados de contato e endereço.');
       return;
+    }
+
+    if (schedulingLoading) {
+      setError('Aguarde enquanto atualizamos as datas de entrega disponíveis.');
+      return;
+    }
+    if (schedulingAvailability?.success) {
+      const selectedDay = schedulingAvailability.dias.find(day => day.value === dataAgendamento);
+      if (!schedulingAvailability.automatico_ativo) {
+        setError('Os agendamentos online estão temporariamente pausados.');
+        return;
+      }
+      if (!selectedDay?.disponivel) {
+        setError('A data escolhida não está mais disponível. Selecione outra data.');
+        return;
+      }
+      if (selectedDay.hoje && periodo !== 'ate_3_horas') {
+        setError('Para receber hoje, selecione a opção de entrega em até 3 horas.');
+        return;
+      }
     }
 
     setLoading(true);
@@ -1364,7 +1469,12 @@ export default function LojaCheckoutModal({
                       </label>
                       <select
                         value={dataAgendamento}
-                        onChange={e => setDataAgendamento(e.target.value)}
+                        onChange={e => {
+                          const value = e.target.value;
+                          const selectedDay = deliveryDays.find(day => day.value === value);
+                          setDataAgendamento(value);
+                          setPeriodo(selectedDay?.hoje ? 'ate_3_horas' : periodo === 'ate_3_horas' ? 'manhademanha' : periodo);
+                        }}
                         style={{
                           width: '100%',
                           padding: '12px',
@@ -1376,8 +1486,17 @@ export default function LojaCheckoutModal({
                           backgroundColor: '#ffffff'
                         }}
                       >
-                        {nextDays.map(d => (
-                          <option key={d.value} value={d.value}>{d.label}</option>
+                        {deliveryDays.length === 0 && (
+                          <option value="">Nenhuma data disponível</option>
+                        )}
+                        {deliveryDays.map(d => (
+                          <option
+                            key={d.value}
+                            value={d.value}
+                            disabled={!d.disponivel && d.value !== dataAgendamento}
+                          >
+                            {d.label}{d.restante !== null ? ` — ${d.restante} vaga(s)` : ''}{!d.disponivel ? ' — indisponível' : ''}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -1388,7 +1507,7 @@ export default function LojaCheckoutModal({
                       </label>
                       <select
                         value={periodo}
-                        onChange={e => setPeriodo(e.target.value as any)}
+                        onChange={e => setPeriodo(e.target.value as typeof periodo)}
                         style={{
                           width: '100%',
                           padding: '12px',
@@ -1400,13 +1519,34 @@ export default function LojaCheckoutModal({
                           backgroundColor: '#ffffff'
                         }}
                       >
-                        <option value="manhademanha">Manhã (09:00 - 12:00)</option>
-                        <option value="tarde">Tarde (14:00 - 18:00)</option>
-                        <option value="noite">Noite (18:30 - 21:00)</option>
-                        <option value="qualquer">Qualquer horário</option>
+                        {periodOptions.map(option => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
                       </select>
                     </div>
                   </div>
+
+                  {(schedulingLoading || schedulingError || schedulingAvailability?.success) && (
+                    <div style={{
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      backgroundColor: schedulingError || schedulingAvailability?.automatico_ativo === false ? '#fff7ed' : '#f0fdf4',
+                      border: `1px solid ${schedulingError || schedulingAvailability?.automatico_ativo === false ? '#fed7aa' : '#bbf7d0'}`,
+                      color: schedulingError || schedulingAvailability?.automatico_ativo === false ? '#9a3412' : '#166534',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                    }}>
+                      {schedulingLoading
+                        ? 'Atualizando disponibilidade de entrega...'
+                        : schedulingError || (schedulingAvailability?.automatico_ativo === false
+                          ? 'Agendamentos online temporariamente pausados.'
+                          : selectedDeliveryDay?.hoje
+                            ? `Seu pedido pode ser entregue em até ${schedulingAvailability?.antecedencia_mesmo_dia_horas || 3} horas.`
+                          : selectedDeliveryDay?.restante !== null && selectedDeliveryDay?.restante !== undefined
+                            ? `${selectedDeliveryDay.restante} vaga(s) restante(s) para esta data.`
+                            : 'Data de entrega disponível.')}
+                    </div>
+                  )}
 
                   {/* Momento do Pagamento */}
                   <div>
@@ -1804,15 +1944,11 @@ export default function LojaCheckoutModal({
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#009845' }}>calendar_today</span>
-                <span><strong>Data de Entrega:</strong> {nextDays.find(d => d.value === dataAgendamento)?.label || dataAgendamento}</span>
+                <span><strong>Data de Entrega:</strong> {selectedDeliveryDay?.label || dataAgendamento}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#009845' }}>schedule</span>
-                <span><strong>Período:</strong> {
-                  periodo === 'manhademanha' ? 'Manhã (09:00 - 12:00)' :
-                  periodo === 'tarde' ? 'Tarde (14:00 - 18:00)' :
-                  periodo === 'noite' ? 'Noite (18:30 - 21:00)' : 'Qualquer horário'
-                }</span>
+                <span><strong>Período:</strong> {getPeriodLabel(periodo, schedulingAvailability?.antecedencia_mesmo_dia_horas || 3)}</span>
               </div>
             </div>
 

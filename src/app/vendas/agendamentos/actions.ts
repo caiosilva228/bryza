@@ -12,6 +12,90 @@ import {
   AgendamentoInput,
 } from '@/services/agendamentos';
 import { AgendamentoItem } from '@/models/types';
+import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
+import {
+  addCalendarDays,
+  formatBusinessDateLabel,
+  getBusinessDateBounds,
+  getSaoPauloDateKey,
+  SchedulingCapacityDay,
+  SchedulingControlSettings,
+} from '@/lib/store-kits/scheduling-control';
+
+export interface SchedulingControlInput {
+  automatico_ativo: boolean;
+  mesmo_dia_ativo: boolean;
+  antecedencia_mesmo_dia_horas: number;
+  limite_pedidos_dia: number | null;
+}
+
+export interface SchedulingControlActionResult {
+  success: boolean;
+  data?: SchedulingControlSettings;
+  dias?: SchedulingCapacityDay[];
+  error?: string;
+}
+
+async function requireActiveAdmin() {
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error('Sessão inválida.');
+
+  const admin = createAdminClient();
+  const { data: profile, error: profileError } = await admin
+    .from('profiles')
+    .select('role, ativo')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (profileError || !profile || profile.ativo !== true || profile.role !== 'admin') {
+    throw new Error('Acesso restrito a administradores ativos.');
+  }
+
+  return admin;
+}
+
+async function loadSchedulingCapacityDays(
+  admin: ReturnType<typeof createAdminClient>,
+  settings: SchedulingControlSettings,
+): Promise<SchedulingCapacityDay[]> {
+  const today = getSaoPauloDateKey();
+  const dates = Array.from({ length: 6 }, (_, index) => addCalendarDays(today, index));
+  const sameDayWindowOpen = getSaoPauloDateKey(
+    new Date(Date.now() + settings.antecedencia_mesmo_dia_horas * 60 * 60 * 1000),
+  ) === today;
+
+  return Promise.all(dates.map(async (dateKey, index) => {
+    const bounds = getBusinessDateBounds(dateKey);
+    const { count, error } = await admin
+      .from('agendamentos')
+      .select('id', { count: 'exact', head: true })
+      .gte('data_agendamento', bounds.start)
+      .lt('data_agendamento', bounds.end)
+      .neq('status', 'cancelado');
+
+    if (error) throw error;
+
+    const quantidade = count ?? 0;
+    const restante = settings.limite_pedidos_dia === null
+      ? null
+      : Math.max(settings.limite_pedidos_dia - quantidade, 0);
+    const capacidadeLivre = restante === null || restante > 0;
+    const disponivel = settings.automatico_ativo
+      && capacidadeLivre
+      && (index > 0 || (settings.mesmo_dia_ativo && sameDayWindowOpen));
+
+    return {
+      value: dateKey,
+      label: formatBusinessDateLabel(dateKey, index === 0, index === 1),
+      quantidade,
+      restante,
+      disponivel,
+      hoje: index === 0,
+    };
+  }));
+}
 
 export async function retornarPedidoParaAgendamentoAction(pedidoId: string, dataAgendamentoIso: string) {
   try {
@@ -153,5 +237,77 @@ export async function cancelarAgendamentosEmLoteAction(agendamentoIds: string[])
   } catch (error) {
     console.error('Erro ao cancelar agendamentos em lote:', error);
     throw new Error('Falha ao cancelar agendamentos em lote.');
+  }
+}
+
+export async function getSchedulingControlAction(): Promise<SchedulingControlActionResult> {
+  try {
+    const admin = await requireActiveAdmin();
+    const { data, error } = await admin
+      .from('agendamento_controle')
+      .select('*')
+      .eq('singleton', true)
+      .single();
+
+    if (error || !data) throw error || new Error('Configuração de agendamento não encontrada.');
+
+    const settings = data as SchedulingControlSettings;
+    const dias = await loadSchedulingCapacityDays(admin, settings);
+    return { success: true, data: settings, dias };
+  } catch (error) {
+    console.error('Erro ao buscar controle de agendamento:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Falha ao carregar o controle de agendamento.',
+    };
+  }
+}
+
+export async function updateSchedulingControlAction(
+  input: SchedulingControlInput,
+): Promise<SchedulingControlActionResult> {
+  try {
+    const admin = await requireActiveAdmin();
+    if (typeof input.automatico_ativo !== 'boolean' || typeof input.mesmo_dia_ativo !== 'boolean') {
+      throw new Error('As opções de ativação são inválidas.');
+    }
+
+    const sameDayHours = Number(input.antecedencia_mesmo_dia_horas);
+    if (!Number.isInteger(sameDayHours) || sameDayHours < 1 || sameDayHours > 24) {
+      throw new Error('A antecedência do mesmo dia deve estar entre 1 e 24 horas.');
+    }
+
+    const rawLimit = input.limite_pedidos_dia === null ? null : Number(input.limite_pedidos_dia);
+    const dailyLimit = rawLimit === null || rawLimit === 0 ? null : rawLimit;
+    if (dailyLimit !== null && (!Number.isInteger(dailyLimit) || dailyLimit < 1 || dailyLimit > 10000)) {
+      throw new Error('O limite diário deve estar entre 1 e 10.000 pedidos.');
+    }
+
+    const { data, error } = await admin
+      .from('agendamento_controle')
+      .update({
+        automatico_ativo: input.automatico_ativo,
+        mesmo_dia_ativo: input.mesmo_dia_ativo,
+        antecedencia_mesmo_dia_horas: sameDayHours,
+        limite_pedidos_dia: dailyLimit,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('singleton', true)
+      .select('*')
+      .single();
+
+    if (error || !data) throw error || new Error('Não foi possível salvar a configuração.');
+
+    revalidatePath('/vendas/agendamentos');
+    revalidatePath('/loja');
+    const settings = data as SchedulingControlSettings;
+    const dias = await loadSchedulingCapacityDays(admin, settings);
+    return { success: true, data: settings, dias };
+  } catch (error) {
+    console.error('Erro ao atualizar controle de agendamento:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Falha ao salvar o controle de agendamento.',
+    };
   }
 }

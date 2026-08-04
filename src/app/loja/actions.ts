@@ -8,6 +8,13 @@ import { KitItem, Produto, StoreKit } from '@/models/types';
 import { calculateKitAvailability } from '@/lib/store-kits/kit-calculations';
 import { normalizeStoreSchedulingDate } from '@/lib/store-kits/scheduling-date';
 import {
+  addCalendarDays,
+  formatBusinessDateLabel,
+  getBusinessDateBounds,
+  getSaoPauloDateKey,
+  StoreSchedulingAvailability,
+} from '@/lib/store-kits/scheduling-control';
+import {
   configureSchedulingPayment,
   type PaymentStatus,
   type PaymentTiming,
@@ -40,7 +47,7 @@ export interface StoreOrderPayload {
   state?: string;
   cep?: string;
   scheduledDate: string;
-  period: 'manhademanha' | 'tarde' | 'noite' | string;
+  period: 'manhademanha' | 'tarde' | 'noite' | 'qualquer' | 'ate_3_horas' | string;
   paymentMethod: string;
   paymentTiming: PaymentTiming;
   notes?: string;
@@ -120,6 +127,80 @@ export async function getStoreProductsAction(): Promise<{
   } catch (error) {
     console.error('Erro em getStoreProductsAction:', error);
     return { success: false, error: 'Falha tecnica ao carregar produtos.' };
+  }
+}
+
+export async function getStoreSchedulingAvailabilityAction(): Promise<StoreSchedulingAvailability> {
+  const unavailable = (error: string): StoreSchedulingAvailability => ({
+    success: false,
+    automatico_ativo: false,
+    mesmo_dia_ativo: false,
+    antecedencia_mesmo_dia_horas: 3,
+    limite_pedidos_dia: null,
+    dias: [],
+    error,
+  });
+
+  try {
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from('agendamento_controle')
+      .select('automatico_ativo, mesmo_dia_ativo, antecedencia_mesmo_dia_horas, limite_pedidos_dia')
+      .eq('singleton', true)
+      .single();
+
+    if (error || !data) {
+      console.error('Erro ao buscar disponibilidade de agendamento:', error);
+      return unavailable('Não foi possível carregar a disponibilidade de entrega.');
+    }
+
+    const today = getSaoPauloDateKey();
+    const sameDayHours = Number(data.antecedencia_mesmo_dia_horas || 3);
+    const sameDayWindowOpen = getSaoPauloDateKey(
+      new Date(Date.now() + sameDayHours * 60 * 60 * 1000),
+    ) === today;
+    const dates = Array.from({ length: 6 }, (_, index) => addCalendarDays(today, index));
+    const limit = data.limite_pedidos_dia === null ? null : Number(data.limite_pedidos_dia);
+
+    const dias = await Promise.all(dates.map(async (dateKey, index) => {
+      const bounds = getBusinessDateBounds(dateKey);
+      const { count, error: countError } = await admin
+        .from('agendamentos')
+        .select('id', { count: 'exact', head: true })
+        .gte('data_agendamento', bounds.start)
+        .lt('data_agendamento', bounds.end)
+        .neq('status', 'cancelado');
+
+      if (countError) throw countError;
+
+      const quantidade = count ?? 0;
+      const restante = limit === null ? null : Math.max(limit - quantidade, 0);
+      const capacidadeLivre = restante === null || restante > 0;
+      const disponivel = Boolean(data.automatico_ativo)
+        && capacidadeLivre
+        && (index > 0 || (Boolean(data.mesmo_dia_ativo) && sameDayWindowOpen));
+
+      return {
+        value: dateKey,
+        label: formatBusinessDateLabel(dateKey, index === 0, index === 1),
+        quantidade,
+        restante,
+        disponivel,
+        hoje: index === 0,
+      };
+    }));
+
+    return {
+      success: true,
+      automatico_ativo: Boolean(data.automatico_ativo),
+      mesmo_dia_ativo: Boolean(data.mesmo_dia_ativo),
+      antecedencia_mesmo_dia_horas: sameDayHours,
+      limite_pedidos_dia: limit,
+      dias,
+    };
+  } catch (error) {
+    console.error('Erro ao calcular disponibilidade de agendamento:', error);
+    return unavailable('Não foi possível calcular os horários de entrega.');
   }
 }
 
@@ -274,6 +355,11 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
       return { success: false, error: 'Selecione quando deseja realizar o pagamento.' };
     }
 
+    const normalizedPeriod = String(payload.period || '').trim().toLowerCase();
+    if (!['manhademanha', 'tarde', 'noite', 'qualquer', 'ate_3_horas'].includes(normalizedPeriod)) {
+      return { success: false, error: 'Selecione um período de entrega válido.' };
+    }
+
     const scheduledIsoDate = normalizeStoreSchedulingDate(payload.scheduledDate);
     if (!scheduledIsoDate) {
       return { success: false, error: 'Selecione uma data de entrega valida.' };
@@ -318,16 +404,17 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
         : 'pix';
 
     const { data: storeResult, error: storeError } = await admin.rpc(
-      'fn_create_store_agendamento_with_kits',
+      'fn_create_store_agendamento_with_control',
       {
         p_agendamento_data: {
           data_agendamento: scheduledIsoDate,
+          periodo: normalizedPeriod,
           cliente_id: customerId,
           vendedor_id: null,
           forma_pagamento: normalizedFormaPagamento,
           observacoes: payload.notes
-            ? `[Loja Virtual - Periodo: ${payload.period}] ${payload.notes}`
-            : `[Agendamento via Loja Virtual - Periodo: ${payload.period}]`,
+            ? `[Loja Virtual - Periodo: ${normalizedPeriod}] ${payload.notes}`
+            : `[Agendamento via Loja Virtual - Periodo: ${normalizedPeriod}]`,
           nome_cliente: clientName,
           telefone_cliente: clientPhone,
           endereco_entrega: fullEndereco,
@@ -366,7 +453,7 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
       + `*Cliente:* ${clientName}\n`
       + `*Telefone:* ${clientPhone}\n`
       + `*Endereco:* ${fullEndereco} - ${payload.neighborhood}, ${payload.city}\n`
-      + `*Data Agendada:* ${payload.scheduledDate} (${payload.period})\n`
+      + `*Data Agendada:* ${payload.scheduledDate} (${normalizedPeriod})\n`
       + `*Pagamento:* ${payload.paymentTiming === 'agora' ? 'Agora pelo Mercado Pago' : `Na entrega (${payload.paymentMethod})`}\n`
       + `*Valor Total:* R$ ${valorTotal.toFixed(2).replace('.', ',')}\n\n`
       + 'Gostaria de confirmar o agendamento da minha entrega!';
@@ -387,6 +474,16 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
         success: false,
         error: 'Os dados de CPF e telefone pertencem a cadastros diferentes. Fale com a equipe Bryza para revisar seu cadastro.',
       };
+    }
+    const errorMessage = String(error?.message || '');
+    if (errorMessage.includes('scheduling_daily_limit_reached')) {
+      return { success: false, error: 'A data escolhida atingiu o limite máximo de pedidos. Selecione outra data.' };
+    }
+    if (errorMessage.includes('scheduling_paused')) {
+      return { success: false, error: 'Os agendamentos online estão temporariamente pausados. Tente novamente mais tarde.' };
+    }
+    if (errorMessage.includes('same_day_scheduling_disabled') || errorMessage.includes('same_day_window_closed')) {
+      return { success: false, error: 'A entrega no mesmo dia não está mais disponível. Selecione uma data futura.' };
     }
     return { success: false, error: error?.message || 'Falha ao finalizar pedido na loja.' };
   }
