@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { KitItem, Produto, StoreKit } from '@/models/types';
 import { calculateKitAvailability } from '@/lib/store-kits/kit-calculations';
+import { normalizeStoreSchedulingDate } from '@/lib/store-kits/scheduling-date';
 import {
   configureSchedulingPayment,
   type PaymentStatus,
@@ -273,6 +274,11 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
       return { success: false, error: 'Selecione quando deseja realizar o pagamento.' };
     }
 
+    const scheduledIsoDate = normalizeStoreSchedulingDate(payload.scheduledDate);
+    if (!scheduledIsoDate) {
+      return { success: false, error: 'Selecione uma data de entrega valida.' };
+    }
+
     const canonicalCustomer = await upsertPublicCustomerCanonical(admin, {
       fullName: clientName,
       phone: clientPhone,
@@ -310,18 +316,6 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
       : paymentMethodLower.includes('cart') || paymentMethodLower.includes('debito') || paymentMethodLower.includes('credito')
         ? 'cartao'
         : 'pix';
-
-    let scheduledIsoDate = new Date().toISOString();
-    if (payload.scheduledDate) {
-      const parts = payload.scheduledDate.split('-');
-      if (parts.length === 3) {
-        scheduledIsoDate = new Date(
-          Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]), 12, 0, 0,
-        ).toISOString();
-      } else {
-        scheduledIsoDate = new Date(payload.scheduledDate).toISOString();
-      }
-    }
 
     const { data: storeResult, error: storeError } = await admin.rpc(
       'fn_create_store_agendamento_with_kits',

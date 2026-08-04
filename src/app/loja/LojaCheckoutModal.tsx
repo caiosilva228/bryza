@@ -238,7 +238,12 @@ export default function LojaCheckoutModal({
   const [cepSearchError, setCepSearchError] = useState('');
 
   // Agendamento & Pagamento
-  const [dataAgendamento, setDataAgendamento] = useState(() => savedDraft?.dataAgendamento || nextDays[0]?.value || '');
+  const [dataAgendamento, setDataAgendamento] = useState(() => {
+    const savedDate = savedDraft?.dataAgendamento;
+    return typeof savedDate === 'string' && nextDays.some(day => day.value === savedDate)
+      ? savedDate
+      : nextDays[0]?.value || '';
+  });
   const [periodo, setPeriodo] = useState<'manhademanha' | 'tarde' | 'noite' | 'qualquer'>(() => savedDraft?.periodo || 'manhademanha');
   const [formaPagamento, setFormaPagamento] = useState(() => savedDraft?.formaPagamento || 'PIX');
   const [paymentTiming, setPaymentTiming] = useState<'agora' | 'na_entrega'>(() => savedDraft?.paymentTiming || 'agora');
