@@ -6,7 +6,10 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { generateIpHash } from '@/lib/referral/ip-hash';
 import { getSyntheticEmail } from '@/utils/env';
-import { normalizeCustomerPhone } from '@/lib/customers/canonical-identity';
+import {
+  isValidBrazilPhone,
+  normalizeCustomerPhone,
+} from '@/lib/customers/canonical-identity';
 
 // Helpers de Mascaramento
 function maskCPF(cpf: string): string {
@@ -43,6 +46,91 @@ function maskPix(key: string, type: string): string {
 function getIpHash(reqHeaders: Headers): string {
   const ip = reqHeaders.get('x-nf-client-connection-ip') || reqHeaders.get('client-ip') || 'unknown-ip';
   return generateIpHash(ip);
+}
+
+type AmbassadorAccessProvisionResult =
+  | { success: true; accountCreated: boolean; userId: string; cleanPhone: string }
+  | { success: false; message: string };
+
+/**
+ * A ativação administrativa precisa deixar o embaixador com uma identidade
+ * Auth vinculada. Antes, o status era alterado sozinho e o `user_id` ficava
+ * nulo; por isso o telefone nunca conseguia ser resolvido no login.
+ */
+async function provisionAmbassadorAccessIfMissing(
+  adminClient: ReturnType<typeof createAdminClient>,
+  ambassadorId: string,
+  actorId: string,
+): Promise<AmbassadorAccessProvisionResult> {
+  const { data: ambassador, error } = await adminClient
+    .from('ambassadors')
+    .select('user_id, phone, username, full_name')
+    .eq('id', ambassadorId)
+    .single();
+
+  if (error || !ambassador) {
+    return { success: false, message: 'Embaixador não encontrado.' };
+  }
+
+  if (ambassador.user_id) {
+    return {
+      success: true,
+      accountCreated: false,
+      userId: ambassador.user_id,
+      cleanPhone: normalizeCustomerPhone(ambassador.phone),
+    };
+  }
+
+  const cleanPhone = normalizeCustomerPhone(ambassador.phone);
+  if (!isValidBrazilPhone(cleanPhone)) {
+    return {
+      success: false,
+      message: 'Cadastre um telefone brasileiro válido com DDD (10 dígitos para fixo ou 11 para celular).',
+    };
+  }
+
+  const syntheticEmail = getSyntheticEmail(ambassador.username);
+  const { data: authData, error: createAuthError } = await adminClient.auth.admin.createUser({
+    email: syntheticEmail,
+    password: cleanPhone,
+    email_confirm: true,
+    user_metadata: { nome: ambassador.full_name },
+  });
+
+  if (createAuthError || !authData.user) {
+    console.error('Erro ao criar acesso Auth na ativação do embaixador:', createAuthError);
+    return {
+      success: false,
+      message: createAuthError?.code === 'email_exists'
+        ? 'O acesso interno deste embaixador já está vinculado a outra conta.'
+        : 'Não foi possível criar automaticamente o acesso do embaixador.',
+    };
+  }
+
+  const userId = authData.user.id;
+  const { data: provisionData, error: provisionError } = await adminClient.rpc(
+    'fn_service_provision_ambassador_access',
+    {
+      p_ambassador_id: ambassadorId,
+      p_auth_user_id: userId,
+      p_actor_id: actorId,
+    },
+  );
+  const provisionResult = provisionData as { status?: string } | null;
+
+  if (provisionError || provisionResult?.status !== 'linked') {
+    console.error('Erro ao vincular acesso canônico do embaixador na ativação:', {
+      provisionError,
+      provisionResult,
+    });
+    await adminClient.auth.admin.deleteUser(userId);
+    return {
+      success: false,
+      message: 'A identidade do embaixador não pôde ser vinculada automaticamente.',
+    };
+  }
+
+  return { success: true, accountCreated: true, userId, cleanPhone };
 }
 
 // Validar se o usuário logado é Admin Ativo
@@ -250,11 +338,11 @@ export async function redefinirAcesso(ambassadorId: string): Promise<
     return { success: false, message: 'Embaixador não encontrado.' };
   }
 
-  const cleanPhone = amb.phone ? amb.phone.replace(/\D/g, '') : '';
-  if (!/^\d{10,11}$/.test(cleanPhone)) {
+  const cleanPhone = normalizeCustomerPhone(amb.phone);
+  if (!isValidBrazilPhone(cleanPhone)) {
     return {
       success: false,
-      message: 'Cadastre um telefone válido com DDD antes de redefinir o acesso.',
+      message: 'Cadastre um telefone brasileiro válido com DDD (10 dígitos para fixo ou 11 para celular) antes de redefinir o acesso.',
     };
   }
   const syntheticEmail = getSyntheticEmail(amb.username);
@@ -445,8 +533,8 @@ export async function editarEmbaixador(ambassadorId: string, data: any) {
   const normalizedFullName = typeof full_name === 'string' ? full_name.trim() : '';
   const normalizedDisplayName = typeof display_name === 'string' ? display_name.trim() : '';
   const cleanPhone = normalizeCustomerPhone(phone);
-  if (!/^\d{10,11}$/.test(cleanPhone)) {
-    throw new Error('Informe um telefone válido com DDD.');
+  if (!isValidBrazilPhone(cleanPhone)) {
+    throw new Error('Informe um telefone brasileiro válido com DDD (10 dígitos para fixo ou 11 para celular).');
   }
   if (!normalizedFullName) {
     throw new Error('Informe o nome completo do embaixador.');
@@ -548,12 +636,27 @@ export async function alterarStatus(ambassadorId: string, newStatus: string) {
 
   const { data: amb, error: findError } = await adminClient
     .from('ambassadors')
-    .select('user_id, username')
+    .select('user_id, username, phone, full_name')
     .eq('id', ambassadorId)
     .maybeSingle();
 
   if (findError) throw new Error('Falha ao consultar o embaixador');
   if (!amb) throw new Error('Embaixador não encontrado');
+
+  let accountCreated = false;
+  if (newStatus === 'ativo' && !amb.user_id) {
+    const provisionResult = await provisionAmbassadorAccessIfMissing(
+      adminClient,
+      ambassadorId,
+      admin.id,
+    );
+
+    if (!provisionResult.success) {
+      throw new Error(provisionResult.message);
+    }
+
+    accountCreated = provisionResult.accountCreated;
+  }
 
   const { error } = await adminClient
     .from('ambassadors')
@@ -578,7 +681,8 @@ export async function alterarStatus(ambassadorId: string, newStatus: string) {
   });
 
   revalidatePath('/embaixadores');
-  return { success: true };
+  revalidatePath(`/embaixadores/${ambassadorId}`);
+  return { success: true, accountCreated };
 }
 
 // 8. Obter Signed URL de foto privada
@@ -830,7 +934,7 @@ export async function ativarEmbaixadoresEmLote(
 
   const { data: ambassadors, error: findError } = await adminClient
     .from('ambassadors')
-    .select('id, username, status, lifecycle_status')
+    .select('id, username, status, lifecycle_status, user_id, phone, full_name')
     .in('id', ids);
 
   if (findError) {
@@ -839,20 +943,42 @@ export async function ativarEmbaixadoresEmLote(
   }
 
   const eligible = (ambassadors || []).filter(
-    (ambassador) => ambassador.lifecycle_status === 'active' && ambassador.status !== 'ativo'
+    (ambassador) => ambassador.lifecycle_status === 'active'
+      && (ambassador.status !== 'ativo' || !ambassador.user_id)
   );
   const alreadyActive = (ambassadors || []).filter(
-    (ambassador) => ambassador.lifecycle_status === 'active' && ambassador.status === 'ativo'
+    (ambassador) => ambassador.lifecycle_status === 'active'
+      && ambassador.status === 'ativo'
+      && !!ambassador.user_id
   ).length;
 
+  const provisionedIds: string[] = [];
+  let failed = 0;
+  for (const ambassador of eligible) {
+    const provisionResult = await provisionAmbassadorAccessIfMissing(
+      adminClient,
+      ambassador.id,
+      admin.id,
+    );
+
+    if (provisionResult.success) {
+      provisionedIds.push(ambassador.id);
+    } else {
+      failed += 1;
+      console.error('Falha ao criar acesso na ativação em lote:', {
+        ambassadorId: ambassador.id,
+        message: provisionResult.message,
+      });
+    }
+  }
+
   let updated: Array<{ id: string }> = [];
-  if (eligible.length) {
+  if (provisionedIds.length) {
     const { data, error } = await adminClient
       .from('ambassadors')
       .update({ status: 'ativo' })
-      .in('id', eligible.map((ambassador) => ambassador.id))
+      .in('id', provisionedIds)
       .eq('lifecycle_status', 'active')
-      .neq('status', 'ativo')
       .select('id');
 
     if (error) {
@@ -889,7 +1015,7 @@ export async function ativarEmbaixadoresEmLote(
     }
   }
 
-  const skipped = ids.length - updated.length - alreadyActive;
+  const skipped = ids.length - updated.length - alreadyActive - failed;
   revalidatePath('/embaixadores');
 
   return {
@@ -897,7 +1023,7 @@ export async function ativarEmbaixadoresEmLote(
     processed: updated.length,
     alreadyActive,
     skipped: Math.max(0, skipped),
-    failed: 0,
+    failed,
   };
 }
 
@@ -1105,7 +1231,7 @@ export async function criarEmbaixadorComCliente(params: CriarEmbaixadorParams): 
   }
 
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  const phone = params.phone.replace(/\D/g, '');
+  const phone = normalizeCustomerPhone(params.phone);
   const cpf = params.cpf.replace(/\D/g, '');
   const email = params.email?.trim().toLowerCase() || '';
   const state = params.state?.trim().toUpperCase() || '';
@@ -1113,8 +1239,8 @@ export async function criarEmbaixadorComCliente(params: CriarEmbaixadorParams): 
   if (params.fullName.trim().length < 2 || params.fullName.trim().length > 200) {
     return { success: false, message: 'Informe o nome completo.' };
   }
-  if (!/^\d{10,15}$/.test(phone) || !/^\d{11}$/.test(cpf)) {
-    return { success: false, message: 'Telefone ou CPF inválido.' };
+  if (!isValidBrazilPhone(phone) || !/^\d{11}$/.test(cpf)) {
+    return { success: false, message: 'Telefone brasileiro ou CPF inválido.' };
   }
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { success: false, message: 'E-mail inválido.' };
