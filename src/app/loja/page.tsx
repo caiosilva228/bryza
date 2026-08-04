@@ -749,46 +749,201 @@ export default function LojaVirtualPage() {
                 <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '12px', marginBottom: '14px' }}>
                   <div>
                     <span style={{ color: '#4d7c0f', fontSize: '11px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                      Oferta do mes
+                      Oferta do mês
                     </span>
                     <h2 id="kits-promocionais" style={{ margin: '4px 0 0', color: '#051329', fontSize: '24px' }}>
                       Kits promocionais
                     </h2>
                   </div>
-                  <span style={{ color: '#64748b', fontSize: '13px' }}>Composicao fixa e preco fechado</span>
+                  <span style={{ color: '#64748b', fontSize: '13px' }}>Composição fixa e preço fechado</span>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '18px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '24px' }}>
                   {kits.map(kit => {
                     const kitKey = kitCartKey(kit.id);
                     const hasStock = kit.disponivel && kit.estoque_disponivel > 0;
+                    const hasDiscount = Boolean(kit.preco_referencia && kit.preco_referencia > kit.preco_venda);
+                    const discountPercent = hasDiscount
+                      ? Math.round(((kit.preco_referencia! - kit.preco_venda) / kit.preco_referencia!) * 100)
+                      : 0;
+                    const componentCount = (kit.itens || []).reduce((total, item) => total + item.quantidade, 0);
+                    const qtyInCart = cart.get(kitKey) || 0;
+
                     return (
-                      <article key={kit.id} style={{ background: '#051329', color: '#fff', borderRadius: '16px', padding: '18px', boxShadow: '0 10px 26px rgba(5,19,41,0.14)' }}>
-                        <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                          <div style={{ width: '82px', height: '82px', flex: '0 0 82px', borderRadius: '12px', overflow: 'hidden', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {kit.imagem_url ? <img src={kit.imagem_url} alt={kit.nome} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} /> : <span className="material-symbols-outlined" style={{ fontSize: '36px', color: '#AEDB45' }}>redeem</span>}
-                          </div>
-                          <div style={{ minWidth: 0, flex: 1 }}>
-                            <h3 style={{ margin: 0, fontSize: '17px', lineHeight: 1.25 }}>{kit.nome}</h3>
-                            {kit.descricao && <p style={{ margin: '6px 0 0', color: 'rgba(255,255,255,0.72)', fontSize: '12px' }}>{kit.descricao}</p>}
-                            <div style={{ marginTop: '10px', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                              {kit.preco_referencia && kit.preco_referencia > kit.preco_venda && <s style={{ color: 'rgba(255,255,255,0.55)', fontSize: '12px' }}>{formatCurrency(kit.preco_referencia)}</s>}
-                              <strong style={{ color: '#AEDB45', fontSize: '22px' }}>{formatCurrency(kit.preco_venda)}</strong>
+                      <article
+                        className={styles.productCard}
+                        key={kit.id}
+                        style={{
+                          backgroundColor: '#ffffff',
+                          borderRadius: '16px',
+                          border: '1px solid #e2e7ef',
+                          padding: '20px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          boxShadow: '0 4px 16px rgba(0,0,0,0.02)',
+                          transition: 'transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease',
+                          position: 'relative'
+                        }}
+                        onMouseEnter={(event) => {
+                          event.currentTarget.style.transform = 'translateY(-3px)';
+                          event.currentTarget.style.boxShadow = '0 12px 28px rgba(5,19,41,0.08)';
+                          event.currentTarget.style.borderColor = 'rgba(0,43,92,0.2)';
+                        }}
+                        onMouseLeave={(event) => {
+                          event.currentTarget.style.transform = 'translateY(0)';
+                          event.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.02)';
+                          event.currentTarget.style.borderColor = '#e2e7ef';
+                        }}
+                      >
+                        <div
+                          className={styles.productImage}
+                          style={{
+                            height: '200px',
+                            padding: '12px',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: '#f8fafc',
+                            borderRadius: '12px',
+                            marginBottom: '16px',
+                            border: '1px solid #f1f5f9'
+                          }}
+                        >
+                          {kit.imagem_url ? (
+                            <img src={kit.imagem_url} alt={kit.nome} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                          ) : (
+                            <span className="material-symbols-outlined" style={{ fontSize: '56px', color: '#cbd5e1' }}>redeem</span>
+                          )}
+                        </div>
+
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                          <div>
+                            <span style={{
+                              display: 'inline-flex',
+                              padding: '3px 8px',
+                              color: '#0b5ea8',
+                              backgroundColor: '#f0f6fc',
+                              border: '1px solid #d0e2f4',
+                              borderRadius: '999px',
+                              fontSize: '10.5px',
+                              fontWeight: 700,
+                              letterSpacing: '0.06em',
+                              textTransform: 'uppercase',
+                              marginBottom: '8px'
+                            }}>
+                              Kit promocional
+                            </span>
+
+                            <h3 style={{ margin: '0 0 6px', fontSize: '16px', fontWeight: 700, color: '#051329', lineHeight: 1.25 }}>
+                              {kit.nome}
+                            </h3>
+                            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>
+                              Composição: {componentCount} {componentCount === 1 ? 'item' : 'itens'}
+                            </span>
+
+                            {kit.descricao && (
+                              <p style={{ margin: '10px 0 0', color: '#64748b', fontSize: '12px', lineHeight: 1.45 }}>
+                                {kit.descricao}
+                              </p>
+                            )}
+
+                            <div style={{ marginTop: '12px', color: '#475569' }}>
+                              <span style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Inclui</span>
+                              <ul style={{ margin: '4px 0 0', paddingLeft: '17px', fontSize: '12px', lineHeight: 1.55 }}>
+                                {(kit.itens || []).map(item => <li key={item.id}>{item.quantidade}x {item.produto?.nome_produto || 'Produto'}</li>)}
+                              </ul>
                             </div>
                           </div>
+
+                          <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #f1f5f9' }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '14px' }}>
+                              <div>
+                                <span style={{ fontSize: '10px', color: '#64748b', display: 'block', fontWeight: 600 }}>PREÇO</span>
+                                {hasDiscount ? (
+                                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                      <span style={{ fontSize: '13px', color: '#94a3b8', textDecoration: 'line-through', fontWeight: 600 }}>
+                                        {formatCurrency(kit.preco_referencia!)}
+                                      </span>
+                                      <span style={{ fontSize: '10px', fontWeight: 800, color: '#dc2626', backgroundColor: '#fef2f2', border: '1px solid #fecaca', padding: '1px 5px', borderRadius: '4px' }}>
+                                        -{discountPercent}%
+                                      </span>
+                                    </div>
+                                    <span style={{ fontSize: '22px', fontWeight: 800, color: '#051329', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+                                      {formatCurrency(kit.preco_venda)}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <span style={{ fontSize: '22px', fontWeight: 800, color: '#051329', letterSpacing: '-0.02em' }}>
+                                    {formatCurrency(kit.preco_venda)}
+                                  </span>
+                                )}
+                              </div>
+
+                              <span style={{
+                                fontSize: '10.5px',
+                                fontWeight: 700,
+                                color: hasStock ? '#4d7c0f' : '#dc2626',
+                                backgroundColor: hasStock ? '#f4fce8' : '#fef2f2',
+                                border: hasStock ? '1px solid rgba(101,156,49,0.35)' : '1px solid #fecaca',
+                                padding: '3px 8px',
+                                borderRadius: '999px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}>
+                                <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: hasStock ? '#5a8216' : '#dc2626' }} />
+                                {hasStock ? 'Disponível' : 'Esgotado'}
+                              </span>
+                            </div>
+
+                            <button
+                              disabled={!hasStock}
+                              onClick={() => { updateQuantity(kitKey, 1); toast.success(`${kit.nome} adicionado ao carrinho!`, { duration: 1500 }); }}
+                              style={{
+                                width: '100%',
+                                minHeight: '44px',
+                                padding: '8px 14px',
+                                backgroundColor: hasStock ? '#AEDB45' : '#e2e8f0',
+                                color: hasStock ? '#051329' : '#94a3b8',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontWeight: 750,
+                                fontSize: '13.5px',
+                                cursor: hasStock ? 'pointer' : 'not-allowed',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                boxShadow: hasStock ? '0 6px 18px rgba(174,219,69,0.2)' : 'none',
+                                transition: 'all 0.2s ease',
+                                position: 'relative'
+                              }}
+                              onMouseEnter={(event) => {
+                                if (hasStock) event.currentTarget.style.backgroundColor = '#9cb82d';
+                              }}
+                              onMouseLeave={(event) => {
+                                if (hasStock) event.currentTarget.style.backgroundColor = '#AEDB45';
+                              }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add_shopping_cart</span>
+                              <span>{hasStock ? 'Adicionar ao Carrinho' : 'Indisponível'}</span>
+                              {qtyInCart > 0 && (
+                                <span style={{
+                                  backgroundColor: '#009845',
+                                  color: '#ffffff',
+                                  fontSize: '11px',
+                                  fontWeight: 800,
+                                  padding: '2px 7px',
+                                  borderRadius: '999px',
+                                  marginLeft: '4px'
+                                }}>
+                                  {qtyInCart}
+                                </span>
+                              )}
+                            </button>
+                          </div>
                         </div>
-                        <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.14)' }}>
-                          <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: 'rgba(255,255,255,0.58)', marginBottom: '6px' }}>Inclui</div>
-                          <ul style={{ margin: 0, paddingLeft: '18px', color: 'rgba(255,255,255,0.82)', fontSize: '12px', lineHeight: 1.7 }}>
-                            {(kit.itens || []).map(item => <li key={item.id}>{item.quantidade}x {item.produto?.nome_produto || 'Produto'}</li>)}
-                          </ul>
-                        </div>
-                        <button
-                          disabled={!hasStock}
-                          onClick={() => { updateQuantity(kitKey, 1); toast.success(`${kit.nome} adicionado ao carrinho!`, { duration: 1500 }); }}
-                          style={{ marginTop: '16px', width: '100%', minHeight: '42px', border: 'none', borderRadius: '8px', background: hasStock ? '#AEDB45' : 'rgba(255,255,255,0.14)', color: hasStock ? '#051329' : 'rgba(255,255,255,0.5)', fontWeight: 800, cursor: hasStock ? 'pointer' : 'not-allowed' }}
-                        >
-                          {hasStock ? 'Adicionar kit ao carrinho' : 'Kit indisponivel'}
-                        </button>
                       </article>
                     );
                   })}
