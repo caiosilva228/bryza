@@ -165,15 +165,34 @@ export async function alterarSenhaPrimeiroAcesso(prevState: any, formData: FormD
     return { success: false, error: `Erro no provedor de autenticação: ${updateAuthError.message}` };
   }
 
-  // 4. Salvar CPF (se atualizado) e marcar must_change_password = false usando RPC canônica
-  const { error: completeError } = await adminClient.rpc('fn_complete_first_access', {
+  // 4. Salvar CPF (se atualizado) e marcar must_change_password = false usando RPC canônica.
+  // A senha do Auth já foi alterada neste ponto; portanto, uma falha aqui deve
+  // ser exibida como uma falha de finalização e permitir uma nova tentativa,
+  // sem deixar a ação parecer concluída quando o perfil ainda está bloqueado.
+  const { data: completionResult, error: completeError } = await adminClient.rpc('fn_complete_first_access', {
     p_user_id: user.id,
     p_cpf: finalCpf || null,
   });
 
   if (completeError) {
     console.error('Erro ao finalizar primeiro acesso no banco:', completeError);
-    return { success: false, error: 'Falha ao atualizar status de primeiro acesso.' };
+    return {
+      success: false,
+      error: 'Não foi possível concluir o primeiro acesso. Tente salvar novamente; sua senha atual foi preservada.',
+    };
+  }
+
+  const completionStatus =
+    completionResult && typeof completionResult === 'object' && 'status' in completionResult
+      ? completionResult.status
+      : null;
+
+  if (completionStatus !== 'success') {
+    console.error('RPC de primeiro acesso não confirmou a conclusão:', completionResult);
+    return {
+      success: false,
+      error: 'Não foi possível concluir o primeiro acesso. Tente salvar novamente; sua senha atual foi preservada.',
+    };
   }
 
   // Auditoria
