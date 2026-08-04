@@ -28,6 +28,7 @@ test('uses only the service-role canonical RPC for a public customer upsert', as
         data: {
           status: 'resolved',
           customer_id: 'customer-175',
+          person_id: 'person-175',
         },
         error: null,
       };
@@ -65,6 +66,28 @@ test('uses only the service-role canonical RPC for a public customer upsert', as
     p_source: 'public_checkout',
   });
   assert.equal(result.customerId, 'customer-175');
+  assert.equal(result.personId, 'person-175');
+});
+
+test('rejects a canonical customer result without its person link', async () => {
+  const fakeClient = {
+    rpc: async () => ({
+      data: {
+        status: 'resolved',
+        customer_id: 'customer-without-person',
+      },
+      error: null,
+    }),
+  };
+
+  await assert.rejects(
+    upsertPublicCustomerCanonical(fakeClient as never, {
+      fullName: 'Cliente Sem Pessoa',
+      phone: '61999999999',
+      origin: 'loja_virtual_publica',
+    }),
+    /canonical_person_id_missing/,
+  );
 });
 
 test('does not silently merge conflicting CPF and phone identities', async () => {

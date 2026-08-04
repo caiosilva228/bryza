@@ -45,7 +45,7 @@ export interface PublicSchedulingInput {
   forma_pagamento: 'dinheiro' | 'pix' | 'cartao';
   payment_timing: PaymentTiming;
   idempotency_key: string;
-  itens: Array<{ produto_id: string; quantidade: number; desconto_aplicado?: number }>;
+  itens: Array<{ produto_id: string; quantidade: number }>;
 }
 
 export interface PublicSchedulingResult {
@@ -201,7 +201,9 @@ export async function createPublicSchedulingAction(
     const itens = input.itens.map((item) => ({
       produto_id: typeof item?.produto_id === 'string' ? item.produto_id : '',
       quantidade: Number(item?.quantidade),
-      desconto_aplicado: Number(item?.desconto_aplicado || 0),
+      // Descontos da oferta são definidos no banco. Nunca confie em valores
+      // enviados pelo navegador para calcular o total do checkout público.
+      desconto_aplicado: 0,
     }));
     if (itens.some((item) => !UUID_PATTERN.test(item.produto_id)
       || !Number.isInteger(item.quantidade)
