@@ -1,5 +1,5 @@
 import { MainLayout } from '@/components/layout/MainLayout';
-import { fetchProdutos } from './actions';
+import { fetchKitsAction, fetchProdutos } from './actions';
 import ProdutoClientPage from './ProdutoClientPage';
 
 export const metadata = {
@@ -7,12 +7,14 @@ export const metadata = {
   description: 'Gerenciamento de catálogo de produtos, matérias-primas e embalagens.',
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function ProdutosPage() {
-  const produtos = await fetchProdutos();
+  const [produtos, kitsResult] = await Promise.all([fetchProdutos(), fetchKitsAction()]);
 
   return (
     <MainLayout>
-      <ProdutoClientPage initialProdutos={produtos} />
+      <ProdutoClientPage initialProdutos={produtos} initialKits={kitsResult.data || []} />
     </MainLayout>
   );
 }

@@ -123,6 +123,13 @@ export default function OrderDetailsModal({ pedido, open, onClose }: Props) {
           </Section>
 
           {/* Itens */}
+          {pedido.kits && pedido.kits.length > 0 && (
+            <Section title="Kits comerciais" icon="redeem">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
+                {pedido.kits.map(kit => <div key={kit.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', padding: '8px 10px', background: '#f0fdf4', borderRadius: '7px' }}><span>{kit.quantidade}x {kit.nome_kit_snapshot}</span><strong>{formatCurrency(kit.subtotal)}</strong></div>)}
+              </div>
+            </Section>
+          )}
           {pedido.itens && pedido.itens.length > 0 && (
             <Section title="Itens do Pedido" icon="inventory_2">
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>

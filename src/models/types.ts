@@ -208,7 +208,38 @@ export interface Produto {
   ativo_loja?: boolean;
   imagem_url?: string | null;
   descricao?: string | null;
+  estoque_disponivel?: number;
   created_at?: string;
+}
+
+export interface KitItem {
+  id: string;
+  kit_id: string;
+  produto_id: string;
+  quantidade: number;
+  created_at?: string;
+  produto?: Pick<Produto, 'id' | 'nome_produto' | 'preco_venda' | 'preco_original' | 'imagem_url' | 'estoque_atual' | 'estoque_reservado' | 'ativo'>;
+}
+
+export interface Kit {
+  id: string;
+  nome: string;
+  descricao?: string | null;
+  preco_venda: number;
+  preco_referencia?: number | null;
+  imagem_url?: string | null;
+  ativo: boolean;
+  ativo_loja: boolean;
+  vigencia_inicio?: string | null;
+  vigencia_fim?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  itens?: KitItem[];
+}
+
+export interface StoreKit extends Kit {
+  estoque_disponivel: number;
+  disponivel: boolean;
 }
 
 export interface Venda {
@@ -220,6 +251,7 @@ export interface Venda {
   forma_pagamento: string;
   status_venda: StatusVenda;
   observacoes?: string | null;
+  kits?: VendaKit[];
 }
 
 export interface VendaItem {
@@ -229,6 +261,54 @@ export interface VendaItem {
   quantidade: number;
   preco_unitario: number;
   subtotal: number;
+  kit_line_id?: string | null;
+}
+
+export interface AgendamentoKit {
+  id: string;
+  agendamento_id: string;
+  kit_id?: string | null;
+  nome_kit_snapshot: string;
+  descricao_kit_snapshot?: string | null;
+  imagem_url_snapshot?: string | null;
+  quantidade: number;
+  preco_unitario: number;
+  preco_referencia?: number | null;
+  subtotal: number;
+  desconto_aplicado?: number;
+  created_at?: string;
+}
+
+export interface PedidoKit {
+  id: string;
+  pedido_id: string;
+  kit_id?: string | null;
+  agendamento_kit_id?: string | null;
+  nome_kit_snapshot: string;
+  descricao_kit_snapshot?: string | null;
+  imagem_url_snapshot?: string | null;
+  quantidade: number;
+  preco_unitario: number;
+  preco_referencia?: number | null;
+  subtotal: number;
+  desconto_aplicado?: number;
+  created_at?: string;
+}
+
+export interface VendaKit {
+  id: string;
+  venda_id: string;
+  kit_id?: string | null;
+  pedido_kit_id?: string | null;
+  nome_kit_snapshot: string;
+  descricao_kit_snapshot?: string | null;
+  imagem_url_snapshot?: string | null;
+  quantidade: number;
+  preco_unitario: number;
+  preco_referencia?: number | null;
+  subtotal: number;
+  desconto_aplicado?: number;
+  created_at?: string;
 }
 
 export interface EstoqueMovimentacao {
@@ -341,6 +421,7 @@ export interface AdminDashboardData {
 }
 
 export interface Pedido {
+  kits?: PedidoKit[];
   id: string;
   numero_pedido: string;
   cliente_id: string;
@@ -594,7 +675,7 @@ export interface AgendamentoItem {
     exception_id?: string | null;
     evaluated_at?: string | null;
   } | null;
-  
+
   // Relacionais (opcionais para quando houver join)
   cliente?: {
     nome: string;
@@ -651,6 +732,7 @@ export interface PedidoItem {
   desconto_valor?: number;
   desconto_aplicado?: number;
   subtotal: number;
+  kit_line_id?: string | null;
   created_at?: string;
   
   // Relacional
@@ -671,6 +753,9 @@ export interface AgendamentoItem {
   desconto_tipo?: TipoDesconto;
   desconto_valor?: number;
   desconto_aplicado?: number;
+  id?: string;
+  agendamento_id?: string;
+  kit_line_id?: string | null;
   produto?: { nome_produto: string; codigo_produto?: number | string };
 }
 
@@ -681,7 +766,7 @@ export interface Agendamento {
   periodo?: 'manhademanha' | 'tarde' | 'noite' | 'qualquer' | string | null;
   status: StatusAgendamento;
   cliente_id: string;
-  vendedor_id: string;
+  vendedor_id: string | null;
   valor_total: number;
   desconto_tipo?: TipoDesconto;
   desconto_valor?: number;
@@ -712,4 +797,6 @@ export interface Agendamento {
   pedido?: { id: string; numero_pedido?: string | null } | null;
   itens?: AgendamentoItem[];
   agendamento_itens?: AgendamentoItem[];
+  kits?: AgendamentoKit[];
+  agendamento_kits?: AgendamentoKit[];
 }

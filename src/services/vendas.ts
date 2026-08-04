@@ -63,7 +63,8 @@ export const getVendasByCliente = async (clienteId: string): Promise<VendaWithIt
         preco_unitario,
         subtotal,
         produto:produtos(nome_produto)
-      )
+      ),
+      kits:venda_kits(*)
     `)
     .eq('cliente_id', clienteId)
     .order('data_venda', { ascending: false });
@@ -160,7 +161,8 @@ export const getVendaById = async (id: string) => {
       itens:venda_itens(
         *,
         produto:produtos(nome_produto, codigo_produto)
-      )
+      ),
+      kits:venda_kits(*)
     `)
     .eq('id', id)
     .single();
@@ -168,4 +170,3 @@ export const getVendaById = async (id: string) => {
   if (error) throw error;
   return data;
 };
-

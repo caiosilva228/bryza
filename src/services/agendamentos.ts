@@ -9,7 +9,8 @@ const AGENDAMENTO_SELECT = `
   itens:agendamento_itens(
     *,
     produto:produtos(nome_produto, codigo_produto)
-  )
+  ),
+  kits:agendamento_kits(*)
 `;
 
 export const fetchAgendamentos = async (): Promise<Agendamento[]> => {

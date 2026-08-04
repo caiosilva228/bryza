@@ -1,10 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle2, XCircle, ArrowRight, ArrowLeft, Search, MapPin, MessageCircle, X, LockKeyhole } from 'lucide-react';
 import { StoreCartItem, StoreOrderPayload, createStoreOrderAction } from './actions';
 import { formatCurrency } from '@/utils/format';
 import styles from './checkout-mobile.module.css';
+
+const getStoreItemName = (item: StoreCartItem) => item.kind === 'produto' ? item.produto.nome_produto : item.kit.nome;
+const getStoreItemPrice = (item: StoreCartItem) => item.kind === 'produto' ? item.produto.preco_venda : item.kit.preco_venda;
 
 interface LojaCheckoutModalProps {
   cartItems: StoreCartItem[];
@@ -189,6 +192,7 @@ export default function LojaCheckoutModal({
   onClose,
   onSuccess
 }: LojaCheckoutModalProps) {
+  const [submissionKey] = useState(() => globalThis.crypto.randomUUID());
   const nextDays = getNext5Days();
   const savedDraft = loadDraft();
 
@@ -468,10 +472,10 @@ export default function LojaCheckoutModal({
         paymentMethod: formaPagamento,
         paymentTiming,
         items: cartItems.map(item => ({
-          produto_id: item.produto.id,
+          ...(item.kind === 'produto' ? { produto_id: item.produto.id } : { kit_id: item.kit.id }),
           quantidade: item.quantidade,
-          preco_unitario: item.produto.preco_venda
-        }))
+        })),
+        idempotencyKey: submissionKey,
       };
 
       const res = await createStoreOrderAction(payload);
@@ -702,12 +706,12 @@ export default function LojaCheckoutModal({
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {(result?.items || cartItems).map(item => (
-                    <div key={item.produto.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13.5px' }}>
+                    <div key={`${item.kind}:${item.kind === 'produto' ? item.produto.id : item.kit.id}`} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13.5px' }}>
                       <span style={{ color: '#0f172a', fontWeight: 600 }}>
-                        {item.quantidade}x {item.produto.nome_produto}
+                        {item.quantidade}x {getStoreItemName(item)}
                       </span>
                       <strong style={{ color: '#047857' }}>
-                        {formatCurrency(item.produto.preco_venda * item.quantidade)}
+                        {formatCurrency(getStoreItemPrice(item) * item.quantidade)}
                       </strong>
                     </div>
                   ))}
@@ -1326,12 +1330,12 @@ export default function LojaCheckoutModal({
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {cartItems.map(item => (
-                        <div key={item.produto.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13.5px' }}>
+                        <div key={`${item.kind}:${item.kind === 'produto' ? item.produto.id : item.kit.id}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13.5px' }}>
                           <span style={{ color: '#0f172a', fontWeight: 600 }}>
-                            {item.quantidade}x {item.produto.nome_produto}
+                            {item.quantidade}x {getStoreItemName(item)}
                           </span>
                           <strong style={{ color: '#047857' }}>
-                            {formatCurrency(item.produto.preco_venda * item.quantidade)}
+                            {formatCurrency(getStoreItemPrice(item) * item.quantidade)}
                           </strong>
                         </div>
                       ))}

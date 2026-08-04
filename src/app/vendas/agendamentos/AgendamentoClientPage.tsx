@@ -1429,6 +1429,12 @@ export default function AgendamentoClientPage({
 
             {/* Itens Agendados */}
             <div>
+              {selectedAgendamento.kits && selectedAgendamento.kits.length > 0 && (
+                <div style={{ marginBottom: '12px', padding: '12px 14px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px' }}>
+                  <strong style={{ display: 'block', fontSize: '12px', color: '#166534', marginBottom: '6px' }}>Kits comerciais</strong>
+                  {selectedAgendamento.kits.map(kit => <div key={kit.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}><span>{kit.quantidade}x {kit.nome_kit_snapshot}</span><strong>{formatCurrency(kit.subtotal)}</strong></div>)}
+                </div>
+              )}
               <strong style={{ fontSize: '13px', color: '#0f172a', display: 'block', marginBottom: '10px' }}>Itens no Agendamento</strong>
               <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>

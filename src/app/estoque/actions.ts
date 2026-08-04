@@ -138,7 +138,8 @@ export async function getPedidoByIdOrNumberAction(idOrNumber: string) {
       itens:pedido_itens(
         *,
         produto:produtos(nome_produto, codigo_produto)
-      )
+      ),
+      kits:pedido_kits(*)
     `);
 
   const trimmed = idOrNumber.trim();

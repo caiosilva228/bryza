@@ -1,18 +1,20 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Produto } from '@/models/types';
+import { Kit, Produto } from '@/models/types';
 import ProdutoTable from './ProdutoTable';
 import ProdutoFormModal from './ProdutoFormModal';
 import { toggleStatusProduto, toggleStatusProdutoLoja } from './actions';
 import ProdutoStats from './ProdutoStats';
 import CategoriasConfigTab from './CategoriasConfigTab';
+import KitsConfigTab from './KitsConfigTab';
 
 interface ProdutoClientPageProps {
   initialProdutos: Produto[];
+  initialKits: Kit[];
 }
 
-export default function ProdutoClientPage({ initialProdutos }: ProdutoClientPageProps) {
+export default function ProdutoClientPage({ initialProdutos, initialKits }: ProdutoClientPageProps) {
   const [produtos, setProdutos] = useState<Produto[]>(initialProdutos);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduto, setEditingProduto] = useState<Produto | null>(null);
@@ -73,7 +75,7 @@ export default function ProdutoClientPage({ initialProdutos }: ProdutoClientPage
     }
   };
 
-  const [activeSubTab, setActiveSubTab] = useState<'produtos' | 'categorias'>('produtos');
+  const [activeSubTab, setActiveSubTab] = useState<'produtos' | 'kits' | 'categorias'>('produtos');
 
   return (
     <div className="page-wrapper">
@@ -126,6 +128,28 @@ export default function ProdutoClientPage({ initialProdutos }: ProdutoClientPage
         </button>
 
         <button
+          onClick={() => setActiveSubTab('kits')}
+          style={{
+            padding: '10px 20px',
+            borderRadius: '10px 10px 0 0',
+            border: 'none',
+            borderBottom: activeSubTab === 'kits' ? '3px solid #0b5ea8' : '3px solid transparent',
+            backgroundColor: activeSubTab === 'kits' ? 'var(--color-surface-container-low)' : 'transparent',
+            color: activeSubTab === 'kits' ? '#0b5ea8' : 'var(--color-on-surface-variant)',
+            fontWeight: 800,
+            fontSize: '14px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.2s'
+          }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>redeem</span>
+          <span>Kits Promocionais</span>
+        </button>
+
+        <button
           onClick={() => setActiveSubTab('categorias')}
           style={{
             padding: '10px 20px',
@@ -150,6 +174,8 @@ export default function ProdutoClientPage({ initialProdutos }: ProdutoClientPage
 
       {activeSubTab === 'categorias' ? (
         <CategoriasConfigTab produtos={produtos} />
+      ) : activeSubTab === 'kits' ? (
+        <KitsConfigTab initialKits={initialKits} produtos={produtos} />
       ) : (
         <>
           <ProdutoStats stats={stats} />

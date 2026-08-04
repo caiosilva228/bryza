@@ -324,6 +324,12 @@ export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onCl
               <h3 style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-outline)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>ITENS DO PEDIDO</h3>
             </div>
             
+            {pedido.kits && pedido.kits.length > 0 && (
+              <div style={{ marginBottom: '12px', padding: '12px 14px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px' }}>
+                <strong style={{ display: 'block', fontSize: '12px', color: '#166534', marginBottom: '6px' }}>Kits comerciais</strong>
+                {pedido.kits.map(kit => <div key={kit.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}><span>{kit.quantidade}x {kit.nome_kit_snapshot}</span><strong>{formatCurrency(kit.subtotal)}</strong></div>)}
+              </div>
+            )}
             <div style={{ border: '1px solid var(--color-outline-variant)', borderRadius: '8px', overflow: 'hidden', marginBottom: '24px' }}>
               <table style={{ width: '100%', fontSize: '14px', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead style={{ backgroundColor: 'var(--color-surface-container-low)', borderBottom: '1px solid var(--color-outline-variant)' }}>

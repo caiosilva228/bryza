@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Produto } from '@/models/types';
+import { Produto, StoreKit } from '@/models/types';
 import { getStoreProductsAction, getStoreUserInfoAction, createStoreOrderAction, StoreCartItem } from './actions';
 import { toast } from 'sonner';
 
@@ -13,6 +13,7 @@ import styles from './loja.module.css';
 export default function LojaVirtualPage() {
   const [loading, setLoading] = useState(true);
   const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [kits, setKits] = useState<StoreKit[]>([]);
   const [search, setSearch] = useState('');
   const [categoriaSel, setCategoriaSel] = useState<string>('Todos');
   const [precoFilter, setPrecoFilter] = useState<'todos' | 'ate30' | '30a60' | 'acima60'>('todos');
@@ -94,6 +95,7 @@ export default function LojaVirtualPage() {
 
       if (resProd.success && resProd.produtos) {
         setProdutos(resProd.produtos);
+        setKits(resProd.kits || []);
       } else {
         toast.error(resProd.error || 'Erro ao carregar produtos.');
       }
@@ -128,7 +130,10 @@ export default function LojaVirtualPage() {
       if (saved) {
         const entries: [string, number][] = JSON.parse(saved);
         if (Array.isArray(entries) && entries.length > 0) {
-          setCart(new Map(entries));
+          setCart(new Map(entries.map(([id, quantity]) => [
+            id.includes(':') ? id : `produto:${id}`,
+            quantity,
+          ])));
         }
       }
     } catch (e) {
@@ -178,7 +183,7 @@ export default function LojaVirtualPage() {
         p.categoria === categoriaSel || 
         (p.categorias_adicionais && Array.isArray(p.categorias_adicionais) && p.categorias_adicionais.includes(categoriaSel));
 
-      const matchesEstoque = !apenasEstoque || p.estoque_atual > 0;
+      const matchesEstoque = !apenasEstoque || (p.estoque_disponivel ?? p.estoque_atual) > 0;
 
       let matchesPreco = true;
       if (precoFilter === 'ate30') matchesPreco = p.preco_venda <= 30;
@@ -208,35 +213,38 @@ export default function LojaVirtualPage() {
   };
 
   // Controles do Carrinho
-  const updateQuantity = (produtoId: string, delta: number) => {
+  const productCartKey = (produtoId: string) => `produto:${produtoId}`;
+  const kitCartKey = (kitId: string) => `kit:${kitId}`;
+
+  const updateQuantity = (cartKey: string, delta: number) => {
     setCart(prev => {
       const next = new Map(prev);
-      const current = next.get(produtoId) || 0;
+      const current = next.get(cartKey) || 0;
       const updated = current + delta;
       if (updated <= 0) {
-        next.delete(produtoId);
+        next.delete(cartKey);
       } else {
-        next.set(produtoId, updated);
+        next.set(cartKey, updated);
       }
       return next;
     });
   };
 
-  const removeFromCart = (produtoId: string) => {
+  const removeFromCart = (cartKey: string) => {
     setCart(prev => {
       const next = new Map(prev);
-      next.delete(produtoId);
+      next.delete(cartKey);
       return next;
     });
   };
 
-  const setDirectQuantity = (produtoId: string, quantity: number) => {
+  const setDirectQuantity = (cartKey: string, quantity: number) => {
     setCart(prev => {
       const next = new Map(prev);
       if (quantity <= 0) {
-        next.delete(produtoId);
+        next.delete(cartKey);
       } else {
-        next.set(produtoId, quantity);
+        next.set(cartKey, quantity);
       }
       return next;
     });
@@ -244,14 +252,20 @@ export default function LojaVirtualPage() {
 
   const cartItemsDetailed: StoreCartItem[] = useMemo(() => {
     const items: StoreCartItem[] = [];
-    cart.forEach((qty, id) => {
+    cart.forEach((qty, key) => {
+      const [kind, id] = key.includes(':') ? key.split(':', 2) : ['produto', key];
+      if (kind === 'kit') {
+        const kit = kits.find(item => item.id === id);
+        if (kit && qty > 0) items.push({ kind: 'kit', kit, quantidade: qty });
+        return;
+      }
       const prod = produtos.find(p => p.id === id);
       if (prod && qty > 0) {
-        items.push({ produto: prod, quantidade: qty });
+        items.push({ kind: 'produto', produto: prod, quantidade: qty });
       }
     });
     return items;
-  }, [cart, produtos]);
+  }, [cart, produtos, kits]);
 
   const totalCartCount = useMemo(() => {
     let sum = 0;
@@ -260,7 +274,9 @@ export default function LojaVirtualPage() {
   }, [cart]);
 
   const totalCartValue = useMemo(() => {
-    return cartItemsDetailed.reduce((acc, item) => acc + (item.produto.preco_venda * item.quantidade), 0);
+    return cartItemsDetailed.reduce((acc, item) => acc + (
+      item.kind === 'produto' ? item.produto.preco_venda : item.kit.preco_venda
+    ) * item.quantidade, 0);
   }, [cartItemsDetailed]);
 
   // Finalizar Pedido
@@ -296,10 +312,10 @@ export default function LojaVirtualPage() {
         paymentTiming,
         notes,
         items: cartItemsDetailed.map(item => ({
-          produto_id: item.produto.id,
+          ...(item.kind === 'produto' ? { produto_id: item.produto.id } : { kit_id: item.kit.id }),
           quantidade: item.quantidade,
-          preco_unitario: item.produto.preco_venda,
-        }))
+        })),
+        idempotencyKey: globalThis.crypto.randomUUID(),
       };
 
       const res = await createStoreOrderAction(payload);
@@ -728,6 +744,58 @@ export default function LojaVirtualPage() {
               </div>
             </div>
 
+            {kits.length > 0 && (
+              <section aria-labelledby="kits-promocionais" style={{ marginBottom: '30px' }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '12px', marginBottom: '14px' }}>
+                  <div>
+                    <span style={{ color: '#4d7c0f', fontSize: '11px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                      Oferta do mes
+                    </span>
+                    <h2 id="kits-promocionais" style={{ margin: '4px 0 0', color: '#051329', fontSize: '24px' }}>
+                      Kits promocionais
+                    </h2>
+                  </div>
+                  <span style={{ color: '#64748b', fontSize: '13px' }}>Composicao fixa e preco fechado</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '18px' }}>
+                  {kits.map(kit => {
+                    const kitKey = kitCartKey(kit.id);
+                    const hasStock = kit.disponivel && kit.estoque_disponivel > 0;
+                    return (
+                      <article key={kit.id} style={{ background: '#051329', color: '#fff', borderRadius: '16px', padding: '18px', boxShadow: '0 10px 26px rgba(5,19,41,0.14)' }}>
+                        <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                          <div style={{ width: '82px', height: '82px', flex: '0 0 82px', borderRadius: '12px', overflow: 'hidden', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {kit.imagem_url ? <img src={kit.imagem_url} alt={kit.nome} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} /> : <span className="material-symbols-outlined" style={{ fontSize: '36px', color: '#AEDB45' }}>redeem</span>}
+                          </div>
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <h3 style={{ margin: 0, fontSize: '17px', lineHeight: 1.25 }}>{kit.nome}</h3>
+                            {kit.descricao && <p style={{ margin: '6px 0 0', color: 'rgba(255,255,255,0.72)', fontSize: '12px' }}>{kit.descricao}</p>}
+                            <div style={{ marginTop: '10px', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                              {kit.preco_referencia && kit.preco_referencia > kit.preco_venda && <s style={{ color: 'rgba(255,255,255,0.55)', fontSize: '12px' }}>{formatCurrency(kit.preco_referencia)}</s>}
+                              <strong style={{ color: '#AEDB45', fontSize: '22px' }}>{formatCurrency(kit.preco_venda)}</strong>
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.14)' }}>
+                          <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: 'rgba(255,255,255,0.58)', marginBottom: '6px' }}>Inclui</div>
+                          <ul style={{ margin: 0, paddingLeft: '18px', color: 'rgba(255,255,255,0.82)', fontSize: '12px', lineHeight: 1.7 }}>
+                            {(kit.itens || []).map(item => <li key={item.id}>{item.quantidade}x {item.produto?.nome_produto || 'Produto'}</li>)}
+                          </ul>
+                        </div>
+                        <button
+                          disabled={!hasStock}
+                          onClick={() => { updateQuantity(kitKey, 1); toast.success(`${kit.nome} adicionado ao carrinho!`, { duration: 1500 }); }}
+                          style={{ marginTop: '16px', width: '100%', minHeight: '42px', border: 'none', borderRadius: '8px', background: hasStock ? '#AEDB45' : 'rgba(255,255,255,0.14)', color: hasStock ? '#051329' : 'rgba(255,255,255,0.5)', fontWeight: 800, cursor: hasStock ? 'pointer' : 'not-allowed' }}
+                        >
+                          {hasStock ? 'Adicionar kit ao carrinho' : 'Kit indisponivel'}
+                        </button>
+                      </article>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
             {/* Grid de Produtos */}
             {loading ? (
               <div style={{ textAlign: 'center', padding: '80px 20px' }}>
@@ -763,8 +831,8 @@ export default function LojaVirtualPage() {
                 gap: '24px'
               }}>
                 {produtosFiltrados.map(p => {
-                  const qtyInCart = cart.get(p.id) || 0;
-                  const hasStock = p.estoque_atual > 0;
+                  const qtyInCart = cart.get(productCartKey(p.id)) || 0;
+                  const hasStock = (p.estoque_disponivel ?? p.estoque_atual) > 0;
 
                   return (
                     <article
@@ -899,7 +967,7 @@ export default function LojaVirtualPage() {
                           <button
                             disabled={!hasStock}
                             onClick={() => {
-                              updateQuantity(p.id, 1);
+                              updateQuantity(productCartKey(p.id), 1);
                               toast.success(`${p.nome_produto} adicionado ao carrinho!`, { duration: 1500 });
                             }}
                             style={{
@@ -1221,13 +1289,13 @@ export default function LojaVirtualPage() {
                   left: '12px',
                   fontSize: '11px',
                   fontWeight: 700,
-                  color: (detailProduct.estoque_atual ?? 1) > 0 ? '#047857' : '#dc2626',
-                  backgroundColor: (detailProduct.estoque_atual ?? 1) > 0 ? '#dcfce7' : '#fef2f2',
-                  border: (detailProduct.estoque_atual ?? 1) > 0 ? '1px solid #bbf7d0' : '1px solid #fecaca',
+                  color: (detailProduct.estoque_disponivel ?? detailProduct.estoque_atual ?? 1) > 0 ? '#047857' : '#dc2626',
+                  backgroundColor: (detailProduct.estoque_disponivel ?? detailProduct.estoque_atual ?? 1) > 0 ? '#dcfce7' : '#fef2f2',
+                  border: (detailProduct.estoque_disponivel ?? detailProduct.estoque_atual ?? 1) > 0 ? '1px solid #bbf7d0' : '1px solid #fecaca',
                   padding: '4px 10px',
                   borderRadius: '999px'
                 }}>
-                  {(detailProduct.estoque_atual ?? 1) > 0 ? 'Disponível em estoque' : 'Esgotado'}
+                  {(detailProduct.estoque_disponivel ?? detailProduct.estoque_atual ?? 1) > 0 ? 'Disponível em estoque' : 'Esgotado'}
                 </span>
               </div>
 
@@ -1292,31 +1360,31 @@ export default function LojaVirtualPage() {
 
                 {/* Botão Adicionar ao Carrinho no Modal */}
                 <button
-                  disabled={(detailProduct.estoque_atual ?? 1) <= 0}
+                  disabled={(detailProduct.estoque_disponivel ?? detailProduct.estoque_atual ?? 1) <= 0}
                   onClick={() => {
-                    updateQuantity(detailProduct.id, 1);
+                    updateQuantity(productCartKey(detailProduct.id), 1);
                     toast.success(`${detailProduct.nome_produto} adicionado ao carrinho!`);
                   }}
                   style={{
                     width: '100%',
                     padding: '14px 24px',
-                    background: (detailProduct.estoque_atual ?? 1) > 0 ? 'linear-gradient(135deg, #009845 0%, #047857 100%)' : '#e2e8f0',
-                    color: (detailProduct.estoque_atual ?? 1) > 0 ? '#ffffff' : '#94a3b8',
+                    background: (detailProduct.estoque_disponivel ?? detailProduct.estoque_atual ?? 1) > 0 ? 'linear-gradient(135deg, #009845 0%, #047857 100%)' : '#e2e8f0',
+                    color: (detailProduct.estoque_disponivel ?? detailProduct.estoque_atual ?? 1) > 0 ? '#ffffff' : '#94a3b8',
                     border: 'none',
                     borderRadius: '12px',
                     fontWeight: 800,
                     fontSize: '15px',
-                    cursor: (detailProduct.estoque_atual ?? 1) > 0 ? 'pointer' : 'not-allowed',
+                    cursor: (detailProduct.estoque_disponivel ?? detailProduct.estoque_atual ?? 1) > 0 ? 'pointer' : 'not-allowed',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '10px',
-                    boxShadow: (detailProduct.estoque_atual ?? 1) > 0 ? '0 8px 24px rgba(0,152,69,0.3)' : 'none'
+                    boxShadow: (detailProduct.estoque_disponivel ?? detailProduct.estoque_atual ?? 1) > 0 ? '0 8px 24px rgba(0,152,69,0.3)' : 'none'
                   }}
                 >
                   <span className="material-symbols-outlined">add_shopping_cart</span>
                   <span>Adicionar ao Carrinho</span>
-                  {cart.get(detailProduct.id) ? (
+                  {cart.get(productCartKey(detailProduct.id)) ? (
                     <span style={{
                       backgroundColor: '#ffffff',
                       color: '#047857',
@@ -1326,7 +1394,7 @@ export default function LojaVirtualPage() {
                       borderRadius: '999px',
                       marginLeft: '4px'
                     }}>
-                      {cart.get(detailProduct.id)} no carrinho
+                      {cart.get(productCartKey(detailProduct.id))} no carrinho
                     </span>
                   ) : null}
                 </button>
@@ -1521,9 +1589,13 @@ export default function LojaVirtualPage() {
                     </span>
 
                     {cartItemsDetailed.map(item => {
-                      const itemSubtotal = item.produto.preco_venda * item.quantidade;
+                      const itemKey = item.kind === 'produto' ? productCartKey(item.produto.id) : kitCartKey(item.kit.id);
+                      const itemName = item.kind === 'produto' ? item.produto.nome_produto : item.kit.nome;
+                      const itemImage = item.kind === 'produto' ? item.produto.imagem_url : item.kit.imagem_url;
+                      const itemPrice = item.kind === 'produto' ? item.produto.preco_venda : item.kit.preco_venda;
+                      const itemSubtotal = itemPrice * item.quantidade;
                       return (
-                        <div key={item.produto.id} className={styles.cartItem} style={{
+                        <div key={itemKey} className={styles.cartItem} style={{
                           display: 'flex',
                           alignItems: 'center',
                           gap: '14px',
@@ -1535,7 +1607,7 @@ export default function LojaVirtualPage() {
                         }}>
                           {/* Imagem do Produto */}
                           <div
-                            onClick={() => setDetailProduct(item.produto)}
+                            onClick={() => { if (item.kind === 'produto') setDetailProduct(item.produto); }}
                             style={{
                               width: '64px',
                               height: '64px',
@@ -1551,25 +1623,25 @@ export default function LojaVirtualPage() {
                               padding: '4px'
                             }}
                           >
-                            {item.produto.imagem_url ? (
-                              <img src={item.produto.imagem_url} alt={item.produto.nome_produto} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                            {itemImage ? (
+                              <img src={itemImage} alt={itemName} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                             ) : (
-                              <span className="material-symbols-outlined" style={{ color: '#cbd5e1' }}>inventory_2</span>
+                              <span className="material-symbols-outlined" style={{ color: '#cbd5e1' }}>{item.kind === 'kit' ? 'redeem' : 'inventory_2'}</span>
                             )}
                           </div>
 
                           {/* Detalhes do Produto */}
                           <div className={styles.cartItemDetails} style={{ flex: 1 }}>
                             <h4
-                              onClick={() => setDetailProduct(item.produto)}
+                              onClick={() => { if (item.kind === 'produto') setDetailProduct(item.produto); }}
                               style={{ margin: '0 0 4px', fontSize: '14.5px', fontWeight: 700, color: '#0f172a', lineHeight: 1.25, cursor: 'pointer' }}
                             >
-                              {item.produto.nome_produto}
+                              {itemName}
                             </h4>
                             
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                               <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>
-                                {formatCurrency(item.produto.preco_venda)} / un
+                                {formatCurrency(itemPrice)} / un
                               </span>
                               <span style={{ fontSize: '11px', color: '#94a3b8' }}>•</span>
                               <span style={{ fontSize: '12.5px', fontWeight: 800, color: '#009845' }}>
@@ -1582,7 +1654,7 @@ export default function LojaVirtualPage() {
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#f1f5f9', borderRadius: '8px', padding: '2px' }}>
                                 <button
                                   className={styles.quantityButton}
-                                  onClick={() => updateQuantity(item.produto.id, -1)}
+                                  onClick={() => updateQuantity(itemKey, -1)}
                                   style={{
                                     width: '28px',
                                     height: '28px',
@@ -1604,15 +1676,15 @@ export default function LojaVirtualPage() {
                                   onChange={(e) => {
                                     const val = parseInt(e.target.value, 10);
                                     if (!isNaN(val)) {
-                                      setDirectQuantity(item.produto.id, val);
+                                      setDirectQuantity(itemKey, val);
                                     } else {
-                                      setDirectQuantity(item.produto.id, 0);
+                                      setDirectQuantity(itemKey, 0);
                                     }
                                   }}
                                   onBlur={(e) => {
                                     const val = parseInt(e.target.value, 10);
                                     if (isNaN(val) || val <= 0) {
-                                      removeFromCart(item.produto.id);
+                                      removeFromCart(itemKey);
                                     }
                                   }}
                                   style={{
@@ -1630,7 +1702,7 @@ export default function LojaVirtualPage() {
                                 />
                                 <button
                                   className={styles.quantityButton}
-                                  onClick={() => updateQuantity(item.produto.id, 1)}
+                                  onClick={() => updateQuantity(itemKey, 1)}
                                   style={{
                                     width: '28px',
                                     height: '28px',
@@ -1649,7 +1721,7 @@ export default function LojaVirtualPage() {
 
                               <button
                                 className={styles.removeItemButton}
-                                onClick={() => removeFromCart(item.produto.id)}
+                                onClick={() => removeFromCart(itemKey)}
                                 title="Remover item"
                                 style={{
                                   background: 'none',

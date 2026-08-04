@@ -29,7 +29,8 @@ export const fetchPedidoById = async (id: string) => {
       itens:pedido_itens(
         *,
         produto:produtos(nome_produto, codigo_produto)
-      )
+      ),
+      kits:pedido_kits(*)
     `)
     .eq('id', id)
     .single();
@@ -142,13 +143,16 @@ export const updatePedido = async (
 
   const { data: pedido, error: fetchError } = await supabase
     .from('pedidos')
-    .select('status_pedido')
+    .select('status_pedido, kits:pedido_kits(id)')
     .eq('id', pedidoId)
     .single();
 
   if (fetchError) throw fetchError;
   if (pedido.status_pedido !== 'aguardando_preparacao') {
     throw new Error('Só é possível editar pedidos com status "Aguardando Preparação".');
+  }
+  if (Array.isArray((pedido as any).kits) && (pedido as any).kits.length > 0) {
+    throw new Error('Pedidos com kits promocionais nao podem ter seus componentes editados. Crie um novo pedido para preservar a composicao historica.');
   }
 
   const valorTotal = pedidoData.valor_total ?? itens.reduce((acc, item) => acc + item.subtotal, 0);
@@ -190,7 +194,8 @@ export const fetchPedidosLogistica = async () => {
       itens:pedido_itens(
         *,
         produto:produtos(nome_produto, codigo_produto)
-      )
+      ),
+      kits:pedido_kits(*)
     `)
     .neq('status_pedido', 'aguardando_preparacao')
     .order('updated_at', { ascending: false });

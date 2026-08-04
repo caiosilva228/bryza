@@ -119,7 +119,8 @@ export const fetchRouteById = async (id: string) => {
           itens:pedido_itens(
             *,
             produto:produtos(codigo_produto, nome_produto)
-          )
+          ),
+          kits:pedido_kits(*)
         )
       )
     `)
@@ -173,7 +174,8 @@ export const fetchAvailableOrdersForRoute = async () => {
       itens:pedido_itens(
         *,
         produto:produtos(codigo_produto, nome_produto)
-      )
+      ),
+      kits:pedido_kits(*)
     `)
     .eq('status_pedido', 'pronto_para_entrega')
     .order('created_at', { ascending: false });

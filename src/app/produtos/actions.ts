@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import * as produtoService from '@/services/produtos';
-import { Produto } from '@/models/types';
+import { Kit, Produto } from '@/models/types';
 import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 
@@ -46,6 +46,159 @@ async function checkAdminAccess() {
 
 export async function fetchProdutos() {
   return await produtoService.getProdutos();
+}
+
+export interface KitInput {
+  id?: string;
+  nome: string;
+  descricao?: string | null;
+  preco_venda: number;
+  preco_referencia?: number | null;
+  imagem_url?: string | null;
+  ativo: boolean;
+  ativo_loja: boolean;
+  vigencia_inicio?: string | null;
+  vigencia_fim?: string | null;
+  itens: Array<{ produto_id: string; quantidade: number }>;
+}
+
+export async function fetchKitsAction(): Promise<{ success: boolean; data?: Kit[]; error?: string }> {
+  try {
+    const admin = await checkAdminAccess();
+    const { data, error } = await admin
+      .from('kits')
+      .select(`*, itens:kit_itens(*, produto:produtos(id, nome_produto, preco_venda, imagem_url, estoque_atual, estoque_reservado, ativo))`)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return { success: true, data: (data || []) as Kit[] };
+  } catch (error: any) {
+    console.error('Erro ao buscar kits:', error);
+    return { success: false, error: error?.message || 'Erro ao carregar kits.' };
+  }
+}
+
+export async function saveKitAction(input: KitInput): Promise<{ success: boolean; data?: Kit; error?: string }> {
+  try {
+    const admin = await checkAdminAccess();
+    const nome = input.nome.trim();
+    const itens = input.itens || [];
+    if (!nome || !Number.isFinite(input.preco_venda) || input.preco_venda < 0 || itens.length === 0) {
+      return { success: false, error: 'Informe nome, preco e pelo menos um componente.' };
+    }
+    if (itens.some(item => !item.produto_id || !Number.isInteger(item.quantidade) || item.quantidade < 1)) {
+      return { success: false, error: 'As quantidades dos componentes devem ser inteiras e positivas.' };
+    }
+    if (new Set(itens.map(item => item.produto_id)).size !== itens.length) {
+      return { success: false, error: 'Um produto nao pode aparecer duas vezes no mesmo kit.' };
+    }
+    if (input.vigencia_inicio && input.vigencia_fim && input.vigencia_fim < input.vigencia_inicio) {
+      return { success: false, error: 'A data final nao pode ser anterior a inicial.' };
+    }
+
+    let previousKitId: string | null = null;
+    if (input.id) {
+      const { data: previousKit, error: previousKitError } = await admin
+        .from('kits')
+        .select('id')
+        .eq('id', input.id)
+        .maybeSingle();
+      if (previousKitError) throw previousKitError;
+      if (!previousKit) return { success: false, error: 'Kit nao encontrado.' };
+      previousKitId = previousKit.id;
+    }
+
+    // Kits publicados sao imutaveis para o checkout: uma edicao cria uma nova
+    // versao (novo id) e invalida qualquer carrinho que ainda carregue a antiga.
+    const payload = {
+      id: crypto.randomUUID(),
+      nome,
+      descricao: input.descricao?.trim() || null,
+      preco_venda: Number(input.preco_venda.toFixed(2)),
+      preco_referencia: input.preco_referencia == null ? null : Number(input.preco_referencia.toFixed(2)),
+      imagem_url: input.imagem_url?.trim() || null,
+      ativo: input.ativo,
+      ativo_loja: input.ativo_loja,
+      vigencia_inicio: input.vigencia_inicio || null,
+      vigencia_fim: input.vigencia_fim || null,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data: kit, error: kitError } = await admin
+      .from('kits')
+      .insert(payload)
+      .select()
+      .single();
+    if (kitError || !kit) throw kitError || new Error('Kit nao retornado.');
+
+    const { error: deleteItemsError } = await admin.from('kit_itens').delete().eq('kit_id', kit.id);
+    if (deleteItemsError) throw deleteItemsError;
+    const { error: insertItemsError } = await admin.from('kit_itens').insert(
+      itens.map(item => ({ kit_id: kit.id, produto_id: item.produto_id, quantidade: item.quantidade })),
+    );
+    if (insertItemsError) throw insertItemsError;
+
+    if (previousKitId) {
+      const { error: retirePreviousError } = await admin
+        .from('kits')
+        .update({ ativo: false, ativo_loja: false, updated_at: new Date().toISOString() })
+        .eq('id', previousKitId);
+      if (retirePreviousError) throw retirePreviousError;
+    }
+
+    const { data: fullKit, error: fullKitError } = await admin
+      .from('kits')
+      .select('*, itens:kit_itens(*, produto:produtos(id, nome_produto, preco_venda, imagem_url, estoque_atual, estoque_reservado, ativo))')
+      .eq('id', kit.id)
+      .single();
+    if (fullKitError) throw fullKitError;
+    revalidatePath('/produtos');
+    revalidatePath('/loja');
+    return { success: true, data: fullKit as Kit };
+  } catch (error: any) {
+    console.error('Erro ao salvar kit:', error);
+    return { success: false, error: error?.message || 'Erro ao salvar kit.' };
+  }
+}
+
+export async function toggleStatusKitAction(id: string, ativo: boolean) {
+  try {
+    const admin = await checkAdminAccess();
+    const { error } = await admin.from('kits').update({ ativo, ativo_loja: ativo ? undefined : false, updated_at: new Date().toISOString() }).eq('id', id);
+    if (error) throw error;
+    revalidatePath('/produtos');
+    revalidatePath('/loja');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error?.message || 'Erro ao alterar status do kit.' };
+  }
+}
+
+export async function toggleStatusKitLojaAction(id: string, ativo_loja: boolean) {
+  try {
+    const admin = await checkAdminAccess();
+    const { data: kit } = await admin.from('kits').select('ativo').eq('id', id).maybeSingle();
+    if (ativo_loja && !kit?.ativo) return { success: false, error: 'Ative o kit antes de publica-lo na loja.' };
+    const { error } = await admin.from('kits').update({ ativo_loja, updated_at: new Date().toISOString() }).eq('id', id);
+    if (error) throw error;
+    revalidatePath('/produtos');
+    revalidatePath('/loja');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error?.message || 'Erro ao alterar visibilidade do kit.' };
+  }
+}
+
+export async function deleteKitAction(id: string) {
+  try {
+    const admin = await checkAdminAccess();
+    const { error } = await admin.from('kits').delete().eq('id', id);
+    if (error) throw error;
+    revalidatePath('/produtos');
+    revalidatePath('/loja');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error?.message || 'Erro ao excluir kit.' };
+  }
 }
 
 export async function saveProduto(produto: Partial<Produto>) {
