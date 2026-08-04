@@ -1495,7 +1495,7 @@ export default function LojaCheckoutModal({
                             value={d.value}
                             disabled={!d.disponivel && d.value !== dataAgendamento}
                           >
-                            {d.label}{d.restante !== null ? ` — ${d.restante} vaga(s)` : ''}{!d.disponivel ? ' — indisponível' : ''}
+                            {d.label}{!d.disponivel ? ' — indisponível' : ''}
                           </option>
                         ))}
                       </select>
@@ -1542,8 +1542,8 @@ export default function LojaCheckoutModal({
                           ? 'Agendamentos online temporariamente pausados.'
                           : selectedDeliveryDay?.hoje
                             ? `Seu pedido pode ser entregue em até ${schedulingAvailability?.antecedencia_mesmo_dia_horas || 3} horas.`
-                          : selectedDeliveryDay?.restante !== null && selectedDeliveryDay?.restante !== undefined
-                            ? `${selectedDeliveryDay.restante} vaga(s) restante(s) para esta data.`
+                          : selectedDeliveryDay?.disponivel === false
+                            ? 'Esta data não está disponível para agendamento.'
                             : 'Data de entrega disponível.')}
                     </div>
                   )}
