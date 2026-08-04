@@ -37,6 +37,7 @@ export type TransparentInit = {
   customerId: string | null;
   cardsIds: string[];
   payerEmail: string | null;
+  publicKey: string | null;
 };
 
 type JsonObject = Record<string, unknown>;
@@ -86,6 +87,10 @@ function asNumber(value: unknown): number | null {
 
 export function isTransparentCheckoutEnabled() {
   return process.env[TRANSPARENT_CHECKOUT_ENABLED_ENV]?.trim().toLowerCase() === 'true';
+}
+
+function getMercadoPagoPublicKey() {
+  return process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY?.trim() || null;
 }
 
 export function assertCheckoutToken(value: unknown): asserts value is string {
@@ -281,6 +286,7 @@ export async function initializeTransparentCheckout(
     customerId: providerCustomerId,
     cardsIds: cards.map(card => card.id),
     payerEmail: accountContext?.email || intent.customerEmail || null,
+    publicKey: getMercadoPagoPublicKey(),
   };
 }
 

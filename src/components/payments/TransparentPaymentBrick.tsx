@@ -13,6 +13,7 @@ type TransparentInit = {
   customerId: string | null;
   cardsIds: string[];
   payerEmail: string | null;
+  publicKey: string | null;
 };
 
 export type TransparentPaymentResult = {
@@ -63,7 +64,6 @@ export function TransparentPaymentBrick({
 
   useEffect(() => {
     let cancelled = false;
-    const publicKey = process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY?.trim();
     // Resolve the rollout mode before requiring the public Brick key.
     setLoading(true);
     setError('');
@@ -87,6 +87,7 @@ export function TransparentPaymentBrick({
           return null;
         }
         if (!response.ok || !body) throw new Error(body?.error || 'Não foi possível carregar o pagamento.');
+        const publicKey = body.publicKey?.trim();
         if (!publicKey) throw new Error('O checkout online ainda não foi configurado.');
         initMercadoPago(publicKey, { locale: 'pt-BR' });
         return body;
