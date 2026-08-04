@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { generateIpHash } from '@/lib/referral/ip-hash';
 import { getSyntheticEmail } from '@/utils/env';
+import { normalizeCustomerPhone } from '@/lib/customers/canonical-identity';
 
 // Helpers de Mascaramento
 function maskCPF(cpf: string): string {
@@ -419,6 +420,7 @@ export async function alterarPlano(ambassadorId: string, planId: string) {
 export async function editarEmbaixador(ambassadorId: string, data: any) {
   await checkAdminAccess();
   const supabase = await createClient();
+  const adminClient = createAdminClient();
 
   const { 
     full_name, 
@@ -440,9 +442,18 @@ export async function editarEmbaixador(ambassadorId: string, data: any) {
     longitude
   } = data;
 
-  const cleanPhone = typeof phone === 'string' ? phone.replace(/\D/g, '') : '';
+  const normalizedFullName = typeof full_name === 'string' ? full_name.trim() : '';
+  const normalizedDisplayName = typeof display_name === 'string' ? display_name.trim() : '';
+  const cleanPhone = normalizeCustomerPhone(phone);
   if (!/^\d{10,11}$/.test(cleanPhone)) {
     throw new Error('Informe um telefone válido com DDD.');
+  }
+  if (!normalizedFullName) {
+    throw new Error('Informe o nome completo do embaixador.');
+  }
+  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  if (!normalizedEmail) {
+    throw new Error('Informe um e-mail válido.');
   }
 
   const normalizedState = state && state.trim() ? state.trim().toUpperCase() : null;
@@ -452,10 +463,10 @@ export async function editarEmbaixador(ambassadorId: string, data: any) {
   }
 
   const updateData: Record<string, any> = {
-    full_name,
-    display_name: display_name || full_name,
-    phone: phone || null,
-    email: email.trim().toLowerCase(),
+    full_name: normalizedFullName,
+    display_name: normalizedDisplayName || normalizedFullName,
+    phone: cleanPhone || null,
+    email: normalizedEmail,
     instagram: instagram || null,
     city: city ? city.trim() : null,
     state: normalizedState,
@@ -475,14 +486,50 @@ export async function editarEmbaixador(ambassadorId: string, data: any) {
     updateData.pix_key = pix_key.trim();
   }
 
-  const { data: result, error } = await supabase.rpc('fn_admin_update_ambassador_canonical', {
-    p_ambassador_id: ambassadorId,
-    p_data: updateData,
-  });
+  const { data: current, error: currentError } = await adminClient
+    .from('ambassadors')
+    .select('full_name, phone, email')
+    .eq('id', ambassadorId)
+    .single();
 
-  if (error) throw new Error('Falha ao atualizar dados do embaixador');
-  if ((result as { status?: string })?.status === 'manual_review_required') {
-    throw new Error('Os dados informados exigem revisão administrativa.');
+  if (currentError || !current) {
+    throw new Error('Embaixador não encontrado.');
+  }
+
+  const currentPhone = normalizeCustomerPhone(current.phone);
+  const currentEmail = typeof current.email === 'string' ? current.email.trim().toLowerCase() : '';
+  const canonicalIdentityChanged = normalizedFullName !== String(current.full_name || '').trim()
+    || cleanPhone !== currentPhone
+    || normalizedEmail !== currentEmail;
+
+  if (canonicalIdentityChanged) {
+    const { data: result, error } = await supabase.rpc('fn_admin_update_ambassador_canonical', {
+      p_ambassador_id: ambassadorId,
+      p_data: updateData,
+    });
+
+    if (error) throw new Error('Falha ao atualizar dados do embaixador');
+    if ((result as { status?: string })?.status === 'manual_review_required') {
+      throw new Error('Os dados informados exigem revisão administrativa.');
+    }
+  } else {
+    const nonCanonicalUpdateData = { ...updateData };
+    delete nonCanonicalUpdateData.full_name;
+    delete nonCanonicalUpdateData.phone;
+    delete nonCanonicalUpdateData.email;
+
+    const { error } = await adminClient
+      .from('ambassadors')
+      .update({
+        ...nonCanonicalUpdateData,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', ambassadorId);
+
+    if (error) {
+      console.error('Erro ao atualizar dados não canônicos do embaixador:', error);
+      throw new Error('Falha ao atualizar dados do embaixador');
+    }
   }
 
   revalidatePath('/embaixadores');

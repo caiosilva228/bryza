@@ -4,7 +4,6 @@ import { useState, useEffect, useTransition, use } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
-import { getEmbaixadorDetails, editarEmbaixador } from '../../actions';
 import { toast } from 'sonner';
 
 interface Context {
@@ -204,7 +203,16 @@ export default function EditarEmbaixadorPage({ params }: Context) {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const amb = await getEmbaixadorDetails(id);
+        const response = await fetch(`/api/embaixadores/${id}/editar`, {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' },
+        });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(body.error || 'Erro ao carregar dados do embaixador.');
+        }
+
+        const amb = body.ambassador;
         setFullName(amb.full_name);
         setDisplayName(amb.display_name);
         setCpfMasked(amb.cpf_masked); // CPF vem mascarado para privacidade
@@ -283,36 +291,39 @@ export default function EditarEmbaixadorPage({ params }: Context) {
         // Vamos verificar se a chave pix contém asteriscos. Se sim, mantemos a antiga!
         const isPixKeyMasked = pixKey.includes('*');
         
-        await editarEmbaixador(id, {
-          full_name: fullName,
-          display_name: displayName,
-          phone,
-          email,
-          instagram,
-          city,
-          state,
-          pix_type: pixType,
+        const response = await fetch(`/api/embaixadores/${id}/editar`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            full_name: fullName,
+            display_name: displayName,
+            phone,
+            email,
+            instagram,
+            city,
+            state,
+            pix_type: pixType,
           // Se pixKey contiver asteriscos, não enviar (deixar null na action para manter o valor original, ou enviar undefined)
-          pix_key: isPixKeyMasked ? null : pixKey,
-          notes,
-          photo_path: finalPhotoPath,
-          cep,
-          address,
-          number,
-          neighborhood,
-          latitude,
-          longitude
+            pix_key: isPixKeyMasked ? null : pixKey,
+            notes,
+            photo_path: finalPhotoPath,
+            cep,
+            address,
+            number,
+            neighborhood,
+            latitude,
+            longitude,
+          }),
         });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(body.error || 'Erro ao salvar alterações.');
+        }
 
         toast.success('Cadastro atualizado com sucesso!');
         router.push(`/embaixadores/${id}`);
       } catch (err: any) {
-        if (err.message?.includes('Server Action') || err.message?.includes('not found')) {
-          toast.error('O sistema foi atualizado no servidor. Recarregando a página para aplicar a versão mais recente...');
-          setTimeout(() => window.location.reload(), 1500);
-        } else {
-          toast.error(err.message || 'Erro ao salvar alterações.');
-        }
+        toast.error(err.message || 'Erro ao salvar alterações.');
       }
     });
   };
@@ -357,7 +368,7 @@ export default function EditarEmbaixadorPage({ params }: Context) {
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>Nome de Exibição</label>
-                <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value.toUpperCase())} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)', textTransform: 'uppercase' }} />
+                <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)' }} />
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>CPF (Não Editável)</label>
