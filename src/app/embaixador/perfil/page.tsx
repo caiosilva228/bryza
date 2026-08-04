@@ -6,6 +6,11 @@ import { getMeuPerfilData, atualizarMeuPerfil, getSignedProfilePhotoUrl, type Am
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'sonner';
 
+function isMissingServerActionError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return /failed to find server action|server action.*(?:was )?not found on the server/i.test(message);
+}
+
 export default function MeuPerfilPage() {
   const [data, setData] = useState<AmbassadorProfileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -296,6 +301,10 @@ export default function MeuPerfilPage() {
         toast.success('Perfil atualizado com sucesso!');
         loadProfile();
       } catch (err: any) {
+        if (isMissingServerActionError(err)) {
+          window.location.reload();
+          return;
+        }
         toast.error(err.message || 'Erro ao atualizar perfil.');
       }
     });
