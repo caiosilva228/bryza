@@ -2,7 +2,10 @@
 
 import { useMemo, useState } from 'react';
 import { Kit, Produto } from '@/models/types';
+import { createClient } from '@/utils/supabase/client';
 import { KitInput, saveKitAction } from './actions';
+
+const PRODUCT_IMAGES_BUCKET = 'product-images';
 
 interface KitFormModalProps {
   kit: Kit | null;
@@ -25,6 +28,7 @@ export default function KitFormModal({ kit, produtos, onClose, onSuccess }: KitF
   );
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const availableProducts = useMemo(
     () => produtos.filter(produto => produto.ativo || itens.some(item => item.produto_id === produto.id)),
@@ -33,6 +37,49 @@ export default function KitFormModal({ kit, produtos, onClose, onSuccess }: KitF
 
   const updateItem = (index: number, patch: Partial<{ produto_id: string; quantidade: number }>) => {
     setItens(current => current.map((item, itemIndex) => itemIndex === index ? { ...item, ...patch } : item));
+  };
+
+  const handleImageFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const fileExt = file.name.split('.').pop()?.toLowerCase();
+    if (fileExt !== 'svg' && file.type !== 'image/svg+xml') {
+      alert('Formato inválido! Envie a imagem do kit no formato SVG (.svg), de preferência com 500x500px.');
+      event.target.value = '';
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+      const supabase = createClient();
+      const fileName = `kit_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.svg`;
+
+      const { error: uploadError } = await supabase.storage
+        .from(PRODUCT_IMAGES_BUCKET)
+        .upload(fileName, file, {
+          upsert: true,
+          contentType: 'image/svg+xml',
+        });
+
+      if (uploadError) {
+        console.error('Erro no upload da imagem do kit:', uploadError);
+        alert('Falha ao subir a imagem do kit.');
+        return;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from(PRODUCT_IMAGES_BUCKET)
+        .getPublicUrl(fileName);
+
+      setImagemUrl(publicUrlData.publicUrl);
+    } catch (uploadError) {
+      console.error('Erro no envio da imagem do kit:', uploadError);
+      alert('Falha ao subir a imagem do kit.');
+    } finally {
+      setUploadingImage(false);
+      event.target.value = '';
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -78,7 +125,34 @@ export default function KitFormModal({ kit, produtos, onClose, onSuccess }: KitF
           <label>Preco de referencia<input min="0" step="0.01" type="number" value={precoReferencia} onChange={event => setPrecoReferencia(event.target.value)} /></label>
           <label>Inicio da vigencia<input type="date" value={inicio} onChange={event => setInicio(event.target.value)} /></label>
           <label>Fim da vigencia<input type="date" value={fim} onChange={event => setFim(event.target.value)} /></label>
-          <label style={{ gridColumn: '1 / -1' }}>Imagem (URL)<input value={imagemUrl} onChange={event => setImagemUrl(event.target.value)} placeholder="https://..." /></label>
+          <div style={{ gridColumn: '1 / -1' }}>
+            <div style={{ color: 'var(--color-on-surface)', fontSize: '13px', fontWeight: 700, marginBottom: '6px' }}>Foto / imagem do kit</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '14px', border: '1.5px dashed var(--color-outline-variant)', borderRadius: '12px', background: 'var(--color-surface-container-lowest)' }}>
+              <div style={{ width: '88px', height: '88px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid var(--color-outline-variant)', borderRadius: '10px', background: 'var(--color-surface-container-high)' }}>
+                {imagemUrl ? (
+                  <img src={imagemUrl} alt="Prévia da imagem do kit" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <span className="material-symbols-outlined" style={{ fontSize: '34px', color: 'var(--color-outline)' }}>add_a_photo</span>
+                )}
+              </div>
+              <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <label style={{ padding: '8px 14px', borderRadius: '8px', background: 'var(--color-primary)', color: '#fff', fontSize: '12px', fontWeight: 700, cursor: uploadingImage ? 'wait' : 'pointer', display: 'inline-flex', flexDirection: 'row', alignItems: 'center', gap: '6px' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>upload</span>
+                    {uploadingImage ? 'Enviando...' : 'Carregar imagem'}
+                    <input type="file" accept=".svg,image/svg+xml" onChange={handleImageFileChange} disabled={uploadingImage} style={{ display: 'none' }} />
+                  </label>
+                  {imagemUrl && (
+                    <button type="button" onClick={() => setImagemUrl('')} style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--color-outline)', background: 'transparent', color: 'var(--color-error)', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
+                      Remover imagem
+                    </button>
+                  )}
+                </div>
+                <div style={{ color: 'var(--color-on-surface-variant)', fontSize: '11px' }}>Formato aceito: SVG (.svg), com 500x500px recomendado.</div>
+                <input type="url" value={imagemUrl} onChange={event => setImagemUrl(event.target.value)} placeholder="Ou cole a URL direta da imagem..." />
+              </div>
+            </div>
+          </div>
           <label style={{ gridColumn: '1 / -1' }}>Descricao<textarea value={descricao || ''} onChange={event => setDescricao(event.target.value)} rows={3} /></label>
         </div>
 
