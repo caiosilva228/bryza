@@ -4324,6 +4324,10 @@
 .submitOrder { color: #ffffff !important; background: #5a8216 !important; font-size: 15px !important; font-weight: 800 !important; text-transform: uppercase !important; }
 
 @media (max-width: 767px) {
+  .marqueeTrack {
+    animation-duration: 42s;
+  }
+
   .benefitGrid {
     grid-template-columns: 1fr !important;
     gap: 16px !important;
