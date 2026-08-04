@@ -431,6 +431,10 @@ export interface Pedido {
   desconto_valor?: number;
   desconto_aplicado?: number;
   forma_pagamento: 'dinheiro' | 'pix' | 'cartao' | 'mercado_pago';
+  mercado_pago_payment_id?: string | null;
+  mercado_pago_payment_method_id?: string | null;
+  mercado_pago_payment_type_id?: string | null;
+  mercado_pago_installments?: number | null;
   payment_timing?: PaymentTiming | null;
   payment_status?: OnlinePaymentStatus | string | null;
   status_pedido: StatusPedido;
@@ -772,6 +776,10 @@ export interface Agendamento {
   desconto_valor?: number;
   desconto_aplicado?: number;
   forma_pagamento: 'dinheiro' | 'pix' | 'cartao' | string;
+  mercado_pago_payment_id?: string | null;
+  mercado_pago_payment_method_id?: string | null;
+  mercado_pago_payment_type_id?: string | null;
+  mercado_pago_installments?: number | null;
   payment_timing?: PaymentTiming | null;
   payment_status?: OnlinePaymentStatus | string | null;
   attribution_source?: string | null;

@@ -391,6 +391,56 @@ export async function getMeusPedidos(
   };
 }
 
+export type AmbassadorCheckoutPreparation = {
+  checkoutToken: string;
+  orderNumber: string;
+  amount: number;
+};
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export async function prepareAmbassadorOrderCheckoutAction(params: {
+  entityType: AmbassadorOwnOrder['entity_type'];
+  entityId: string;
+}): Promise<AmbassadorCheckoutPreparation> {
+  if (!UUID_PATTERN.test(params.entityId)) {
+    throw new Error('Pedido inválido.');
+  }
+
+  const { supabase } = await getAuthenticatedUser();
+  const { data, error } = await supabase.rpc('fn_prepare_ambassador_checkout', {
+    p_entity_type: params.entityType,
+    p_entity_id: params.entityId,
+  });
+
+  if (error) {
+    console.error('Erro na RPC de checkout do embaixador:', error.code);
+    const rpcMessage = error.message || '';
+    const message = rpcMessage.includes('ambassador_order_not_found')
+      ? 'Pedido não encontrado ou não pertence à sua conta.'
+      : rpcMessage.includes('ambassador_payment_under_review')
+        ? 'O pagamento deste pedido está em análise.'
+        : rpcMessage.includes('ambassador_payment_unavailable')
+          ? 'Este pedido não está disponível para pagamento.'
+          : rpcMessage || 'Não foi possível preparar o pagamento.';
+    throw new Error(message);
+  }
+
+  const result = (Array.isArray(data) ? data[0] : data) as Record<string, unknown> | null;
+  const checkoutToken = typeof result?.checkout_token === 'string' ? result.checkout_token : '';
+  if (result?.status !== 'ok' || !UUID_PATTERN.test(checkoutToken)) {
+    throw new Error('Não foi possível preparar o pagamento deste pedido.');
+  }
+
+  revalidatePath('/embaixador/meus-pedidos');
+  return {
+    checkoutToken,
+    orderNumber: String(result?.order_number || ''),
+    amount: Number(result?.amount || 0),
+  };
+}
+
 export async function getMinhasComissoes(params?: { page?: number; limit?: number; status?: string }) {
   const { supabase } = await getAuthenticatedUser();
   const limit = Math.min(Math.max(params?.limit || 10, 1), 100);

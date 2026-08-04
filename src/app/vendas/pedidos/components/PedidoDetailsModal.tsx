@@ -296,6 +296,14 @@ export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onCl
                     {currentStatus.label}
                   </span>
                 </div>
+                {pedido.mercado_pago_payment_id && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+                    <span style={{ color: 'var(--color-on-surface-variant)' }}>ID da transação:</span>
+                    <code style={{ maxWidth: '68%', overflowWrap: 'anywhere', color: 'var(--color-on-surface)', textAlign: 'right' }}>
+                      {pedido.mercado_pago_payment_id}
+                    </code>
+                  </div>
+                )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', paddingTop: '8px' }}>
                   <span style={{ color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '12px', fontWeight: 600 }}>Total GERAL:</span>
                   <span style={{ fontWeight: 700, fontSize: '20px', color: '#0d9488', textAlign: 'right' }}>

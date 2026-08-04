@@ -6,6 +6,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { formatCurrency, formatDate } from '@/utils/format';
 import {
   getMeusPedidos,
+  prepareAmbassadorOrderCheckoutAction,
   type AmbassadorOwnOrder,
   type AmbassadorOwnOrdersData,
 } from '../actions';
@@ -53,6 +54,7 @@ export default function MeusPedidosPage() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(true);
+  const [payingOrderKey, setPayingOrderKey] = useState<string | null>(null);
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -68,6 +70,30 @@ export default function MeusPedidosPage() {
   useEffect(() => {
     void loadOrders();
   }, [loadOrders]);
+
+  const handlePayNow = useCallback(async (item: AmbassadorOwnOrder) => {
+    const orderKey = `${item.entity_type}-${item.entity_id}`;
+    setPayingOrderKey(orderKey);
+    try {
+      const preparation = await prepareAmbassadorOrderCheckoutAction({
+        entityType: item.entity_type,
+        entityId: item.entity_id,
+      });
+      const response = await fetch('/api/payments/mercado-pago/preference', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ checkoutToken: preparation.checkoutToken }),
+      });
+      const result = await response.json().catch(() => null) as { checkoutUrl?: string; error?: string } | null;
+      if (!response.ok || !result?.checkoutUrl) {
+        throw new Error(result?.error || 'Não foi possível abrir o checkout.');
+      }
+      window.location.assign(result.checkoutUrl);
+    } catch (caught) {
+      toast.error(caught instanceof Error ? caught.message : 'Não foi possível iniciar o pagamento.');
+      setPayingOrderKey(null);
+    }
+  }, []);
 
   const summary = useMemo(() => ({
     paid: data.items.filter((item) => item.payment_status === 'aprovado').length,
@@ -174,9 +200,17 @@ export default function MeusPedidosPage() {
                         <td data-label="Valor"><strong>{formatCurrency(Number(item.valor_total))}</strong></td>
                         <td data-label="Ação">
                           {item.can_pay_now ? (
-                            <button className={styles.futurePayButton} disabled title="Pagamento online em breve">
-                              Pagar agora
-                              <small>Em breve</small>
+                            <button
+                              className={styles.payButton}
+                              onClick={() => void handlePayNow(item)}
+                              disabled={loading || payingOrderKey !== null}
+                              aria-busy={payingOrderKey === `${item.entity_type}-${item.entity_id}`}
+                            >
+                              <span className="material-symbols-outlined">
+                                {payingOrderKey === `${item.entity_type}-${item.entity_id}` ? 'progress_activity' : 'payments'}
+                              </span>
+                              {payingOrderKey === `${item.entity_type}-${item.entity_id}` ? 'Abrindo...' : 'Pagar agora'}
+                              <small>Mercado Pago</small>
                             </button>
                           ) : (
                             <span className={styles.noAction}>—</span>
