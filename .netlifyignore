@@ -1,0 +1,13 @@
+.git/
+.netlify/
+.next/
+node_modules/
+tmp/
+scratch/
+output/
+temp_stitch/
+.codex-dev-*.log
+*.log
+*.tsbuildinfo
+.env*
+!.env.example
