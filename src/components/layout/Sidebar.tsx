@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { logout } from '@/app/login/actions';
 import { createClient } from '@/utils/supabase/client';
 import { getCurrentProfile } from '@/services/profiles';
 import { Profile } from '@/models/types';
@@ -20,6 +19,20 @@ export const Sidebar = () => {
   const pathname = usePathname();
   const [openMenus, setOpenMenus] = useState<string[]>(['Vendas', 'Minhas indicações', 'Minhas comissões', 'Programa de Embaixadores']);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+
+    try {
+      await createClient().auth.signOut();
+    } catch (error) {
+      console.error('Erro ao encerrar a sessão:', error);
+    } finally {
+      window.location.assign('/login');
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -235,9 +248,10 @@ export const Sidebar = () => {
           );
         })}
         
-        <form action={logout}>
-          <button 
-            type="submit" 
+        <button
+            type="button"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
             className={styles.navItem} 
             style={{ 
               width: 'calc(100% - 12px)', 
@@ -250,9 +264,8 @@ export const Sidebar = () => {
             }}
           >
             <span className="material-symbols-outlined">logout</span>
-            <span className={styles.navItemText}>Sair</span>
+            <span className={styles.navItemText}>{isLoggingOut ? 'Saindo...' : 'Sair'}</span>
           </button>
-        </form>
       </nav>
 
       <div style={{ padding: '12px 16px' }}>
