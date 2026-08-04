@@ -556,6 +556,7 @@ export async function getComprovantePaymentUrl(paymentId: string) {
 
 // 7. Atualização do Perfil Próprio do Embaixador (Somente campos autorizados)
 export async function atualizarMeuPerfil(payload: {
+  display_name?: string;
   phone?: string;
   instagram?: string;
   city?: string;
@@ -574,9 +575,17 @@ export async function atualizarMeuPerfil(payload: {
   const admin = createAdminClient();
   const { data: current, error: currentError } = await admin
     .from('ambassadors')
-    .select('pix_key_type, pix_key')
+    .select('display_name, pix_key_type, pix_key')
     .eq('user_id', user.id)
     .single();
+
+  let normalizedDisplayName: string | null = null;
+  if (payload.display_name !== undefined) {
+    normalizedDisplayName = payload.display_name.trim();
+    if (normalizedDisplayName.length < 2 || normalizedDisplayName.length > 80) {
+      throw new Error('O nome de exibição deve ter entre 2 e 80 caracteres.');
+    }
+  }
   if (currentError || !current) throw new Error('Não foi possível validar o perfil atual.');
 
   const normalizedPhone = payload.phone && payload.phone.replace(/[^0-9]/g, '') ? payload.phone.replace(/[^0-9]/g, '') : null;
@@ -635,6 +644,21 @@ export async function atualizarMeuPerfil(payload: {
   if (error) {
     console.error('Erro ao atualizar perfil do embaixador:', error);
     throw new Error(error.message || 'Falha ao atualizar perfil');
+  }
+
+  if (normalizedDisplayName !== null && normalizedDisplayName !== current.display_name) {
+    const { error: displayNameError } = await admin
+      .from('ambassadors')
+      .update({
+        display_name: normalizedDisplayName,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', user.id);
+
+    if (displayNameError) {
+      console.error('Erro ao atualizar nome de exibição do embaixador:', displayNameError);
+      throw new Error('Não foi possível atualizar o nome de exibição.');
+    }
   }
 
   // Update additional address fields directly since the RPC doesn't cover them
