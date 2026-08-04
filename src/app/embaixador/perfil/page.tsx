@@ -12,6 +12,7 @@ export default function MeuPerfilPage() {
   const [isPending, startTransition] = useTransition();
 
   // Campos mutáveis
+  const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
   const [instagram, setInstagram] = useState('');
   const [city, setCity] = useState('');
@@ -202,6 +203,7 @@ export default function MeuPerfilPage() {
     try {
       const res = await getMeuPerfilData();
       setData(res);
+      setDisplayName(res.display_name);
       setPhone(res.phone);
       setInstagram(res.instagram);
       setCity(res.city);
@@ -275,6 +277,7 @@ export default function MeuPerfilPage() {
         }
 
         await atualizarMeuPerfil({
+          display_name: displayName,
           phone,
           instagram,
           city,
@@ -346,7 +349,7 @@ export default function MeuPerfilPage() {
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '6px' }}>Nome de Exibição</label>
-                <input type="text" value={data?.display_name || ''} disabled style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface-container-high)', color: 'var(--color-on-surface-variant)', cursor: 'not-allowed' }} />
+                <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} required maxLength={80} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-outline-variant)', backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)', cursor: 'text' }} />
               </div>
             </div>
           </div>
