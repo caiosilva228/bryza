@@ -7,8 +7,9 @@ import PedidoStats from './PedidoStats';
 import PedidoTable from './PedidoTable';
 import PedidoFormModal from './PedidoFormModal';
 import PedidoDetailsModal from './PedidoDetailsModal';
+import PedidoCheckoutModal from './PedidoCheckoutModal';
 import PaymentCheckModal from '@/components/logistica/PaymentCheckModal';
-import { getPedidos, getPedidosStats, getProdutosAction, confirmarPagamentoAction } from '../actions';
+import { getPedidos, getPedidosStats, getProdutosAction, confirmarPagamentoAction, prepareOrderCheckoutAction } from '../actions';
 import { toast } from 'sonner';
 import Pagination from '@/components/ui/Pagination';
 
@@ -70,6 +71,10 @@ export default function PedidoClientPage({
   const [pedidoToEdit, setPedidoToEdit] = useState<Pedido | null>(null);
   const [paymentPedido, setPaymentPedido] = useState<Pedido | null>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [checkoutPedido, setCheckoutPedido] = useState<Pedido | null>(null);
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const handleConfirmarPagamento = async (params: {
     orderId: string;
@@ -114,6 +119,42 @@ export default function PedidoClientPage({
       toast.error('Erro ao atualizar dados.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGenerateCheckout = async (pedido: Pedido) => {
+    setSelectedPedido(null);
+    setCheckoutPedido(pedido);
+    setCheckoutUrl(null);
+    setCheckoutError(null);
+    setCheckoutLoading(true);
+
+    try {
+      const preparation = await prepareOrderCheckoutAction(pedido.id);
+      if (!preparation.success || !preparation.data?.checkoutToken) {
+        throw new Error(preparation.error || 'Não foi possível preparar o checkout do pedido.');
+      }
+
+      const response = await fetch('/api/payments/mercado-pago/preference', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
+        body: JSON.stringify({ checkoutToken: preparation.data.checkoutToken }),
+      });
+      const result = await response.json().catch(() => null) as { checkoutUrl?: string; error?: string } | null;
+
+      if (!response.ok || !result?.checkoutUrl) {
+        throw new Error(result?.error || 'Não foi possível gerar o link de pagamento.');
+      }
+
+      setCheckoutUrl(result.checkoutUrl);
+      toast.success('Link de pagamento gerado com sucesso.');
+      void refreshData();
+    } catch (error: any) {
+      setCheckoutError(error?.message || 'Não foi possível gerar o checkout.');
+      toast.error(error?.message || 'Não foi possível gerar o checkout.');
+    } finally {
+      setCheckoutLoading(false);
     }
   };
 
@@ -576,6 +617,7 @@ export default function PedidoClientPage({
           onClose={() => setSelectedPedido(null)}
           onUpdate={refreshData}
           onOpenPaymentModal={(p) => setPaymentPedido(p)}
+          onGenerateCheckout={handleGenerateCheckout}
           onEdit={(pedido) => {
             setPedidoToEdit(pedido);
             setIsFormModalOpen(true);
@@ -590,6 +632,22 @@ export default function PedidoClientPage({
         onConfirm={handleConfirmarPagamento}
         loading={paymentLoading}
       />
+
+      {checkoutPedido && (
+        <PedidoCheckoutModal
+          pedido={checkoutPedido}
+          isOpen={!!checkoutPedido}
+          isLoading={checkoutLoading}
+          checkoutUrl={checkoutUrl}
+          error={checkoutError}
+          onClose={() => {
+            setCheckoutPedido(null);
+            setCheckoutUrl(null);
+            setCheckoutError(null);
+          }}
+          onRetry={() => void handleGenerateCheckout(checkoutPedido)}
+        />
+      )}
     </div>
   );
 }

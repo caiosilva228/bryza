@@ -5,6 +5,7 @@ import { unstable_rethrow } from 'next/navigation';
 import * as pedidoService from '@/services/pedidos';
 import { getProdutos } from '@/services/produtos';
 import { StatusPedido, Pedido, PedidoItem } from '@/models/types';
+import { prepareOrderCheckout } from '@/lib/payments/payment-intents';
 
 export async function getPedidos() {
   try {
@@ -171,6 +172,23 @@ export async function confirmarPagamentoAction(params: {
       finalized: false,
       divergent: false,
       error: message,
+    };
+  }
+}
+
+export async function prepareOrderCheckoutAction(orderId: string) {
+  try {
+    const data = await prepareOrderCheckout(orderId);
+    revalidatePath('/vendas/pedidos');
+    revalidatePath('/logistica');
+    return { success: true, data, error: undefined };
+  } catch (error: any) {
+    unstable_rethrow(error);
+    console.error('Erro ao preparar checkout do pedido:', error);
+    return {
+      success: false,
+      data: undefined,
+      error: error?.message || 'Não foi possível preparar o checkout do pedido.',
     };
   }
 }

@@ -430,7 +430,7 @@ export interface Pedido {
   desconto_tipo?: TipoDesconto;
   desconto_valor?: number;
   desconto_aplicado?: number;
-  forma_pagamento: 'dinheiro' | 'pix' | 'cartao';
+  forma_pagamento: 'dinheiro' | 'pix' | 'cartao' | 'mercado_pago';
   payment_timing?: PaymentTiming | null;
   payment_status?: OnlinePaymentStatus | string | null;
   status_pedido: StatusPedido;

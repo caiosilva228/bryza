@@ -16,10 +16,11 @@ interface Props {
   onUpdate: () => void;
   onEdit?: (pedido: Pedido) => void;
   onOpenPaymentModal?: (pedido: Pedido) => void;
+  onGenerateCheckout?: (pedido: Pedido) => void;
 }
 
 
-export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onClose, onUpdate, onEdit, onOpenPaymentModal }: Props) {
+export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onClose, onUpdate, onEdit, onOpenPaymentModal, onGenerateCheckout }: Props) {
   const [itens, setItens] = useState<PedidoItem[]>([]);
   const [pedido, setPedido] = useState<Pedido>(pedidoInitial);
   const [isLoading, setIsLoading] = useState(false);
@@ -106,6 +107,12 @@ export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onCl
   if (!isOpen) return null;
 
   const currentStatus = statusWorkflow[pedido.status_pedido] || statusWorkflow['aguardando_preparacao'];
+  const isPaid = ['aprovado', 'confirmado', 'pago'].includes(pedido.payment_status || '')
+    || pedido.payment_check_status === 'confirmado'
+    || pedido.status_pedido === 'finalizado';
+  const canGenerateCheckout = Boolean(onGenerateCheckout)
+    && !isPaid
+    && pedido.status_pedido !== 'cancelado';
 
   return (
     <div className="modal-overlay" style={{ fontFamily: 'var(--font-sans)' }}>
@@ -384,7 +391,9 @@ export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onCl
           backgroundColor: 'var(--color-surface-container-lowest)', 
           display: 'flex', 
           alignItems: 'center', 
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          gap: '12px',
+          flexWrap: 'wrap'
         }}>
           <button 
             disabled={isUpdating || pedido.status_pedido === 'cancelado'}
@@ -465,7 +474,34 @@ export default function PedidoDetailsModal({ pedido: pedidoInitial, isOpen, onCl
             </div>
           )}
           
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'flex-end', flex: '1 1 auto' }}>
+            {canGenerateCheckout && onGenerateCheckout && (
+              <button
+                type="button"
+                onClick={() => onGenerateCheckout({ ...pedido, itens })}
+                disabled={isUpdating || isLoading}
+                style={{
+                  padding: '10px 16px',
+                  backgroundColor: '#0b6580',
+                  border: 'none',
+                  color: '#ffffff',
+                  fontWeight: 800,
+                  fontSize: '12px',
+                  borderRadius: '6px',
+                  textTransform: 'uppercase',
+                  cursor: (isUpdating || isLoading) ? 'not-allowed' : 'pointer',
+                  boxShadow: '0 2px 5px rgba(11, 101, 128, 0.2)',
+                  opacity: (isUpdating || isLoading) ? 0.7 : 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>link</span>
+                GERAR CHECKOUT
+              </button>
+            )}
             <button
               onClick={() => printSummary({ ...pedido, itens } as any, 'pedido')}
               style={{

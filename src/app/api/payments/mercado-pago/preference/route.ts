@@ -28,7 +28,8 @@ export async function POST(request: Request) {
         id, checkout_token, external_reference, expected_amount, currency,
         status, provider_preference_id, checkout_url, sandbox_checkout_url,
         expires_at,
-        agendamento:agendamento_id(numero_agendamento)
+        agendamento:agendamento_id(numero_agendamento),
+        pedido:pedido_id(numero_pedido, status_pedido, payment_status, payment_check_status)
       `)
       .eq('checkout_token', checkoutToken)
       .single();
@@ -42,6 +43,16 @@ export async function POST(request: Request) {
     if (['aprovado', 'reembolsado', 'chargeback'].includes(intent.status)) {
       return NextResponse.json({ error: 'Este pagamento não está disponível para checkout.' }, { status: 409 });
     }
+
+    const order = Array.isArray(intent.pedido) ? intent.pedido[0] : intent.pedido;
+    const orderPaymentStatus = String(order?.payment_status || '').toLowerCase();
+    if (
+      order?.status_pedido === 'cancelado'
+      || ['aprovado', 'confirmado', 'pago'].includes(orderPaymentStatus)
+      || order?.payment_check_status === 'confirmado'
+    ) {
+      return NextResponse.json({ error: 'Este pedido não está disponível para checkout.' }, { status: 409 });
+    }
     if (
       intent.provider_preference_id
       && intent.checkout_url
@@ -53,10 +64,11 @@ export async function POST(request: Request) {
     const scheduling = Array.isArray(intent.agendamento)
       ? intent.agendamento[0]
       : intent.agendamento;
+    const subjectNumber = scheduling?.numero_agendamento || order?.numero_pedido || '';
     const preference = await createMercadoPagoPreference({
       accessToken: config.accessToken,
       idempotencyKey: intent.id,
-      title: `Pedido Bryza ${scheduling?.numero_agendamento || ''}`.trim(),
+      title: `Pedido Bryza ${subjectNumber}`.trim(),
       amount: Number(intent.expected_amount),
       externalReference: intent.external_reference,
       appUrl: config.appUrl,
