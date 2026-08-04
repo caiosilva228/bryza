@@ -129,7 +129,7 @@ export async function POST(request: Request) {
           numero_agendamento, valor_total, nome_cliente, telefone_cliente,
           agendamento_itens (
             quantidade, preco_unitario,
-            produtos ( nome_produto )
+            produtos ( id, nome_produto )
           )
         `)
         .eq('id', currentIntent.agendamento_id)
@@ -140,6 +140,7 @@ export async function POST(request: Request) {
         if (agendamento.valor_total) totalValue = Number(agendamento.valor_total);
         const rawItens = Array.isArray(agendamento.agendamento_itens) ? agendamento.agendamento_itens : [];
         items = rawItens.map((i: any) => ({
+          id: i.produtos?.id || undefined,
           nome: i.produtos?.nome_produto || 'Produto',
           quantidade: Number(i.quantidade || 1),
           preco: Number(i.preco_unitario || 0),

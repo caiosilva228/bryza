@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import { verifyAndParseReferralCookie, COOKIE_NAME } from '@/lib/referral/cookie';
 import { KitBryzaSalesPagePremium } from '@/components/public/KitBryzaSalesPagePremium';
 import { faqs } from '@/components/public/kit-bryza-content';
+import { MetaPixelScript } from '@/components/analytics/MetaPixelScript';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -149,6 +150,7 @@ export default async function PublicAmbassadorSalesPage({ params }: PageProps) {
 
   return (
     <>
+      <MetaPixelScript />
       <KitBryzaSalesPagePremium ambassador={publicAmbassador} products={products || []} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }} />
     </>

@@ -6,6 +6,7 @@ import {
   AmbassadorAccessPrompt,
   type AmbassadorAccessInfo,
 } from '@/components/public/AmbassadorAccessPrompt';
+import MetaPixelPurchase from '@/components/analytics/MetaPixelPurchase';
 import styles from './payment-return.module.css';
 
 const PAYMENT_RETURN_KEY = 'bryza_mp_checkout';
@@ -32,6 +33,7 @@ type StoredCheckout = {
   orderNumber?: string;
   whatsappUrl?: string;
   items?: Array<{
+    id?: string;
     nome: string;
     quantidade: number;
     preco: number;
@@ -138,10 +140,11 @@ export default function PaymentReturnClient({
     return 'processing';
   });
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
-  const [orderItems, setOrderItems] = useState<Array<{ nome: string; quantidade: number; preco: number }>>([]);
+  const [orderItems, setOrderItems] = useState<Array<{ id?: string; nome: string; quantidade: number; preco: number }>>([]);
   const [totalValue, setTotalValue] = useState<number | null>(null);
   const [whatsappUrl, setWhatsappUrl] = useState<string | null>(null);
   const [ambassadorAccess, setAmbassadorAccess] = useState<AmbassadorAccessInfo | null>(null);
+  const [checkoutToken, setCheckoutToken] = useState<string | null>(null);
 
   const [attempts, setAttempts] = useState(0);
   const [checking, setChecking] = useState(true);
@@ -151,6 +154,7 @@ export default function PaymentReturnClient({
 
   const checkStatus = useCallback(async () => {
     const stored = readStoredCheckout();
+    if (stored.checkoutToken) setCheckoutToken(stored.checkoutToken);
     if (stored.orderNumber) setOrderNumber(stored.orderNumber);
     if (stored.items && stored.items.length > 0) setOrderItems(stored.items);
     if (stored.totalValue !== undefined) setTotalValue(stored.totalValue);
@@ -179,7 +183,7 @@ export default function PaymentReturnClient({
         status?: PaymentStatus;
         orderNumber?: string;
         totalValue?: number;
-        items?: Array<{ nome: string; quantidade: number; preco: number }>;
+        items?: Array<{ id?: string; nome: string; quantidade: number; preco: number }>;
         whatsappUrl?: string;
       };
       if (!mountedRef.current) return;
@@ -238,6 +242,15 @@ export default function PaymentReturnClient({
   const content = CONTENT[view];
   const isProcessing = view === 'processing';
   const isConfirmedOrThanks = view === 'thanks' || view === 'confirmed';
+  const purchaseEventId = externalReference || paymentId || checkoutToken || orderNumber;
+  const purchaseContents = orderItems
+    .filter((item) => item.id)
+    .map((item) => ({
+      id: item.id as string,
+      quantity: item.quantidade,
+      item_price: item.preco,
+    }));
+  const purchaseNumItems = orderItems.reduce((total, item) => total + item.quantidade, 0);
 
   // Gerar link padrão para WhatsApp se não houver um gravado
   const cleanPhone = '556132462117';
@@ -252,6 +265,16 @@ export default function PaymentReturnClient({
   return (
     <main className={styles.page}>
       <section className={styles.card} aria-live="polite">
+        {isConfirmedOrThanks && purchaseEventId && totalValue !== null && (
+          <MetaPixelPurchase
+            eventId={purchaseEventId}
+            orderId={orderNumber || purchaseEventId}
+            value={totalValue}
+            contentName="Pedido Bryza"
+            contents={purchaseContents}
+            numItems={purchaseNumItems}
+          />
+        )}
         <div className={`${styles.iconWrap} ${styles[content.tone]}`}>
           <span className={`material-symbols-outlined ${isProcessing && checking ? styles.spin : ''}`}>
             {content.icon}

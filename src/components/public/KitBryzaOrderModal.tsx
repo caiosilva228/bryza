@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Check, X, LockKeyhole, ArrowRight, ArrowLeft, Search, MapPin, CheckCircle2, XCircle, MessageCircle, CalendarDays, Clock3, Gift, Minus, Package, Plus, ShoppingCart } from 'lucide-react';
 import { createPublicSchedulingAction, type PublicSchedulingResult } from '@/app/actions/create-public-order';
 import { AmbassadorAccessPrompt } from './AmbassadorAccessPrompt';
+import MetaPixelPurchase from '@/components/analytics/MetaPixelPurchase';
 import type { AmbassadorPublicInfo, ProductOffer } from './kit-bryza-types';
 import styles from './KitBryzaSalesPage.module.css';
 
@@ -530,7 +531,20 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
 
         {/* Estado de Sucesso */}
         {result ? (
-          <div className={styles.successState} aria-live="polite" style={{ padding: '24px 20px', textAlign: 'center' }}>
+          <>
+            <MetaPixelPurchase
+              eventId={result.agendamento_id}
+              orderId={result.numero_agendamento}
+              value={result.valor_total}
+              contentName="Kit Bryza Casa Perfumada"
+              numItems={kitQuantity}
+              contents={[
+                { id: SOAP_PRODUCT_ID, quantity: kitQuantity },
+                { id: SOFTENER_PRODUCT_ID, quantity: kitQuantity },
+                { id: CLOTH_PRODUCT_ID, quantity: clothQuantity },
+              ]}
+            />
+            <div className={styles.successState} aria-live="polite" style={{ padding: '24px 20px', textAlign: 'center' }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '56px', height: '56px', background: '#f0fdf4', color: '#16a34a', borderRadius: '50%', marginBottom: '12px' }}>
               <Check size={32} />
             </span>
@@ -667,7 +681,8 @@ Aguardo a confirmação da entrega!`;
                 </div>
               );
             })()}
-          </div>
+            </div>
+          </>
         ) : (
           <form className={styles.orderForm} aria-busy={loading}>
             {error && <div className={styles.formError}>{error}</div>}
