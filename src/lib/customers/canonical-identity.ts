@@ -1,11 +1,27 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+/**
+ * Telefones brasileiros em formato canônico: DDD + número, somente dígitos.
+ *
+ * - Fixo: 10 dígitos, com o número iniciando em 2, 3, 4 ou 5.
+ * - Celular: 11 dígitos, com o número iniciando em 9.
+ */
+export const BRAZIL_CANONICAL_PHONE_PATTERN =
+  '(?:[1-9][1-9][2-5][0-9]{7}|[1-9][1-9]9[0-9]{8})';
+export const BRAZIL_CANONICAL_PHONE_REGEX = new RegExp(
+  `^${BRAZIL_CANONICAL_PHONE_PATTERN}$`,
+);
+
 export function normalizeCustomerPhone(value: unknown): string {
   const digits = typeof value === 'string' ? value.replace(/\D/g, '') : '';
   if ((digits.length === 12 || digits.length === 13) && digits.startsWith('55')) {
     return digits.slice(2);
   }
   return digits;
+}
+
+export function isValidBrazilPhone(value: unknown): boolean {
+  return BRAZIL_CANONICAL_PHONE_REGEX.test(normalizeCustomerPhone(value));
 }
 
 export function normalizeCustomerCpf(value: unknown): string | null {

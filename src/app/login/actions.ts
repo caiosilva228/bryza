@@ -7,6 +7,7 @@ import { getSyntheticEmail } from '@/utils/env';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { headers } from 'next/headers';
 import crypto from 'crypto';
+import { isValidBrazilPhone, normalizeCustomerPhone } from '@/lib/customers/canonical-identity';
 
 function getIpHash(reqHeaders: Headers): string {
   // Obter cabeçalho seguro de borda do Netlify
@@ -59,30 +60,33 @@ export async function login(formData: FormData) {
   // 2. Resolução do Username para e-mail sintético (Código Bryza, CPF, Telefone ou E-mail)
   let resolvedEmail = normalizedUsername;
   const digitsOnly = normalizedUsername.replace(/\D/g, '');
+  const canonicalPhone = normalizeCustomerPhone(identifier);
 
-  if (digitsOnly.length === 10 || digitsOnly.length === 11) {
-    // 2a. Tentar resolver por Telefone
+  if (isValidBrazilPhone(canonicalPhone)) {
+    // 2a. O telefone sempre chega ao banco em formato canônico: somente
+    // dígitos, com DDD, seguindo o padrão brasileiro de 10/11 dígitos.
     const { data: phoneEmail } = await adminClient.rpc('fn_resolve_login_phone', {
-      p_phone: digitsOnly,
+      p_phone: canonicalPhone,
     });
 
     if (typeof phoneEmail === 'string' && phoneEmail) {
       resolvedEmail = phoneEmail;
-    } else if (digitsOnly.length === 11) {
-      // 2b. Tentar resolver por CPF
-      const { data: cpfEmail } = await adminClient.rpc('fn_resolve_login_cpf', {
-        p_cpf: digitsOnly,
-      });
+    }
+  }
 
-      if (typeof cpfEmail === 'string' && cpfEmail) {
-        resolvedEmail = cpfEmail;
-      } else {
-        resolvedEmail = getSyntheticEmail(`identificador-invalido-${digitsOnly}`);
-      }
+  if (resolvedEmail === normalizedUsername && digitsOnly.length === 11) {
+    // 2b. Tentar resolver por CPF quando o identificador de 11 dígitos não
+    // encontrou um telefone canônico.
+    const { data: cpfEmail } = await adminClient.rpc('fn_resolve_login_cpf', {
+      p_cpf: digitsOnly,
+    });
+
+    if (typeof cpfEmail === 'string' && cpfEmail) {
+      resolvedEmail = cpfEmail;
     } else {
       resolvedEmail = getSyntheticEmail(`identificador-invalido-${digitsOnly}`);
     }
-  } else if (/^bryza\d+$/i.test(normalizedUsername)) {
+  } else if (resolvedEmail === normalizedUsername && /^bryza\d+$/i.test(normalizedUsername)) {
     // Resolver pelo perfil evita quebrar contas legadas cujo e-mail interno
     // tenha ficado divergente do código Bryza exibido.
     const { data: usernameProfile, error: usernameProfileError } = await adminClient

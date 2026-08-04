@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 
 interface EmbaixadorItem {
   id: string;
-  user_id: string;
+  user_id: string | null;
   full_name: string;
   display_name: string;
   username: string;
@@ -72,7 +72,7 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
   const allSelected = lista.length > 0 && lista.every((item) => selectedSet.has(item.id));
   const someSelected = lista.some((item) => selectedSet.has(item.id));
   const inactiveSelected = lista.filter(
-    (item) => selectedSet.has(item.id) && item.status !== 'ativo'
+    (item) => selectedSet.has(item.id) && (item.status !== 'ativo' || !item.user_id)
   );
   const commissionEligibleSelected = lista.filter(
     (item) => selectedSet.has(item.id)
@@ -141,8 +141,12 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
 
   const handleStatusChange = async (id: string, newStatus: string, name: string) => {
     try {
-      await alterarStatus(id, newStatus);
-      toast.success(`Status de ${name} alterado para ${newStatus}.`);
+      const result = await alterarStatus(id, newStatus);
+      toast.success(
+        result.accountCreated
+          ? `Status de ${name} alterado para ativo. O acesso foi criado: login e senha temporária usam o telefone canônico.`
+          : `Status de ${name} alterado para ${newStatus}.`,
+      );
       onRefresh();
     } catch (e: any) {
       toast.error(e.message || 'Erro ao alterar status.');
@@ -624,7 +628,7 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
                       <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit</span>
                     </Link>
 
-                    {item.status !== 'ativo' && (
+                    {(item.status !== 'ativo' || !item.user_id) && (
                       <button
                         onClick={() => handleStatusChange(item.id, 'ativo', item.full_name)}
                         style={{
@@ -637,9 +641,11 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
                           display: 'flex',
                           alignItems: 'center'
                         }}
-                        title="Ativar Conta"
+                        title={item.status === 'ativo' ? 'Criar acesso' : 'Ativar Conta'}
                       >
-                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>check_circle</span>
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                          {item.status === 'ativo' ? 'key' : 'check_circle'}
+                        </span>
                       </button>
                     )}
 

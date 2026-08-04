@@ -1,9 +1,19 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  isValidBrazilPhone,
   normalizeCustomerIdentity,
+  normalizeCustomerPhone,
   upsertPublicCustomerCanonical,
 } from './canonical-identity.ts';
+
+test('accepts only canonical Brazilian landline and mobile formats', () => {
+  assert.equal(normalizeCustomerPhone('+55 (61) 98211-5107'), '61982115107');
+  assert.equal(isValidBrazilPhone('+55 (61) 98211-5107'), true);
+  assert.equal(isValidBrazilPhone('(61) 3333-3333'), true);
+  assert.equal(isValidBrazilPhone('(61) 8123-4567'), false);
+  assert.equal(isValidBrazilPhone('6198211510'), false);
+});
 
 test('normalizes phone, CPF and email consistently across public channels', () => {
   assert.deepEqual(normalizeCustomerIdentity({

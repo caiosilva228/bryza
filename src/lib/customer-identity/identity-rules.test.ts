@@ -28,6 +28,14 @@ test('normalizes an explicit Brazilian country code and rejects invalid phone le
     /invalid_customer_phone/,
   );
   assert.throws(
+    () => normalizeCustomerPhone('(11) 9876-5432'),
+    /invalid_customer_phone/,
+  );
+  assert.throws(
+    () => normalizeCustomerPhone('(11) 88765-4321'),
+    /invalid_customer_phone/,
+  );
+  assert.throws(
     () => normalizeCustomerPhone(null),
     /invalid_customer_phone/,
   );

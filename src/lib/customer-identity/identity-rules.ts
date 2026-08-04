@@ -1,4 +1,5 @@
 import {
+  isValidBrazilPhone,
   normalizeCustomerCpf as normalizeCpfValue,
   normalizeCustomerPhone as normalizePhoneValue,
 } from '../customers/canonical-identity.ts';
@@ -32,7 +33,7 @@ export function normalizeCustomerPhone(
 ): string {
   const normalized = normalizePhoneValue(value);
 
-  if (!/^[0-9]{10,11}$/.test(normalized)) {
+  if (!isValidBrazilPhone(normalized)) {
     throw new Error('invalid_customer_phone');
   }
 

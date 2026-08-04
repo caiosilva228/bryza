@@ -327,7 +327,7 @@ export default function ClientesIndicadosTab() {
             </div>
             <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--color-on-surface)', margin: '0 0 8px' }}>Tornar Embaixador</h2>
             <p style={{ color: 'var(--color-on-surface-variant)', fontSize: '14px', margin: '0 0 24px' }}>
-              O cliente <strong>{modalCliente.nome}</strong> será promovido a embaixador com status <strong>Pendente</strong>. O admin poderá ativar o acesso depois via &quot;Redefinir Acesso&quot;.
+              O cliente <strong>{modalCliente.nome}</strong> será promovido a embaixador com status <strong>Pendente</strong>. Ao ativar a conta, o acesso será criado automaticamente com o telefone canônico como credencial temporária.
             </p>
 
             <div style={{ backgroundColor: 'var(--color-surface-container-low)', borderRadius: '10px', padding: '14px 16px', marginBottom: '20px', fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
