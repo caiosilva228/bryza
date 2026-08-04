@@ -52,6 +52,11 @@ interface TableProps {
   onSort?: (key: string) => void;
 }
 
+function isMissingServerActionError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return /failed to find server action|server action.*(?:was )?not found on the server/i.test(message);
+}
+
 export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder, onSort }: TableProps) {
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
   const [networkStats, setNetworkStats] = useState<Record<string, NetworkStat>>({});
@@ -270,6 +275,10 @@ export default function EmbaixadoresTable({ lista, onRefresh, sortBy, sortOrder,
         setSelectedIds([]);
         onRefresh();
       } catch (error) {
+        if (isMissingServerActionError(error)) {
+          window.location.reload();
+          return;
+        }
         toast.error(error instanceof Error ? error.message : 'Erro ao ativar comissões.');
       }
     });
