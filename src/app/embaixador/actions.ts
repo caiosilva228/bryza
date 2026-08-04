@@ -575,7 +575,7 @@ export async function atualizarMeuPerfil(payload: {
   const admin = createAdminClient();
   const { data: current, error: currentError } = await admin
     .from('ambassadors')
-    .select('display_name, pix_key_type, pix_key')
+    .select('display_name, phone, pix_key_type, pix_key')
     .eq('user_id', user.id)
     .single();
 
@@ -592,6 +592,10 @@ export async function atualizarMeuPerfil(payload: {
   if (normalizedPhone && !/^[0-9]{10,11}$/.test(normalizedPhone)) {
     throw new Error('Informe um telefone com DDD válido.');
   }
+  const currentPhone = current.phone ? current.phone.replace(/[^0-9]/g, '') : null;
+  // Um telefone legado duplicado não deve bloquear alterações de outros campos.
+  // A revisão de identidade só é necessária quando o embaixador realmente troca o número.
+  const phoneChanged = normalizedPhone !== null && normalizedPhone !== currentPhone;
   const normalizedState = payload.state && payload.state.trim() ? payload.state.trim().toUpperCase() : null;
   if (normalizedState && !/^[A-Z]{2}$/.test(normalizedState)) throw new Error('Informe uma UF válida.');
   const normalizedPixType = payload.pix_type === 'pix' || payload.pix_type === 'outro'
@@ -617,7 +621,7 @@ export async function atualizarMeuPerfil(payload: {
     }
   }
 
-  if (normalizedPhone) {
+  if (phoneChanged) {
     const { data: identityResult, error: identityError } = await supabase.rpc(
       'fn_update_my_profile_canonical',
       {
