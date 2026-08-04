@@ -44,3 +44,4 @@ next-env.d.ts
 
 # temporary production deployment packages
 /tmp/netlify-push-production-*/
+/deploy-*.zip
