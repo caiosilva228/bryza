@@ -40,6 +40,11 @@ function formatCurrency(value: number) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 }
 
+// The Payment Brick removes card methods below this value for Brazil. Keep the
+// configuration aligned with the provider so the UI does not render methods
+// that the provider will reject before the form can be submitted.
+const CARD_MINIMUM_AMOUNT = 10;
+
 function errorText(value: unknown) {
   if (value && typeof value === 'object' && 'message' in value && typeof value.message === 'string') {
     return value.message;
@@ -157,6 +162,17 @@ export function TransparentPaymentBrick({
   }
   if (!initialization) return null;
 
+  const savedCardPayer = initialization.customerId && initialization.cardsIds.length > 0
+    ? {
+      customerId: initialization.customerId,
+      cardsIds: initialization.cardsIds,
+    }
+    : {};
+  const cardMethodsAvailable = initialization.amount >= CARD_MINIMUM_AMOUNT;
+  const paymentMethods = cardMethodsAvailable
+    ? { creditCard: 'all' as const, debitCard: 'all' as const, bankTransfer: 'all' as const }
+    : { bankTransfer: 'all' as const };
+
   if (paymentResult && ['aprovado', 'processando', 'pendente'].includes(paymentResult.status)) {
     const isApproved = paymentResult.status === 'aprovado';
     return (
@@ -213,6 +229,11 @@ export function TransparentPaymentBrick({
         </div>
         <strong>{formatCurrency(initialization.amount || amount)}</strong>
       </div>
+      {!cardMethodsAvailable ? (
+        <small style={{ color: '#64748b' }}>
+          Neste valor, o Mercado Pago disponibiliza apenas Pix.
+        </small>
+      ) : null}
       {error ? <div role="alert" style={{ padding: '10px 12px', borderRadius: '8px', background: '#fff7ed', color: '#9a3412' }}>{error}</div> : null}
       <Payment
         key={brickKey}
@@ -221,19 +242,13 @@ export function TransparentPaymentBrick({
         initialization={{
           amount: initialization.amount,
           payer: {
+            entityType: 'individual',
             ...(initialization.payerEmail ? { email: initialization.payerEmail } : {}),
-            ...(initialization.customerId ? {
-              customerId: initialization.customerId,
-              cardsIds: initialization.cardsIds,
-            } : {}),
+            ...savedCardPayer,
           },
         }}
         customization={{
-          paymentMethods: {
-            creditCard: 'all',
-            debitCard: 'all',
-            bankTransfer: 'all',
-          },
+          paymentMethods,
           visual: { preserveSavedCardsOrder: true },
         }}
         onSubmit={submitPayment}

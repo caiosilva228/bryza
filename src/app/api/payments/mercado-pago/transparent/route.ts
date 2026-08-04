@@ -47,7 +47,7 @@ export async function POST(request: Request) {
         : message === 'payment_unavailable'
           ? 'Este pagamento não está mais disponível.'
           : message.startsWith('Mercado Pago recusou')
-            ? 'O Mercado Pago não aceitou os dados enviados. Revise o formulário e tente novamente.'
+            ? message
             : 'Não foi possível processar o pagamento.' },
       { status: statusForError(message) },
     );

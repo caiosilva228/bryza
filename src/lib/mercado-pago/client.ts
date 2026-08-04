@@ -109,12 +109,29 @@ function objectValue(value: unknown): JsonObject | undefined {
     : undefined;
 }
 
+function providerErrorDetail(body: unknown, fallback: string) {
+  const provider = objectValue(body);
+  const causes = Array.isArray(provider?.cause) ? provider.cause : [];
+  const parts = [
+    stringValue(provider?.error, 80),
+    stringValue(provider?.message, 240),
+    ...causes.flatMap(cause => {
+      const item = objectValue(cause);
+      return item
+        ? [stringValue(item.code, 80), stringValue(item.description, 240)]
+        : [];
+    }),
+    stringValue(fallback, 120),
+  ].filter((part): part is string => Boolean(part));
+
+  return [...new Set(parts)].join(' | ').slice(0, 500);
+}
+
 function safeProviderError(body: unknown, status: number, fallback: string) {
-  // Do not echo provider payloads: they can contain tokenized payment data or
-  // other request details that must never reach application logs.
-  void body;
-  void fallback;
-  return new Error(`Mercado Pago recusou o pagamento (${status}).`);
+  // Only expose provider error/message and cause code/description. Never echo
+  // the full payload because it can contain tokenized payment data.
+  const detail = providerErrorDetail(body, fallback);
+  return new Error(`Mercado Pago recusou o pagamento (${status})${detail ? `: ${detail}` : '.'}`);
 }
 
 /**
@@ -138,29 +155,22 @@ export async function createMercadoPagoTransparentPayment(
     metadata: { payment_intent: input.externalReference, checkout_mode: 'transparent' },
   };
 
-  for (const key of [
-    'token',
-    'payment_method_id',
-    'payment_type_id',
-    'issuer_id',
-    'installments',
-    'payment_method_option_id',
-    'processing_mode',
-    'transaction_details',
-  ]) {
+  // The Brick returns additional fields for other Mercado Pago products and
+  // regions. Only forward fields accepted by POST /v1/payments here.
+  for (const key of ['token', 'payment_method_id', 'installments', 'issuer_id']) {
     if (formData[key] !== undefined) payload[key] = formData[key];
   }
 
-  const payer: JsonObject = {
-    email: input.payer.email,
-  };
-  if (input.payer.identification) payer.identification = input.payer.identification;
-  if (input.payer.providerCustomerId) {
-    // Saved-card payments are scoped to the customer resolved from the
-    // verified Bryza account, never to a customer id sent by the browser.
-    payer.type = 'customer';
-    payer.id = input.payer.providerCustomerId;
-  } else {
+  const payerType = stringValue(payerFromBrick?.type, 40)?.toLowerCase();
+  const isSavedCardPayment = payerType === 'customer' || Boolean(formData.card_id);
+  const usesProviderCustomer = Boolean(input.payer.providerCustomerId && isSavedCardPayment);
+  const payer: JsonObject = usesProviderCustomer
+    ? { type: 'customer', id: input.payer.providerCustomerId }
+    : { email: input.payer.email };
+  if (!usesProviderCustomer && input.payer.identification) payer.identification = input.payer.identification;
+  // Saved-card payments are scoped to the customer resolved from the
+  // verified Bryza account, never to a customer id sent by the browser.
+  if (!usesProviderCustomer) {
     const firstName = stringValue(payerFromBrick?.first_name || payerFromBrick?.firstName, 80);
     const lastName = stringValue(payerFromBrick?.last_name || payerFromBrick?.lastName, 120);
     if (firstName) payer.first_name = firstName;
