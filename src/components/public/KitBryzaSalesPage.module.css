@@ -3701,6 +3701,25 @@
 
 @media (prefers-reduced-motion: reduce) {
   .page *, .page *::before, .page *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+  .page .marqueeTrack {
+    width: 100%;
+    animation: none !important;
+    transform: none !important;
+  }
+  .page .marqueeGroup { display: none; }
+  .page .marqueeGroup:first-child {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    padding-right: 0;
+    justify-content: center;
+  }
+  .page .marqueeItem {
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 /* Identidade compartilhada com a página principal da Bryza — Versão Premium Otimizada */
@@ -4286,21 +4305,30 @@
 
 /* Custom Overrides for High-Contrast Modal & Marquee Ticker */
 @keyframes marqueeScroll {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(-50%); }
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
 }
 
 .marqueeTrack {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 36px;
+  width: max-content;
+  flex: 0 0 auto;
   white-space: nowrap;
   animation: marqueeScroll 18s linear infinite;
   will-change: transform;
 }
 
+.marqueeGroup {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  padding-right: 36px;
+}
+
 .marqueeItem {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   gap: 6px;
   font-size: 12px;
@@ -4325,7 +4353,11 @@
 
 @media (max-width: 767px) {
   .marqueeTrack {
-    animation-duration: 42s;
+    animation-duration: 60s;
+  }
+
+  .marqueeGroup {
+    padding-right: 24px;
   }
 
   .benefitGrid {
