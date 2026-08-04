@@ -2,14 +2,9 @@
 
 import { useState, useEffect, useTransition } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { getMeuPerfilData, atualizarMeuPerfil, getSignedProfilePhotoUrl, type AmbassadorProfileData } from '../actions';
+import type { AmbassadorProfileData } from '../actions';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'sonner';
-
-function isMissingServerActionError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-  return /failed to find server action|server action.*(?:was )?not found on the server/i.test(message);
-}
 
 export default function MeuPerfilPage() {
   const [data, setData] = useState<AmbassadorProfileData | null>(null);
@@ -206,7 +201,16 @@ export default function MeuPerfilPage() {
   const loadProfile = async () => {
     setLoading(true);
     try {
-      const res = await getMeuPerfilData();
+      const response = await fetch('/api/embaixador/perfil', {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(body.error || 'Erro ao carregar dados do perfil.');
+      }
+
+      const res = body.profile as AmbassadorProfileData;
       setData(res);
       setDisplayName(res.display_name);
       setPhone(res.phone);
@@ -223,9 +227,7 @@ export default function MeuPerfilPage() {
       if (res.longitude) setLng(Number(res.longitude));
       setPixType(res.pix_type);
       setPixKey(res.pix_key_masked);
-      if (res.photo_path) {
-        getSignedProfilePhotoUrl(res.photo_path).then(setPhotoUrl);
-      }
+      setPhotoUrl(body.photo_url || null);
     } catch (e: any) {
       toast.error(e.message || 'Erro ao carregar dados do perfil.');
     } finally {
@@ -281,30 +283,34 @@ export default function MeuPerfilPage() {
           throw new Error('Ao alterar o tipo da chave Pix, informe também a nova chave.');
         }
 
-        await atualizarMeuPerfil({
-          display_name: displayName,
-          phone,
-          instagram,
-          city,
-          state,
-          cep,
-          address,
-          number,
-          neighborhood,
-          latitude,
-          longitude,
-          pix_type: pixType !== data?.pix_type ? pixType : null,
-          pix_key: isPixKeyMasked ? null : pixKey,
-          photo_path: finalPhotoPath || null
+        const response = await fetch('/api/embaixador/perfil', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            display_name: displayName,
+            phone,
+            instagram,
+            city,
+            state,
+            cep,
+            address,
+            number,
+            neighborhood,
+            latitude,
+            longitude,
+            pix_type: pixType !== data?.pix_type ? pixType : null,
+            pix_key: isPixKeyMasked ? null : pixKey,
+            photo_path: finalPhotoPath || null,
+          }),
         });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(body.error || 'Erro ao atualizar perfil.');
+        }
 
         toast.success('Perfil atualizado com sucesso!');
-        loadProfile();
+        await loadProfile();
       } catch (err: any) {
-        if (isMissingServerActionError(err)) {
-          window.location.reload();
-          return;
-        }
         toast.error(err.message || 'Erro ao atualizar perfil.');
       }
     });

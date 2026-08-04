@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { logout } from '@/app/login/actions';
 import { createClient } from '@/utils/supabase/client';
 import { getCurrentProfile } from '@/services/profiles';
 
@@ -23,6 +22,20 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
   const pathname = usePathname();
   const [openMenus, setOpenMenus] = useState<string[]>(['Vendas', 'Minhas indicações', 'Minhas comissões', 'Programa de Embaixadores']);
   const [role, setRole] = useState<string | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+
+    try {
+      await createClient().auth.signOut();
+    } catch (error) {
+      console.error('Erro ao encerrar a sessão:', error);
+    } finally {
+      window.location.assign('/login');
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -352,9 +365,10 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
             borderTop: '1px solid var(--color-outline-variant)',
           }}
         >
-          <form action={logout}>
-            <button
-              type="submit"
+          <button
+              type="button"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
               style={{
                 width: '100%',
                 display: 'flex',
@@ -376,9 +390,8 @@ export const MobileDrawer = ({ isOpen, onClose }: MobileDrawerProps) => {
               <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>
                 logout
               </span>
-              Sair do sistema
+              {isLoggingOut ? 'Saindo...' : 'Sair do sistema'}
             </button>
-          </form>
         </div>
       </aside>
     </>
