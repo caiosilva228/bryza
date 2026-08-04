@@ -73,18 +73,18 @@ export function CadastroPageClient({ sponsor }: CadastroPageClientProps) {
       {/* 1. Faixa de Anúncio Superior (Marquee Continuo e Lento no Mobile) */}
       <div className={styles.announcement} style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
         <div className={styles.marqueeTrack}>
-          <span className={styles.marqueeItem}>
-            <Users size={13} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />
-            Programa Oficial de Embaixadores Bryza • Convite Exclusivo de {sponsor.display_name}
-          </span>
-          <span className={styles.marqueeItem}>
-            <Users size={13} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />
-            Programa Oficial de Embaixadores Bryza • Convite Exclusivo de {sponsor.display_name}
-          </span>
-          <span className={styles.marqueeItem}>
-            <Users size={13} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />
-            Programa Oficial de Embaixadores Bryza • Convite Exclusivo de {sponsor.display_name}
-          </span>
+          <div className={styles.marqueeGroup}>
+            <span className={styles.marqueeItem}>
+              <Users size={13} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />
+              Programa Oficial de Embaixadores Bryza • Convite Exclusivo de {sponsor.display_name}
+            </span>
+          </div>
+          <div className={styles.marqueeGroup} aria-hidden="true">
+            <span className={styles.marqueeItem}>
+              <Users size={13} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />
+              Programa Oficial de Embaixadores Bryza • Convite Exclusivo de {sponsor.display_name}
+            </span>
+          </div>
         </div>
       </div>
 
