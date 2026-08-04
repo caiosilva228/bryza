@@ -22,6 +22,7 @@ import {
 import {
   findCustomerByCanonicalIdentity,
   normalizeCustomerCpf,
+  normalizeCustomerEmail,
   normalizeCustomerPhone,
   upsertPublicCustomerCanonical,
 } from '@/lib/customers/canonical-identity';
@@ -39,6 +40,7 @@ export interface StoreOrderItemInput {
 export interface StoreOrderPayload {
   clientName?: string;
   clientPhone?: string;
+  email?: string;
   cpf?: string;
   address: string;
   number?: string;
@@ -338,6 +340,10 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
     if (payload.cpf && !/^\d{11}$/.test(clientCpf || '')) {
       return { success: false, error: 'Informe um CPF valido com 11 digitos.' };
     }
+    const clientEmail = normalizeCustomerEmail(payload.email);
+    if (payload.email && (!clientEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clientEmail))) {
+      return { success: false, error: 'Informe um e-mail valido.' };
+    }
     if (!payload.items?.length || payload.items.length > 50) {
       return { success: false, error: 'O carrinho esta vazio ou excede o limite.' };
     }
@@ -368,7 +374,7 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
     const canonicalCustomer = await upsertPublicCustomerCanonical(admin, {
       fullName: clientName,
       phone: clientPhone,
-      email: user?.email_confirmed_at ? user.email : undefined,
+      email: user?.email_confirmed_at ? user.email : clientEmail || undefined,
       cpf: clientCpf,
       address: payload.address,
       number: payload.number,

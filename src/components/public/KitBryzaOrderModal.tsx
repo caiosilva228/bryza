@@ -5,6 +5,7 @@ import { Check, X, LockKeyhole, ArrowRight, ArrowLeft, Search, MapPin, CheckCirc
 import { createPublicSchedulingAction, type PublicSchedulingResult } from '@/app/actions/create-public-order';
 import { AmbassadorAccessPrompt } from './AmbassadorAccessPrompt';
 import MetaPixelPurchase from '@/components/analytics/MetaPixelPurchase';
+import { TransparentPaymentBrick, type TransparentPaymentResult } from '@/components/payments/TransparentPaymentBrick';
 import type { AmbassadorPublicInfo, ProductOffer } from './kit-bryza-types';
 import styles from './KitBryzaSalesPage.module.css';
 
@@ -152,6 +153,10 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
   const [form, setForm] = useState<OrderForm>(() => initialForm(ambassador.city));
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PublicSchedulingResult | null>(null);
+  const [transparentCheckout, setTransparentCheckout] = useState<{
+    checkoutToken: string;
+    result: PublicSchedulingResult;
+  } | null>(null);
   const [error, setError] = useState('');
 
   // Status de Validação CPF & CEP (Verdadeiro / Falso)
@@ -409,6 +414,7 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
         nome: form.nome,
         cpf: form.cpf,
         telefone: form.telefone,
+        email: form.email,
         endereco: form.endereco,
         numero: form.numero,
         complemento: form.complemento,
@@ -436,25 +442,10 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
           payment_status?: string;
         };
         if (form.paymentTiming === 'agora' && paymentData.checkout_token) {
-          const checkoutResponse = await fetch('/api/payments/mercado-pago/preference', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ checkoutToken: paymentData.checkout_token }),
+          setTransparentCheckout({
+            checkoutToken: paymentData.checkout_token,
+            result: response.data,
           });
-          const checkout = await checkoutResponse.json() as { checkoutUrl?: string; error?: string };
-          if (!checkoutResponse.ok || !checkout.checkoutUrl) {
-            throw new Error(checkout.error || 'Não foi possível abrir o pagamento. Tente novamente.');
-          }
-          try {
-            sessionStorage.setItem('bryza_mp_checkout', JSON.stringify({
-              checkoutToken: paymentData.checkout_token,
-              source: 'kit_bryza',
-              ambassadorAccess: paymentData.ambassador_access,
-            }));
-          } catch {
-            // O retorno ainda pode usar os identificadores enviados pelo Mercado Pago.
-          }
-          window.location.assign(checkout.checkoutUrl);
           return;
         }
         setResult(response.data);
@@ -483,6 +474,8 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
             <h2>
               {result
                 ? 'Pedido recebido!'
+                : transparentCheckout
+                ? 'Pagamento seguro'
                 : step === 1
                 ? 'Monte o seu pedido'
                 : step === 2
@@ -496,6 +489,8 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
             <p>
               {result
                 ? 'Sua solicitação de agendamento foi registrada com sucesso.'
+                : transparentCheckout
+                ? 'Conclua o pagamento sem sair da Bryza.'
                 : step === 1
                 ? 'Escolha quantos kits deseja e confira tudo o que receberá.'
                 : 'Escolha pagar agora com Mercado Pago ou somente quando receber.'}
@@ -507,7 +502,7 @@ export function KitBryzaOrderModal({ ambassador, product, onClose }: OrderModalP
         </header>
 
         {/* Barra de Progresso / Indicadores de Etapa */}
-        {!result && (
+        {!result && !transparentCheckout && (
           <div className={styles.orderProgress}>
             <div style={{ height: '4px', background: 'rgba(255,255,255,0.15)', borderRadius: '2px', overflow: 'hidden', marginBottom: '12px' }}>
               <div
@@ -683,6 +678,19 @@ Aguardo a confirmação da entrega!`;
             })()}
             </div>
           </>
+        ) : transparentCheckout ? (
+          <div style={{ padding: '24px 20px' }}>
+            <TransparentPaymentBrick
+              checkoutToken={transparentCheckout.checkoutToken}
+              amount={transparentCheckout.result.valor_total}
+              orderNumber={transparentCheckout.result.numero_agendamento}
+              onCompleted={(_payment: TransparentPaymentResult) => {
+                setResult(transparentCheckout.result);
+                setTransparentCheckout(null);
+              }}
+              onCancel={() => setTransparentCheckout(null)}
+            />
+          </div>
         ) : (
           <form className={styles.orderForm} aria-busy={loading}>
             {error && <div className={styles.formError}>{error}</div>}

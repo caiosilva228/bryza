@@ -16,6 +16,7 @@ import {
   StoreSchedulingAvailability,
 } from '@/lib/store-kits/scheduling-control';
 import styles from './checkout-mobile.module.css';
+import { TransparentPaymentBrick, type TransparentPaymentResult } from '@/components/payments/TransparentPaymentBrick';
 
 const getStoreItemName = (item: StoreCartItem) => item.kind === 'produto' ? item.produto.nome_produto : item.kit.nome;
 const getStoreItemPrice = (item: StoreCartItem) => item.kind === 'produto' ? item.produto.preco_venda : item.kit.preco_venda;
@@ -129,7 +130,6 @@ const ESTADOS_BRASIL = [
 ];
 
 const DRAFT_KEY = 'bryza_checkout_draft';
-const PAYMENT_RETURN_KEY = 'bryza_mp_checkout';
 
 function loadDraft() {
   if (typeof window === 'undefined') return null;
@@ -286,6 +286,17 @@ export default function LojaCheckoutModal({
     paymentStatus?: string;
     items?: typeof cartItems;
     totalValue?: number;
+  } | null>(null);
+  const [transparentCheckout, setTransparentCheckout] = useState<{
+    checkoutToken: string;
+    orderData: {
+      orderNumber: string;
+      whatsappUrl: string;
+      paymentTiming?: string;
+      paymentStatus?: string;
+      items?: typeof cartItems;
+      totalValue?: number;
+    };
   } | null>(null);
 
   useEffect(() => {
@@ -570,6 +581,7 @@ export default function LojaCheckoutModal({
       const payload: StoreOrderPayload = {
         clientName: nome,
         clientPhone: telefone,
+        email,
         cpf,
         address: endereco,
         number: numero,
@@ -598,25 +610,15 @@ export default function LojaCheckoutModal({
           paymentStatus?: string;
         };
         if (paymentTiming === 'agora' && paymentResult.checkoutToken) {
-          const checkoutResponse = await fetch('/api/payments/mercado-pago/preference', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ checkoutToken: paymentResult.checkoutToken }),
-          });
-          const checkout = await checkoutResponse.json() as { checkoutUrl?: string; error?: string };
-          if (!checkoutResponse.ok || !checkout.checkoutUrl) {
-            throw new Error(checkout.error || 'Não foi possível abrir o pagamento. Tente novamente.');
-          }
-          try {
-            sessionStorage.setItem(PAYMENT_RETURN_KEY, JSON.stringify({
-              checkoutToken: paymentResult.checkoutToken,
-              orderNumber: res.orderNumber,
-              createdAt: new Date().toISOString(),
-            }));
-          } catch {
-            // O retorno ainda pode usar os identificadores enviados pelo Mercado Pago.
-          }
-          window.location.assign(checkout.checkoutUrl);
+          const orderData = {
+            orderNumber: res.orderNumber,
+            whatsappUrl: res.whatsappUrl || '',
+            paymentTiming: paymentResult.paymentTiming,
+            paymentStatus: paymentResult.paymentStatus,
+            items: cartItems.map((item) => ({ ...item })),
+            totalValue: totalValue,
+          };
+          setTransparentCheckout({ checkoutToken: paymentResult.checkoutToken, orderData });
           return;
         }
         if (typeof window !== 'undefined') {
@@ -682,10 +684,10 @@ export default function LojaCheckoutModal({
                 Carrinho da Loja Bryza
               </span>
               <h2 style={{ margin: '4px 0 2px', fontSize: '22px', fontWeight: 800, color: '#ffffff', lineHeight: 1.2 }}>
-                {result ? 'Pedido Registrado!' : step === 1 ? 'Seus dados de contato' : step === 2 ? 'Validação de documento (CPF)' : step === 3 ? 'Endereço de entrega' : 'Confirmar agendamento'}
+                {result ? 'Pedido Registrado!' : transparentCheckout ? 'Pagamento seguro' : step === 1 ? 'Seus dados de contato' : step === 2 ? 'Validação de documento (CPF)' : step === 3 ? 'Endereço de entrega' : 'Confirmar agendamento'}
               </h2>
               <p style={{ margin: 0, fontSize: '13px', color: 'rgba(255,255,255,0.75)', fontWeight: 400 }}>
-                {result ? 'Seu agendamento foi registrado com sucesso.' : 'Escolha pagar agora com Mercado Pago ou somente quando receber.'}
+                {result ? 'Seu agendamento foi registrado com sucesso.' : transparentCheckout ? 'Conclua o pagamento sem sair da Bryza.' : 'Escolha pagar agora com Mercado Pago ou somente quando receber.'}
               </p>
             </div>
             
@@ -715,7 +717,7 @@ export default function LojaCheckoutModal({
           </div>
 
           {/* BARRA DE PROGRESSO DE PASSOS (1 a 4) */}
-          {!result && (
+          {!result && !transparentCheckout && (
             <div className={styles.progress} style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(4, 1fr)',
@@ -878,6 +880,21 @@ export default function LojaCheckoutModal({
                   Fechar janela
                 </button>
               </div>
+            </div>
+          ) : transparentCheckout ? (
+            <div style={{ display: 'grid', gap: '16px' }}>
+              <TransparentPaymentBrick
+                checkoutToken={transparentCheckout.checkoutToken}
+                amount={transparentCheckout.orderData.totalValue || totalValue}
+                orderNumber={transparentCheckout.orderData.orderNumber}
+                onCompleted={(_payment: TransparentPaymentResult) => {
+                  if (typeof window !== 'undefined') localStorage.removeItem(DRAFT_KEY);
+                  setResult(transparentCheckout.orderData);
+                  setTransparentCheckout(null);
+                  onSuccess(transparentCheckout.orderData);
+                }}
+                onCancel={() => setTransparentCheckout(null)}
+              />
             </div>
           ) : (
             <form onSubmit={e => e.preventDefault()}>

@@ -23,6 +23,21 @@ function numberValue(value: number | string | null | undefined) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function canPayOnline(input: {
+  canPayNow: boolean;
+  paymentStatus: string;
+  paymentTiming: string;
+  fulfillmentStatus: string;
+}) {
+  if (input.canPayNow) return true;
+  const paymentStatus = input.paymentStatus.toLowerCase();
+  const paymentTiming = input.paymentTiming.toLowerCase();
+  const fulfillmentStatus = input.fulfillmentStatus.toLowerCase();
+  return ['agora', 'na_entrega', 'entrega'].includes(paymentTiming)
+    && ['nao_iniciado', 'nao iniciado', 'pendente', 'processando', 'em_analise', 'rejeitado', 'recusado', 'expirado'].includes(paymentStatus)
+    && !['cancelado', 'entregue', 'finalizado', 'convertido'].includes(fulfillmentStatus);
+}
+
 export function normalizeOrderStatus(value: string): OrderStatus {
   const normalized = value.toLowerCase();
 
@@ -51,7 +66,7 @@ export function normalizePaymentStatus(value: string): PaymentStatus {
   const normalized = value.toLowerCase();
 
   if (['pago', 'aprovado', 'approved', 'paid'].includes(normalized)) return 'aprovado';
-  if (['pendente', 'pending', 'in_process', 'aguardando'].includes(normalized)) return 'pendente';
+  if (['pendente', 'pending', 'in_process', 'processando', 'em_analise', 'in_mediation', 'aguardando'].includes(normalized)) return 'pendente';
   if (['rejeitado', 'rejected', 'failed'].includes(normalized)) return 'rejeitado';
   if (['expirado', 'expired', 'cancelled', 'canceled'].includes(normalized)) return 'expirado';
   if (['reembolsado', 'refunded'].includes(normalized)) return 'reembolsado';
@@ -76,7 +91,12 @@ export function toOrderSummary(raw: RawOrderSummary): CustomerOrderSummary {
     orderStatus: normalizeOrderStatus(raw.fulfillment_status),
     paymentStatus: normalizePaymentStatus(raw.payment_status),
     paymentChoice: normalizePaymentChoice(raw.payment_timing),
-    canPayNow: raw.can_pay_now,
+    canPayNow: canPayOnline({
+      canPayNow: raw.can_pay_now,
+      paymentStatus: raw.payment_status,
+      paymentTiming: raw.payment_timing,
+      fulfillmentStatus: raw.fulfillment_status,
+    }),
     canRepeat: false,
   };
 }
@@ -152,7 +172,12 @@ export function toOrderDetail(payload: OrderDetailPayload): CustomerOrderDetail 
     orderStatus: normalizedStatus,
     paymentStatus: normalizePaymentStatus(order.payment.status),
     paymentChoice: normalizePaymentChoice(order.payment.timing),
-    canPayNow: order.can_pay_now,
+    canPayNow: canPayOnline({
+      canPayNow: order.can_pay_now,
+      paymentStatus: order.payment.status,
+      paymentTiming: order.payment.timing,
+      fulfillmentStatus: order.fulfillment_status,
+    }),
     canRepeat: false,
     itemCount: items.reduce((total, item) => total + item.quantity, 0),
     items,

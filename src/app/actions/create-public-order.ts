@@ -33,6 +33,7 @@ export interface PublicSchedulingInput {
   nome: string;
   cpf: string;
   telefone: string;
+  email?: string;
   endereco: string;
   numero: string;
   complemento?: string;
@@ -145,9 +146,11 @@ export async function createPublicSchedulingAction(
     const identity = normalizeCustomerIdentity({
       cpf: input.cpf,
       phone: input.telefone,
+      email: input.email,
     });
     const cpf = identity.cpf || '';
     const telefone = identity.phone;
+    const email = identity.email;
     const endereco = cleanText(input.endereco, 200);
     const numero = cleanText(input.numero, 20);
     const complemento = cleanText(input.complemento, 100);
@@ -166,6 +169,9 @@ export async function createPublicSchedulingAction(
     }
     if (!/^\d{10,11}$/.test(telefone)) {
       return { success: false, error: 'Informe um telefone válido com DDD.' };
+    }
+    if (input.email && (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))) {
+      return { success: false, error: 'Informe um e-mail válido.' };
     }
     if (endereco.length < 3 || !numero || bairro.length < 2 || cidade.length < 2) {
       return { success: false, error: 'Preencha o endereço completo para entrega.' };
@@ -236,6 +242,7 @@ export async function createPublicSchedulingAction(
         nome,
         cpf,
         telefone,
+        email,
         endereco,
         numero,
         complemento: complemento || null,

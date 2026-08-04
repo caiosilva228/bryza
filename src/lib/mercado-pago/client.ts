@@ -78,3 +78,196 @@ export async function getMercadoPagoPayment(
   }
   return body as Record<string, unknown>;
 }
+
+type JsonObject = Record<string, unknown>;
+
+export type MercadoPagoTransparentPaymentInput = {
+  accessToken: string;
+  idempotencyKey: string;
+  amount: number;
+  currency: string;
+  externalReference: string;
+  appUrl: string;
+  description: string;
+  formData: JsonObject;
+  payer: {
+    email: string;
+    identification?: { type: string; number: string };
+    providerCustomerId?: string | null;
+  };
+};
+
+function stringValue(value: unknown, maxLength = 200): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const normalized = value.trim();
+  return normalized ? normalized.slice(0, maxLength) : undefined;
+}
+
+function objectValue(value: unknown): JsonObject | undefined {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as JsonObject
+    : undefined;
+}
+
+function safeProviderError(body: unknown, status: number, fallback: string) {
+  // Do not echo provider payloads: they can contain tokenized payment data or
+  // other request details that must never reach application logs.
+  void body;
+  void fallback;
+  return new Error(`Mercado Pago recusou o pagamento (${status}).`);
+}
+
+/**
+ * Creates a direct Payment API charge from Brick data. The caller supplies the
+ * amount, reference and payer identity from the database; Brick data is only
+ * used for the selected payment method and one-time token.
+ */
+export async function createMercadoPagoTransparentPayment(
+  input: MercadoPagoTransparentPaymentInput,
+): Promise<JsonObject> {
+  const formData = input.formData;
+  const payerFromBrick = objectValue(formData.payer);
+  const payload: JsonObject = {
+    transaction_amount: Number(input.amount.toFixed(2)),
+    currency_id: input.currency,
+    external_reference: input.externalReference,
+    description: input.description.slice(0, 120),
+    notification_url: `${input.appUrl}/api/payments/mercado-pago/webhook`,
+    statement_descriptor: 'BRYZA',
+    binary_mode: false,
+    metadata: { payment_intent: input.externalReference, checkout_mode: 'transparent' },
+  };
+
+  for (const key of [
+    'token',
+    'payment_method_id',
+    'payment_type_id',
+    'issuer_id',
+    'installments',
+    'payment_method_option_id',
+    'processing_mode',
+    'transaction_details',
+  ]) {
+    if (formData[key] !== undefined) payload[key] = formData[key];
+  }
+
+  const payer: JsonObject = {
+    email: input.payer.email,
+  };
+  if (input.payer.identification) payer.identification = input.payer.identification;
+  if (input.payer.providerCustomerId) {
+    // Saved-card payments are scoped to the customer resolved from the
+    // verified Bryza account, never to a customer id sent by the browser.
+    payer.type = 'customer';
+    payer.id = input.payer.providerCustomerId;
+  } else {
+    const firstName = stringValue(payerFromBrick?.first_name || payerFromBrick?.firstName, 80);
+    const lastName = stringValue(payerFromBrick?.last_name || payerFromBrick?.lastName, 120);
+    if (firstName) payer.first_name = firstName;
+    if (lastName) payer.last_name = lastName;
+  }
+  payload.payer = payer;
+
+  const response = await fetch(`${API_URL}/v1/payments`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${input.accessToken}`,
+      'Content-Type': 'application/json',
+      'X-Idempotency-Key': input.idempotencyKey,
+    },
+    body: JSON.stringify(payload),
+    cache: 'no-store',
+  });
+  const body = await response.json().catch(() => null);
+  if (!response.ok || !objectValue(body)?.id) {
+    throw safeProviderError(body, response.status, response.statusText);
+  }
+  return body as JsonObject;
+}
+
+export async function createMercadoPagoCustomer(input: {
+  accessToken: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+}): Promise<JsonObject> {
+  const response = await fetch(`${API_URL}/v1/customers`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${input.accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email: input.email,
+      first_name: input.firstName,
+      last_name: input.lastName,
+    }),
+    cache: 'no-store',
+  });
+  const body = await response.json().catch(() => null);
+  if (!response.ok || !objectValue(body)?.id) {
+    throw safeProviderError(body, response.status, response.statusText);
+  }
+  return body as JsonObject;
+}
+
+export async function saveMercadoPagoCustomerCard(input: {
+  accessToken: string;
+  customerId: string;
+  token: string;
+}): Promise<JsonObject> {
+  const response = await fetch(
+    `${API_URL}/v1/customers/${encodeURIComponent(input.customerId)}/cards`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${input.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ token: input.token }),
+      cache: 'no-store',
+    },
+  );
+  const body = await response.json().catch(() => null);
+  if (!response.ok || !objectValue(body)?.id) {
+    throw safeProviderError(body, response.status, response.statusText);
+  }
+  return body as JsonObject;
+}
+
+export async function listMercadoPagoCustomerCards(input: {
+  accessToken: string;
+  customerId: string;
+}): Promise<JsonObject[]> {
+  const response = await fetch(
+    `${API_URL}/v1/customers/${encodeURIComponent(input.customerId)}/cards`,
+    {
+      headers: { Authorization: `Bearer ${input.accessToken}` },
+      cache: 'no-store',
+    },
+  );
+  const body = await response.json().catch(() => null);
+  if (!response.ok || !Array.isArray(body)) {
+    throw safeProviderError(body, response.status, response.statusText);
+  }
+  return body.filter((card): card is JsonObject => Boolean(objectValue(card)));
+}
+
+export async function deleteMercadoPagoCustomerCard(input: {
+  accessToken: string;
+  customerId: string;
+  cardId: string;
+}): Promise<void> {
+  const response = await fetch(
+    `${API_URL}/v1/customers/${encodeURIComponent(input.customerId)}/cards/${encodeURIComponent(input.cardId)}`,
+    {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${input.accessToken}` },
+      cache: 'no-store',
+    },
+  );
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw safeProviderError(body, response.status, response.statusText);
+  }
+}

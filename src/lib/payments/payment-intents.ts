@@ -238,6 +238,8 @@ export async function configureSchedulingPayment(
       payment_timing: 'agora',
       expected_amount: Number(amount.toFixed(2)),
       status: 'pendente',
+      checkout_mode: 'transparent',
+      card_save_status: 'not_requested',
     })
     .select('checkout_token, status')
     .single();

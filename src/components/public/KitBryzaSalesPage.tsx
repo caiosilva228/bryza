@@ -7,6 +7,7 @@ import {
   createPublicSchedulingAction,
   type PublicSchedulingResult,
 } from '@/app/actions/create-public-order';
+import { TransparentPaymentBrick, type TransparentPaymentResult } from '@/components/payments/TransparentPaymentBrick';
 import styles from './KitBryzaSalesPage.module.css';
 
 interface AmbassadorPublicInfo {
@@ -32,6 +33,7 @@ interface SchedulingForm {
   nome: string;
   cpf: string;
   telefone: string;
+  email: string;
   endereco: string;
   numero: string;
   complemento: string;
@@ -49,6 +51,7 @@ const initialForm = (city?: string | null): SchedulingForm => ({
   nome: '',
   cpf: '',
   telefone: '',
+  email: '',
   endereco: '',
   numero: '',
   complemento: '',
@@ -153,6 +156,10 @@ export function KitBryzaSalesPage({ ambassador, products }: KitBryzaSalesPagePro
   const [form, setForm] = useState<SchedulingForm>(() => initialForm(ambassador.city));
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PublicSchedulingResult | null>(null);
+  const [transparentCheckout, setTransparentCheckout] = useState<{
+    checkoutToken: string;
+    result: PublicSchedulingResult;
+  } | null>(null);
   const [error, setError] = useState('');
   const idempotencyKeyRef = useRef('');
   const firstInputRef = useRef<HTMLInputElement>(null);
@@ -203,6 +210,7 @@ export function KitBryzaSalesPage({ ambassador, products }: KitBryzaSalesPagePro
       nome: form.nome,
       cpf: form.cpf,
       telefone: form.telefone,
+      email: form.email,
       endereco: form.endereco,
       numero: form.numero,
       complemento: form.complemento,
@@ -222,28 +230,10 @@ export function KitBryzaSalesPage({ ambassador, products }: KitBryzaSalesPagePro
     if (response.success) {
       const paymentData = response.data as PublicSchedulingResult & { checkout_token?: string | null };
       if (form.paymentTiming === 'agora' && paymentData.checkout_token) {
-        try {
-          const checkoutResponse = await fetch('/api/payments/mercado-pago/preference', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ checkoutToken: paymentData.checkout_token }),
-          });
-          const checkout = await checkoutResponse.json() as { checkoutUrl?: string; error?: string };
-          if (!checkoutResponse.ok || !checkout.checkoutUrl) throw new Error(checkout.error || 'Não foi possível abrir o pagamento.');
-          try {
-            sessionStorage.setItem('bryza_mp_checkout', JSON.stringify({
-              checkoutToken: paymentData.checkout_token,
-            }));
-          } catch {
-            // O retorno ainda pode usar os identificadores enviados pelo Mercado Pago.
-          }
-          window.location.assign(checkout.checkoutUrl);
-          return;
-        } catch (checkoutError) {
-          setError(checkoutError instanceof Error ? checkoutError.message : 'Não foi possível abrir o pagamento.');
-        } finally {
-          setLoading(false);
-        }
+        setTransparentCheckout({
+          checkoutToken: paymentData.checkout_token,
+          result: response.data,
+        });
         return;
       }
       setResult(response.data);
@@ -417,6 +407,19 @@ export function KitBryzaSalesPage({ ambassador, products }: KitBryzaSalesPagePro
                   Concluir
                 </button>
               </div>
+            ) : transparentCheckout ? (
+              <div style={{ padding: 'clamp(22px, 5vw, 38px)' }}>
+                <TransparentPaymentBrick
+                  checkoutToken={transparentCheckout.checkoutToken}
+                  amount={transparentCheckout.result.valor_total}
+                  orderNumber={transparentCheckout.result.numero_agendamento}
+                  onCompleted={(_payment: TransparentPaymentResult) => {
+                    setResult(transparentCheckout.result);
+                    setTransparentCheckout(null);
+                  }}
+                  onCancel={() => setTransparentCheckout(null)}
+                />
+              </div>
             ) : (
               <form onSubmit={submitScheduling} style={{ padding: 'clamp(18px, 4vw, 28px)' }}>
                 <div aria-live="assertive">
@@ -435,6 +438,10 @@ export function KitBryzaSalesPage({ ambassador, products }: KitBryzaSalesPagePro
                   <div>
                     <label htmlFor="public-phone" style={labelStyle}>Telefone / WhatsApp *</label>
                     <input id="public-phone" type="tel" inputMode="tel" autoComplete="tel" required placeholder="(00) 00000-0000" value={form.telefone} onChange={(event) => setField('telefone', maskPhone(event.target.value))} style={fieldStyle} />
+                  </div>
+                  <div>
+                    <label htmlFor="public-email" style={labelStyle}>E-mail</label>
+                    <input id="public-email" type="email" autoComplete="email" placeholder="seu@email.com (opcional)" value={form.email} onChange={(event) => setField('email', event.target.value)} style={fieldStyle} />
                   </div>
                   <div style={{ gridColumn: '1 / -1' }}>
                     <label htmlFor="public-address" style={labelStyle}>Endereço *</label>

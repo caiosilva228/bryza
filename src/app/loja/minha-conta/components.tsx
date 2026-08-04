@@ -7,6 +7,8 @@ import type {
   OrderStatus,
   PaymentStatus,
 } from './types';
+import { CustomerTransparentPayment } from './CustomerTransparentPayment';
+import { SavedCardsPanel } from './SavedCardsPanel';
 
 const currency = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
@@ -282,6 +284,7 @@ export function AccountDashboard({ summary }: { summary: CustomerAccountSummary 
           </div>
         </aside>
       </div>
+      <SavedCardsPanel />
     </>
   );
 }
@@ -347,6 +350,7 @@ export function OrdersPageView({
 }
 
 export function OrderDetailView({ order }: { order: CustomerOrderDetail }) {
+  const [entityType, entityId] = order.id.split(':');
   return (
     <>
       <Breadcrumb detail={`Pedido #${order.orderNumber}`} />
@@ -378,7 +382,7 @@ export function OrderDetailView({ order }: { order: CustomerOrderDetail }) {
             </strong>
             <span>
               {order.canPayNow
-                ? 'A opção de pagar online estará disponível aqui quando a função for ativada.'
+                ? 'Você pode concluir o pagamento online nesta página.'
                 : 'Você pode acompanhar a atualização do pagamento nesta página.'}
             </span>
           </div>
@@ -472,10 +476,12 @@ export function OrderDetailView({ order }: { order: CustomerOrderDetail }) {
             <h2>Próximos passos</h2>
             <div className={styles.actions}>
               {order.canPayNow ? (
-                <span className={styles.primaryButton} aria-disabled="true">
-                  <span className="material-symbols-outlined" aria-hidden="true">payments</span>
-                  Pagar agora em breve
-                </span>
+                <CustomerTransparentPayment
+                  entityType={entityType === 'pedido' ? 'pedido' : 'agendamento'}
+                  entityId={entityId}
+                  amount={order.total}
+                  orderNumber={order.orderNumber}
+                />
               ) : null}
               <Link className={styles.secondaryButton} href="/loja">
                 <span className="material-symbols-outlined" aria-hidden="true">refresh</span>
