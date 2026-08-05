@@ -146,7 +146,6 @@ export async function createMercadoPagoTransparentPayment(
   const payerFromBrick = objectValue(formData.payer);
   const payload: JsonObject = {
     transaction_amount: Number(input.amount.toFixed(2)),
-    currency_id: input.currency,
     external_reference: input.externalReference,
     description: input.description.slice(0, 120),
     notification_url: `${input.appUrl}/api/payments/mercado-pago/webhook`,
