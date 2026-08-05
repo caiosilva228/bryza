@@ -80,8 +80,8 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  .body input,
-  .body select,
+  .body > form input,
+  .body > form select,
   .cepModal input,
   .cepModal select {
     width: 100% !important;
@@ -91,22 +91,22 @@
     font-size: 16px !important;
   }
 
-  .body button,
+  .body > form button,
   .cepModal button {
     min-height: 44px;
     max-width: 100%;
   }
 
-  .body [style*="grid-template-columns"] {
+  .body > form [style*="grid-template-columns"] {
     grid-template-columns: minmax(0, 1fr) !important;
   }
 
-  .body [style*="justify-content: space-between"] {
+  .body > form [style*="justify-content: space-between"] {
     flex-wrap: wrap;
     gap: 10px;
   }
 
-  .body [style*="justify-content: space-between"] > button {
+  .body > form [style*="justify-content: space-between"] > button {
     flex: 1 1 130px;
     justify-content: center;
   }
@@ -125,12 +125,12 @@
     overflow-wrap: anywhere;
   }
 
-  .body [style*="padding: 16px 20px"] {
+  .body > form [style*="padding: 16px 20px"] {
     padding: 14px !important;
   }
 
-  .body [style*="font-size: 24px"],
-  .body [style*="font-size: 26px"] {
+  .body > form [style*="font-size: 24px"],
+  .body > form [style*="font-size: 26px"] {
     font-size: 21px !important;
   }
 

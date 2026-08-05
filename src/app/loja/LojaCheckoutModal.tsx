@@ -28,6 +28,7 @@ interface LojaCheckoutModalProps {
   userData?: {
     full_name?: string;
     phone?: string;
+    email?: string;
     cpf?: string;
     address?: string;
     number?: string;
@@ -63,6 +64,11 @@ function isValidCPF(cpfStr: string): boolean {
   if (rev !== parseInt(clean.charAt(10), 10)) return false;
 
   return true;
+}
+
+function isValidCheckoutEmail(value: string) {
+  const email = value.trim().toLowerCase();
+  return email.length <= 254 && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
 }
 
 function getNext5Days() {
@@ -235,7 +241,7 @@ export default function LojaCheckoutModal({
 
   const [nome, setNome] = useState(() => savedDraft?.nome || userData?.full_name || '');
   const [telefone, setTelefone] = useState(() => savedDraft?.telefone || userData?.phone || '');
-  const [email, setEmail] = useState(() => savedDraft?.email || '');
+  const [email, setEmail] = useState(() => savedDraft?.email || userData?.email || '');
   const [cpf, setCpf] = useState(() => savedDraft?.cpf || userData?.cpf || '');
   const [cpfStatus, setCpfStatus] = useState<'idle' | 'valid' | 'invalid'>(() => {
     const initialCpf = savedDraft?.cpf || userData?.cpf;
@@ -553,6 +559,12 @@ export default function LojaCheckoutModal({
 
     if (!nome.trim() || !telefone.trim() || !endereco.trim() || !bairro.trim()) {
       setError('Por favor, preencha seus dados de contato e endereço.');
+      return;
+    }
+
+    if (paymentTiming === 'agora' && !isValidCheckoutEmail(email)) {
+      setStep(1);
+      setError('Informe um e-mail válido para concluir o pagamento online.');
       return;
     }
 
@@ -887,6 +899,7 @@ export default function LojaCheckoutModal({
                 checkoutToken={transparentCheckout.checkoutToken}
                 amount={transparentCheckout.orderData.totalValue || totalValue}
                 orderNumber={transparentCheckout.orderData.orderNumber}
+                payerEmail={email}
                 onCompleted={(_payment: TransparentPaymentResult) => {
                   if (typeof window !== 'undefined') localStorage.removeItem(DRAFT_KEY);
                   setResult(transparentCheckout.orderData);
@@ -958,11 +971,11 @@ export default function LojaCheckoutModal({
 
                     <div>
                       <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '6px' }}>
-                        E-mail
+                        E-mail{paymentTiming === 'agora' ? ' *' : ''}
                       </label>
                       <input
                         type="email"
-                        placeholder="seu@email.com (opcional)"
+                        placeholder={paymentTiming === 'agora' ? 'seu@email.com' : 'seu@email.com (opcional)'}
                         value={email}
                         onChange={e => setEmail(e.target.value)}
                         style={{

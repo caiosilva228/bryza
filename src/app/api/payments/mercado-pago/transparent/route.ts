@@ -9,7 +9,10 @@ import {
 export const runtime = 'nodejs';
 
 function statusForError(message: string) {
-  if (message === 'invalid_checkout_token' || message === 'invalid_idempotency_key') return 400;
+  if (message === 'invalid_checkout_token'
+    || message === 'invalid_idempotency_key'
+    || message === 'payment_method_missing'
+    || message === 'payer_email_missing') return 400;
   if (message === 'payment_intent_not_found') return 404;
   if (message === 'payment_attempt_in_progress' || message === 'payment_unavailable') return 409;
   if (message.startsWith('Mercado Pago não configurado')) return 503;
@@ -39,6 +42,12 @@ export async function POST(request: Request) {
     const message = error instanceof Error ? error.message : '';
     if (message === 'invalid_checkout_token' || message === 'invalid_idempotency_key') {
       return NextResponse.json({ error: 'Identificadores de pagamento inválidos.' }, { status: 400 });
+    }
+    if (message === 'payer_email_missing') {
+      return NextResponse.json({ error: 'Informe um e-mail valido para concluir o pagamento.' }, { status: 400 });
+    }
+    if (message === 'payment_method_missing') {
+      return NextResponse.json({ error: 'Selecione uma forma de pagamento para continuar.' }, { status: 400 });
     }
     console.error('Erro no checkout transparente do Mercado Pago:', message);
     return NextResponse.json(

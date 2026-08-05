@@ -35,6 +35,24 @@ export function normalizeCustomerEmail(value: unknown): string | null {
   return normalized || null;
 }
 
+const CUSTOMER_EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+const RESERVED_EMAIL_SUFFIXES = ['.internal', '.local', '.test', '.invalid', '.localhost'];
+
+export function normalizeValidCustomerEmail(value: unknown): string | null {
+  const normalized = normalizeCustomerEmail(value);
+  if (!normalized
+    || normalized.length > 254
+    || !CUSTOMER_EMAIL_PATTERN.test(normalized)
+    || RESERVED_EMAIL_SUFFIXES.some(suffix => normalized.endsWith(suffix))) {
+    return null;
+  }
+  return normalized;
+}
+
+export function isValidCustomerEmail(value: unknown): boolean {
+  return normalizeValidCustomerEmail(value) !== null;
+}
+
 export function normalizeCustomerIdentity(input: {
   phone?: unknown;
   cpf?: unknown;

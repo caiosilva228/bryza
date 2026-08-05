@@ -32,12 +32,23 @@ type Props = {
   checkoutToken: string;
   amount: number;
   orderNumber?: string;
+  payerEmail?: string | null;
   onCompleted?: (result: TransparentPaymentResult) => void;
   onCancel?: () => void;
 };
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+}
+
+function normalizePaymentEmail(value: unknown) {
+  if (typeof value !== 'string') return '';
+  return value.trim().toLowerCase();
+}
+
+function isValidPaymentEmail(value: unknown) {
+  const email = normalizePaymentEmail(value);
+  return email.length <= 254 && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
 }
 
 // The Payment Brick removes card methods below this value for Brazil. Keep the
@@ -56,6 +67,7 @@ export function TransparentPaymentBrick({
   checkoutToken,
   amount,
   orderNumber,
+  payerEmail,
   onCompleted,
   onCancel,
 }: Props) {
@@ -64,6 +76,7 @@ export function TransparentPaymentBrick({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [paymentResult, setPaymentResult] = useState<TransparentPaymentResult | null>(null);
+  const [payerEmailInput, setPayerEmailInput] = useState(() => normalizePaymentEmail(payerEmail));
   const [brickKey, setBrickKey] = useState(0);
   const idempotencyKeyRef = useRef(crypto.randomUUID());
 
@@ -110,6 +123,12 @@ export function TransparentPaymentBrick({
     return () => { cancelled = true; };
   }, [checkoutToken]);
 
+  useEffect(() => {
+    const nextEmail = normalizePaymentEmail(payerEmail);
+    if (!nextEmail) return;
+    setPayerEmailInput(current => current || nextEmail);
+  }, [payerEmail]);
+
   const resetForRetry = () => {
     idempotencyKeyRef.current = crypto.randomUUID();
     setPaymentResult(null);
@@ -119,11 +138,31 @@ export function TransparentPaymentBrick({
 
   const submitPayment = async (submission: unknown) => {
     if (submitting) return;
-    const payload = submission && typeof submission === 'object' && 'formData' in submission
-      ? (submission as { formData?: unknown }).formData
-      : null;
     setSubmitting(true);
     setError('');
+    const rawPayload = submission && typeof submission === 'object' && 'formData' in submission
+      ? (submission as { formData?: unknown }).formData
+      : null;
+    const payload = rawPayload && typeof rawPayload === 'object' && !Array.isArray(rawPayload)
+      ? rawPayload as Record<string, unknown>
+      : null;
+    const brickPayer = payload?.payer && typeof payload.payer === 'object' && !Array.isArray(payload.payer)
+      ? payload.payer as Record<string, unknown>
+      : {};
+    const savedCardSubmission = brickPayer.type === 'customer' || Boolean(payload?.card_id);
+    const normalizedEmail = normalizePaymentEmail(payerEmailInput)
+      || normalizePaymentEmail(initialization?.payerEmail);
+    if (!savedCardSubmission && !isValidPaymentEmail(normalizedEmail)) {
+      setError('Informe um e-mail valido para concluir o pagamento.');
+      setSubmitting(false);
+      return;
+    }
+    const paymentFormData = payload && isValidPaymentEmail(normalizedEmail)
+      ? {
+        ...payload,
+        payer: { ...brickPayer, email: normalizedEmail },
+      }
+      : rawPayload;
     try {
       const response = await fetch('/api/payments/mercado-pago/transparent', {
         method: 'POST',
@@ -131,7 +170,7 @@ export function TransparentPaymentBrick({
         body: JSON.stringify({
           checkoutToken,
           idempotencyKey: idempotencyKeyRef.current,
-          formData: payload,
+          formData: paymentFormData,
         }),
       });
       const body = await response.json().catch(() => null) as TransparentPaymentResult & { error?: string } | null;
@@ -170,8 +209,11 @@ export function TransparentPaymentBrick({
     : {};
   const cardMethodsAvailable = initialization.amount >= CARD_MINIMUM_AMOUNT;
   const paymentMethods = cardMethodsAvailable
-    ? { creditCard: 'all' as const, debitCard: 'all' as const, bankTransfer: 'all' as const }
-    : { bankTransfer: 'all' as const };
+    ? { creditCard: 'all' as const, debitCard: 'all' as const, bankTransfer: ['pix'] }
+    : { bankTransfer: ['pix'] };
+  const resolvedPayerEmail = normalizePaymentEmail(payerEmailInput)
+    || normalizePaymentEmail(initialization.payerEmail);
+  const hasValidPayerEmail = isValidPaymentEmail(resolvedPayerEmail);
 
   if (paymentResult && ['aprovado', 'processando', 'pendente'].includes(paymentResult.status)) {
     const isApproved = paymentResult.status === 'aprovado';
@@ -234,6 +276,25 @@ export function TransparentPaymentBrick({
           Neste valor, o Mercado Pago disponibiliza apenas Pix.
         </small>
       ) : null}
+      {!hasValidPayerEmail ? (
+        <div style={{ display: 'grid', gap: '6px' }}>
+          <label htmlFor="bryza-payment-email" style={{ fontSize: '13px', fontWeight: 700, color: '#334155' }}>
+            E-mail para o pagamento *
+          </label>
+          <input
+            id="bryza-payment-email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            value={payerEmailInput}
+            onChange={event => setPayerEmailInput(event.target.value)}
+            placeholder="seu@email.com"
+            required
+            style={{ width: '100%', minHeight: '44px', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', color: '#0f172a' }}
+          />
+          <small style={{ color: '#64748b' }}>O Mercado Pago exige um e-mail vÃ¡lido para gerar o pagamento.</small>
+        </div>
+      ) : null}
       {error ? <div role="alert" style={{ padding: '10px 12px', borderRadius: '8px', background: '#fff7ed', color: '#9a3412' }}>{error}</div> : null}
       <Payment
         key={brickKey}
@@ -243,13 +304,16 @@ export function TransparentPaymentBrick({
           amount: initialization.amount,
           payer: {
             entityType: 'individual',
-            ...(initialization.payerEmail ? { email: initialization.payerEmail } : {}),
+            ...(hasValidPayerEmail ? { email: resolvedPayerEmail } : {}),
             ...savedCardPayer,
           },
         }}
         customization={{
           paymentMethods,
-          visual: { preserveSavedCardsOrder: true },
+          visual: {
+            preserveSavedCardsOrder: true,
+            ...(!cardMethodsAvailable ? { defaultPaymentOption: { bankTransferForm: true } } : {}),
+          },
         }}
         onSubmit={submitPayment}
         onError={(brickError) => {

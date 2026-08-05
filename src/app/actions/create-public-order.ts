@@ -7,6 +7,7 @@ import { getSyntheticEmail } from '@/utils/env';
 import {
   findAmbassadorByCanonicalIdentity,
   normalizeCustomerIdentity,
+  normalizeValidCustomerEmail,
 } from '@/lib/customers/canonical-identity';
 import {
   configureSchedulingPayment,
@@ -151,6 +152,7 @@ export async function createPublicSchedulingAction(
     const cpf = identity.cpf || '';
     const telefone = identity.phone;
     const email = identity.email;
+    const validEmail = normalizeValidCustomerEmail(email);
     const endereco = cleanText(input.endereco, 200);
     const numero = cleanText(input.numero, 20);
     const complemento = cleanText(input.complemento, 100);
@@ -172,6 +174,9 @@ export async function createPublicSchedulingAction(
     }
     if (input.email && (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))) {
       return { success: false, error: 'Informe um e-mail válido.' };
+    }
+    if (input.payment_timing === 'agora' && !validEmail) {
+      return { success: false, error: 'Informe um e-mail válido para concluir o pagamento online.' };
     }
     if (endereco.length < 3 || !numero || bairro.length < 2 || cidade.length < 2) {
       return { success: false, error: 'Preencha o endereço completo para entrega.' };
@@ -242,7 +247,7 @@ export async function createPublicSchedulingAction(
         nome,
         cpf,
         telefone,
-        email,
+        email: validEmail,
         endereco,
         numero,
         complemento: complemento || null,

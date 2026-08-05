@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   isValidBrazilPhone,
+  isValidCustomerEmail,
   normalizeCustomerIdentity,
   normalizeCustomerPhone,
+  normalizeValidCustomerEmail,
   upsertPublicCustomerCanonical,
 } from './canonical-identity.ts';
 
@@ -25,6 +27,13 @@ test('normalizes phone, CPF and email consistently across public channels', () =
     cpf: '05620743179',
     email: 'cliente@exemplo.com',
   });
+});
+
+test('accepts only provider-compatible customer emails', () => {
+  assert.equal(normalizeValidCustomerEmail(' Cliente@Exemplo.COM '), 'cliente@exemplo.com');
+  assert.equal(isValidCustomerEmail('cliente@exemplo.com'), true);
+  assert.equal(isValidCustomerEmail('61982115107'), false);
+  assert.equal(normalizeValidCustomerEmail('cliente@usuarios.bryza.internal'), null);
 });
 
 test('uses only the service-role canonical RPC for a public customer upsert', async () => {

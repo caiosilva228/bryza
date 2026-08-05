@@ -413,6 +413,7 @@ export function KitBryzaSalesPage({ ambassador, products }: KitBryzaSalesPagePro
                   checkoutToken={transparentCheckout.checkoutToken}
                   amount={transparentCheckout.result.valor_total}
                   orderNumber={transparentCheckout.result.numero_agendamento}
+                  payerEmail={form.email}
                   onCompleted={(_payment: TransparentPaymentResult) => {
                     setResult(transparentCheckout.result);
                     setTransparentCheckout(null);
@@ -440,8 +441,8 @@ export function KitBryzaSalesPage({ ambassador, products }: KitBryzaSalesPagePro
                     <input id="public-phone" type="tel" inputMode="tel" autoComplete="tel" required placeholder="(00) 00000-0000" value={form.telefone} onChange={(event) => setField('telefone', maskPhone(event.target.value))} style={fieldStyle} />
                   </div>
                   <div>
-                    <label htmlFor="public-email" style={labelStyle}>E-mail</label>
-                    <input id="public-email" type="email" autoComplete="email" placeholder="seu@email.com (opcional)" value={form.email} onChange={(event) => setField('email', event.target.value)} style={fieldStyle} />
+                    <label htmlFor="public-email" style={labelStyle}>E-mail{form.paymentTiming === 'agora' ? ' *' : ''}</label>
+                    <input id="public-email" type="email" autoComplete="email" required={form.paymentTiming === 'agora'} placeholder={form.paymentTiming === 'agora' ? 'seu@email.com' : 'seu@email.com (opcional)'} value={form.email} onChange={(event) => setField('email', event.target.value)} style={fieldStyle} />
                   </div>
                   <div style={{ gridColumn: '1 / -1' }}>
                     <label htmlFor="public-address" style={labelStyle}>Endereço *</label>

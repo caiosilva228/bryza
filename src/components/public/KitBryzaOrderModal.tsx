@@ -684,6 +684,7 @@ Aguardo a confirmação da entrega!`;
               checkoutToken={transparentCheckout.checkoutToken}
               amount={transparentCheckout.result.valor_total}
               orderNumber={transparentCheckout.result.numero_agendamento}
+              payerEmail={form.email}
               onCompleted={(_payment: TransparentPaymentResult) => {
                 setResult(transparentCheckout.result);
                 setTransparentCheckout(null);
@@ -806,11 +807,12 @@ Aguardo a confirmação da entrega!`;
                     />
                   </label>
                   <label>
-                    E-mail
+                    E-mail{form.paymentTiming === 'agora' ? ' *' : ''}
                     <input
                       type="email"
                       autoComplete="email"
-                      placeholder="seu@email.com (opcional)"
+                      placeholder={form.paymentTiming === 'agora' ? 'seu@email.com' : 'seu@email.com (opcional)'}
+                      required={form.paymentTiming === 'agora'}
                       value={form.email}
                       onChange={e => setField('email', e.target.value)}
                     />

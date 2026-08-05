@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { createClient } from '@/utils/supabase/server';
+import { normalizeValidCustomerEmail } from '@/lib/customers/canonical-identity';
 import { getMercadoPagoConfig } from './config';
 import {
   createMercadoPagoCustomer,
@@ -206,15 +207,17 @@ async function ensureProviderCustomer(
   admin: SupabaseClient,
   context: AccountContext,
 ): Promise<string | null> {
-  if (!context.person_id || !context.email || context.eligible !== true) return null;
+  if (!context.person_id || context.eligible !== true) return null;
   if (context.provider_customer_id) return context.provider_customer_id;
+  const email = normalizeValidCustomerEmail(context.email);
+  if (!email) return null;
 
   const config = getMercadoPagoConfig();
   const fullName = context.full_name || '';
   const [firstName, ...lastNameParts] = fullName.split(' ').filter(Boolean);
   const providerCustomer = await createMercadoPagoCustomer({
     accessToken: config.accessToken,
-    email: context.email,
+    email,
     firstName,
     lastName: lastNameParts.join(' ') || undefined,
   });
@@ -224,7 +227,7 @@ async function ensureProviderCustomer(
   const { error } = await admin.rpc('fn_service_upsert_mercado_pago_customer_link', {
     p_person_id: context.person_id,
     p_provider_customer_id: providerId,
-    p_email: context.email,
+    p_email: email,
   });
   if (error) throw new Error(error.message);
   return providerId;
@@ -261,7 +264,10 @@ export async function initializeTransparentCheckout(
     const context = await getAccountContext(admin, user.id, checkoutToken);
     if (context.status === 'ok' && context.owned === true && context.eligible === true) {
       accountContext = context;
-      providerCustomerId = await ensureProviderCustomer(admin, context);
+      const providerEmail = normalizeValidCustomerEmail(context.email)
+        || normalizeValidCustomerEmail(user.email)
+        || normalizeValidCustomerEmail(intent.customerEmail);
+      providerCustomerId = await ensureProviderCustomer(admin, { ...context, email: providerEmail || undefined });
       if (providerCustomerId) {
         const config = getMercadoPagoConfig();
         const providerCards = await listMercadoPagoCustomerCards({
@@ -285,7 +291,9 @@ export async function initializeTransparentCheckout(
     eligibleToSaveCard: Boolean(accountContext && providerCustomerId),
     customerId: providerCustomerId,
     cardsIds: cards.map(card => card.id),
-    payerEmail: accountContext?.email || intent.customerEmail || null,
+    payerEmail: normalizeValidCustomerEmail(accountContext?.email)
+      || normalizeValidCustomerEmail(user?.email)
+      || normalizeValidCustomerEmail(intent.customerEmail),
     publicKey: getMercadoPagoPublicKey(),
   };
 }
@@ -414,30 +422,43 @@ export async function submitTransparentPayment(input: {
   if (claimData.status === 'replay' && providerPaymentId) {
     providerPayment = await getMercadoPagoPayment(config.accessToken, providerPaymentId);
   } else {
-    const user = await getSessionUser();
     let accountContext: AccountContext | null = null;
     let trustedProviderCustomerId: string | null = null;
-    if (user?.email_confirmed_at) {
-      const context = await getAccountContext(admin, user.id, input.checkoutToken);
-      if (context.status === 'ok' && context.owned === true && context.eligible === true) {
-        accountContext = context;
-        trustedProviderCustomerId = await ensureProviderCustomer(admin, context);
-      }
-    }
-
-    const payerFromBrick = isObject(formData.payer) ? formData.payer : {};
-    const payerEmail = accountContext?.email
-      || intent.customerEmail
-      || asString(payerFromBrick.email)
-      || `cliente-${intent.customerId || intent.id}@usuarios.bryza.internal`;
-    const cpf = (accountContext?.cpf || intent.customerCpf || '').replace(/\D/g, '');
-    const trustedPayer: MercadoPagoTransparentPaymentInput['payer'] = {
-      email: payerEmail,
-      providerCustomerId: trustedProviderCustomerId,
-      ...(cpf.length === 11 ? { identification: { type: 'CPF', number: cpf } } : {}),
-    };
-
     try {
+      const user = await getSessionUser();
+      const payerFromBrick = isObject(formData.payer) ? formData.payer : {};
+      const payerType = asString(payerFromBrick.type)?.toLowerCase();
+      const isSavedCardPayment = payerType === 'customer' || Boolean(formData.card_id);
+      const brickEmail = normalizeValidCustomerEmail(payerFromBrick.email);
+
+      if (user?.email_confirmed_at) {
+        const context = await getAccountContext(admin, user.id, input.checkoutToken);
+        if (context.status === 'ok' && context.owned === true && context.eligible === true) {
+          accountContext = context;
+          const providerEmail = normalizeValidCustomerEmail(context.email)
+            || normalizeValidCustomerEmail(user.email)
+            || normalizeValidCustomerEmail(intent.customerEmail)
+            || brickEmail;
+          trustedProviderCustomerId = await ensureProviderCustomer(admin, {
+            ...context,
+            email: providerEmail || undefined,
+          });
+        }
+      }
+
+      const payerEmail = normalizeValidCustomerEmail(accountContext?.email)
+        || normalizeValidCustomerEmail(user?.email)
+        || normalizeValidCustomerEmail(intent.customerEmail)
+        || brickEmail;
+      if (!isSavedCardPayment && !payerEmail) throw new Error('payer_email_missing');
+
+      const cpf = (accountContext?.cpf || intent.customerCpf || '').replace(/\D/g, '');
+      const trustedPayer: MercadoPagoTransparentPaymentInput['payer'] = {
+        email: payerEmail || '',
+        providerCustomerId: trustedProviderCustomerId,
+        ...(cpf.length === 11 ? { identification: { type: 'CPF', number: cpf } } : {}),
+      };
+
       providerPayment = await createMercadoPagoTransparentPayment({
         accessToken: config.accessToken,
         idempotencyKey: input.idempotencyKey,
@@ -456,6 +477,7 @@ export async function submitTransparentPayment(input: {
 
     const providerStatus = paymentStatusOf(providerPayment);
     const newCardToken = asString(formData.token, 500);
+    const payerFromBrick = isObject(formData.payer) ? formData.payer : {};
     const payerType = asString(payerFromBrick.type)?.toLowerCase();
     const isSavedCardPayment = payerType === 'customer' || Boolean(formData.card_id);
     let cardSaveStatus: 'not_requested' | 'saved' | 'failed' | 'not_saved' = 'not_requested';

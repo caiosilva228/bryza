@@ -23,6 +23,7 @@ import {
   findCustomerByCanonicalIdentity,
   normalizeCustomerCpf,
   normalizeCustomerEmail,
+  normalizeValidCustomerEmail,
   normalizeCustomerPhone,
   upsertPublicCustomerCanonical,
 } from '@/lib/customers/canonical-identity';
@@ -211,6 +212,7 @@ export async function getStoreUserInfoAction(): Promise<{
   userData?: {
     full_name: string;
     phone: string;
+    email?: string;
     cpf?: string;
     address: string;
     number: string;
@@ -282,6 +284,7 @@ export async function getStoreUserInfoAction(): Promise<{
       userData: {
         full_name: amb?.display_name || amb?.full_name || cli?.nome || prof?.nome || user.email || '',
         phone: amb?.phone || cli?.telefone || prof?.telefone || '',
+        email: normalizeValidCustomerEmail(user.email) || normalizeValidCustomerEmail(cli?.email) || undefined,
         cpf: amb?.cpf || cli?.cpf || prof?.cpf || undefined,
         address: amb?.address || amb?.endereco || cli?.endereco || prof?.endereco || '',
         number: amb?.number || amb?.numero || cli?.numero || prof?.numero || '',
@@ -344,6 +347,13 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
     if (payload.email && (!clientEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clientEmail))) {
       return { success: false, error: 'Informe um e-mail valido.' };
     }
+    const authenticatedEmail = user?.email_confirmed_at
+      ? normalizeValidCustomerEmail(user.email)
+      : null;
+    const effectiveEmail = authenticatedEmail || normalizeValidCustomerEmail(clientEmail);
+    if (payload.paymentTiming === 'agora' && !effectiveEmail) {
+      return { success: false, error: 'Informe um e-mail valido para concluir o pagamento online.' };
+    }
     if (!payload.items?.length || payload.items.length > 50) {
       return { success: false, error: 'O carrinho esta vazio ou excede o limite.' };
     }
@@ -374,7 +384,7 @@ export async function createStoreOrderAction(payload: StoreOrderPayload): Promis
     const canonicalCustomer = await upsertPublicCustomerCanonical(admin, {
       fullName: clientName,
       phone: clientPhone,
-      email: user?.email_confirmed_at ? user.email : clientEmail || undefined,
+      email: effectiveEmail || undefined,
       cpf: clientCpf,
       address: payload.address,
       number: payload.number,
