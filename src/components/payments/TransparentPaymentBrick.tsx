@@ -176,13 +176,12 @@ export function TransparentPaymentBrick({
       const body = await response.json().catch(() => null) as TransparentPaymentResult & { error?: string } | null;
       if (!response.ok || !body) throw new Error(body?.error || 'Não foi possível processar o pagamento.');
       setPaymentResult(body);
-      if (body.status === 'aprovado' || body.status === 'processando' || body.status === 'pendente') {
+      if (body.status === 'aprovado') {
         onCompleted?.(body);
       }
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : 'Não foi possível processar o pagamento.';
       setError(message);
-      throw submitError;
     } finally {
       setSubmitting(false);
     }
@@ -244,6 +243,12 @@ export function TransparentPaymentBrick({
             />
             {paymentResult.pix.qrCode ? <button type="button" onClick={() => navigator.clipboard?.writeText(paymentResult.pix?.qrCode || '')}>Copiar código Pix</button> : null}
           </div>
+        ) : null}
+        {!isApproved && onCompleted ? (
+          <button type="button" onClick={() => onCompleted(paymentResult)}>Concluir</button>
+        ) : null}
+        {!isApproved && !onCompleted && onCancel ? (
+          <button type="button" onClick={onCancel}>Fechar</button>
         ) : null}
       </section>
     );
@@ -318,7 +323,7 @@ export function TransparentPaymentBrick({
         onSubmit={submitPayment}
         onError={(brickError) => {
           const message = errorText(brickError);
-          setError(message || 'Não foi possível validar os dados do pagamento.');
+          setError(current => current || message || 'Não foi possível validar os dados do pagamento.');
         }}
       />
       {submitting ? <small aria-live="polite">Enviando pagamento…</small> : null}

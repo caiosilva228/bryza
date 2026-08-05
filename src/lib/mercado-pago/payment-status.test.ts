@@ -2,11 +2,19 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   assertPaymentMatchesIntent,
+  normalizeMercadoPagoPaymentId,
   validatePaymentStatusRequest,
 } from './payment-status.ts';
 
 const checkoutToken = '415799aa-f4a4-4cef-bff7-ace457b6b15c';
 const externalReference = '43acead1-e670-4003-90db-1c2851c8984e';
+
+test('normalizes numeric and textual Mercado Pago payment ids', () => {
+  assert.equal(normalizeMercadoPagoPaymentId(172184909916), '172184909916');
+  assert.equal(normalizeMercadoPagoPaymentId(' 172184909916 '), '172184909916');
+  assert.equal(normalizeMercadoPagoPaymentId('invalid-id'), null);
+  assert.equal(normalizeMercadoPagoPaymentId(null), null);
+});
 
 test('accepts a checkout token without provider payment data', () => {
   assert.deepEqual(validatePaymentStatusRequest({ checkoutToken }), {

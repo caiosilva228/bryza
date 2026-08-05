@@ -14,6 +14,7 @@ import {
   saveMercadoPagoCustomerCard,
   type MercadoPagoTransparentPaymentInput,
 } from './client';
+import { normalizeMercadoPagoPaymentId } from './payment-status';
 
 export const TRANSPARENT_CHECKOUT_ENABLED_ENV = 'MERCADO_PAGO_TRANSPARENT_CHECKOUT_ENABLED';
 
@@ -344,7 +345,7 @@ async function reconcileTransparentPayment(
   providerPayment: JsonObject,
   eventPrefix: string,
 ) {
-  const paymentId = asString(providerPayment.id, 120);
+  const paymentId = normalizeMercadoPagoPaymentId(providerPayment.id);
   if (!paymentId) throw new Error('mercado_pago_payment_id_missing');
   const providerUpdatedAt = asString(providerPayment.date_last_updated)
     || asString(providerPayment.status)
@@ -381,12 +382,13 @@ async function finishAttempt(
   providerPaymentId: string | null,
   status: 'completed' | 'failed',
 ) {
-  await admin.rpc('fn_service_finish_transparent_attempt', {
+  const { error } = await admin.rpc('fn_service_finish_transparent_attempt', {
     p_checkout_token: checkoutToken,
     p_idempotency_key: idempotencyKey,
     p_provider_payment_id: providerPaymentId,
     p_status: status,
   });
+  if (error) throw new Error(error.message);
 }
 
 function formDataObject(value: unknown): JsonObject {
@@ -471,8 +473,34 @@ export async function submitTransparentPayment(input: {
         payer: trustedPayer,
       });
     } catch (error) {
-      await finishAttempt(admin, input.checkoutToken, input.idempotencyKey, null, 'failed');
+      try {
+        await finishAttempt(admin, input.checkoutToken, input.idempotencyKey, null, 'failed');
+      } catch (finishError) {
+        console.error('Falha ao liberar tentativa transparente:',
+          finishError instanceof Error ? finishError.message : 'database_error');
+      }
       throw error;
+    }
+
+    const paymentId = normalizeMercadoPagoPaymentId(providerPayment.id);
+    if (!paymentId) {
+      try {
+        await finishAttempt(admin, input.checkoutToken, input.idempotencyKey, null, 'failed');
+      } catch (finishError) {
+        console.error('Falha ao liberar pagamento sem identificador:',
+          finishError instanceof Error ? finishError.message : 'database_error');
+      }
+      throw new Error('mercado_pago_payment_id_missing');
+    }
+
+    // The provider payment already exists at this point. Persist its numeric
+    // identifier before any secondary work so retries always replay the same
+    // charge instead of creating another Pix or card payment.
+    try {
+      await finishAttempt(admin, input.checkoutToken, input.idempotencyKey, paymentId, 'completed');
+    } catch (finishError) {
+      console.error('Pagamento criado, mas a trava idempotente ficou pendente:',
+        finishError instanceof Error ? finishError.message : 'database_error');
     }
 
     const providerStatus = paymentStatusOf(providerPayment);
@@ -507,15 +535,22 @@ export async function submitTransparentPayment(input: {
         .eq('id', intent.id);
     }
 
-    await reconcileTransparentPayment(admin, providerPayment, 'transparent');
-    const paymentId = asString(providerPayment.id);
-    if (paymentId) {
-      await admin
-        .from('payment_attempts')
-        .update({ checkout_mode: 'transparent', card_save_status: cardSaveStatus })
-        .eq('provider_payment_id', paymentId);
+    try {
+      await reconcileTransparentPayment(admin, providerPayment, 'transparent');
+    } catch (reconcileError) {
+      // The webhook retries reconciliation independently. Once Mercado Pago
+      // created the payment, a transient database error must not hide the Pix
+      // QR code or tell the customer that the charge failed.
+      console.error('Pagamento criado; reconciliacao pendente:',
+        reconcileError instanceof Error ? reconcileError.message : 'database_error');
     }
-    await finishAttempt(admin, input.checkoutToken, input.idempotencyKey, paymentId, 'completed');
+    const { error: attemptUpdateError } = await admin
+      .from('payment_attempts')
+      .update({ checkout_mode: 'transparent', card_save_status: cardSaveStatus })
+      .eq('provider_payment_id', paymentId);
+    if (attemptUpdateError) {
+      console.error('Pagamento criado; metadados da tentativa pendentes:', attemptUpdateError.message);
+    }
 
     const status = paymentStatusOf(providerPayment);
     return {
@@ -527,11 +562,16 @@ export async function submitTransparentPayment(input: {
     };
   }
 
-  await reconcileTransparentPayment(admin, providerPayment, 'transparent-replay');
+  try {
+    await reconcileTransparentPayment(admin, providerPayment, 'transparent-replay');
+  } catch (reconcileError) {
+    console.error('Pagamento recuperado; reconciliacao pendente:',
+      reconcileError instanceof Error ? reconcileError.message : 'database_error');
+  }
   const status = paymentStatusOf(providerPayment);
   return {
     status,
-    paymentId: asString(providerPayment.id),
+    paymentId: normalizeMercadoPagoPaymentId(providerPayment.id),
     orderNumber: intent.orderNumber,
     cardSaveStatus: 'not_requested' as const,
     pix: pixDataOf(providerPayment),

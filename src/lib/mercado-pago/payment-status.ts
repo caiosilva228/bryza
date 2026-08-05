@@ -3,6 +3,12 @@ export const UUID_PATTERN =
 
 export const PAYMENT_ID_PATTERN = /^\d+$/;
 
+export function normalizeMercadoPagoPaymentId(value: unknown): string | null {
+  if (typeof value !== 'string' && typeof value !== 'number') return null;
+  const normalized = String(value).trim();
+  return PAYMENT_ID_PATTERN.test(normalized) ? normalized : null;
+}
+
 export type PaymentStatusRequest = {
   checkoutToken?: string;
   paymentId?: string;
@@ -59,7 +65,7 @@ export function assertPaymentMatchesIntent(
   paymentId: string,
   intent: PaymentIntentIdentity,
 ) {
-  const providerPaymentId = String(payment.id ?? '');
+  const providerPaymentId = normalizeMercadoPagoPaymentId(payment.id) || '';
   const externalReference = String(payment.external_reference ?? '');
   const amount = Number(payment.transaction_amount);
   const expectedAmount = Number(intent.expected_amount);
