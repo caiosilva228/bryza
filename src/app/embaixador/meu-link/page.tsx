@@ -76,7 +76,7 @@ export default function MeuLinkPage() {
           {/* Link Completo de Vendas */}
           <div>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-on-surface-variant)', marginBottom: '8px', textTransform: 'uppercase' }}>
-              Seu Link Completo de Vendas
+              Seu Link de Vendas da Promoção do Mês Atual
             </label>
             <div className={styles.inputRow}>
               <input
