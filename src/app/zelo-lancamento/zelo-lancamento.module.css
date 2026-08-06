@@ -1,0 +1,656 @@
+.page {
+  --page-bg: #07090b;
+  --panel: #101417;
+  --panel-soft: rgba(18, 23, 26, 0.78);
+  --line: rgba(218, 232, 238, 0.14);
+  --muted: #97a4a9;
+  --text: #f5f8f8;
+  --accent: #08a9e4;
+  --accent-bright: #36c9ff;
+  min-height: 100svh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 14% 8%, rgba(0, 133, 186, 0.13), transparent 30rem),
+    var(--page-bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.page,
+.page * {
+  box-sizing: border-box;
+}
+
+.shell {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 40px, 1380px);
+  margin: 0 auto;
+}
+
+.ambientLight {
+  position: absolute;
+  top: 28rem;
+  left: 41%;
+  width: 36rem;
+  height: 36rem;
+  border-radius: 50%;
+  background: rgba(0, 157, 214, 0.07);
+  filter: blur(90px);
+  pointer-events: none;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 76px;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.brandMark {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid rgba(54, 201, 255, 0.75);
+  border-radius: 50%;
+  color: var(--accent-bright);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.08em;
+}
+
+.brandName {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.26em;
+}
+
+.topbarLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.liveDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-bright);
+  box-shadow: 0 0 0 4px rgba(54, 201, 255, 0.11);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(390px, 0.78fr);
+  gap: clamp(24px, 4vw, 64px);
+  align-items: start;
+  padding: 28px 0 0;
+}
+
+.stage {
+  position: relative;
+  min-height: 930px;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background:
+    linear-gradient(136deg, rgba(22, 31, 35, 0.7), rgba(7, 9, 11, 0.96) 52%),
+    #0b0e10;
+  box-shadow: 0 32px 100px rgba(0, 0, 0, 0.26);
+}
+
+.stage::before {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(180deg, rgba(5, 7, 8, 0.1) 0%, transparent 46%, rgba(5, 7, 8, 0.78) 100%);
+  content: "";
+  pointer-events: none;
+}
+
+.stage::after {
+  position: absolute;
+  right: -18%;
+  bottom: -18%;
+  z-index: 0;
+  width: 62%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(0, 141, 201, 0.11);
+  filter: blur(60px);
+  content: "";
+  pointer-events: none;
+}
+
+.stageGrid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.32;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(180deg, black, transparent 78%);
+  pointer-events: none;
+}
+
+.copy {
+  position: relative;
+  z-index: 3;
+  max-width: 520px;
+  padding: clamp(38px, 5vw, 72px) clamp(28px, 5vw, 64px) 0;
+}
+
+.eyebrow,
+.signupKicker {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 0 0 22px;
+  color: var(--accent-bright);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.19em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.eyebrowLine {
+  display: inline-block;
+  width: 28px;
+  height: 1px;
+  background: currentColor;
+}
+
+.title {
+  max-width: 510px;
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(3.8rem, 6.6vw, 6.85rem);
+  font-weight: 700;
+  letter-spacing: -0.08em;
+  line-height: 0.9;
+}
+
+.title span {
+  color: var(--accent-bright);
+}
+
+.lede {
+  max-width: 430px;
+  margin: 28px 0 0;
+  color: #c3ced1;
+  font-size: clamp(0.98rem, 1.25vw, 1.14rem);
+  line-height: 1.65;
+}
+
+.scarcity {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  max-width: 410px;
+  margin-top: 28px;
+  padding: 14px 17px;
+  border: 1px solid rgba(54, 201, 255, 0.24);
+  border-radius: 14px;
+  background: rgba(8, 35, 46, 0.44);
+}
+
+.scarcityNumber {
+  color: var(--accent-bright);
+  font-size: 29px;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+
+.scarcityCopy {
+  display: grid;
+  gap: 3px;
+  color: #d6e3e6;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.scarcityCopy strong {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.primaryCta,
+.groupLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  color: #041017;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.primaryCta {
+  min-width: 205px;
+  margin-top: 26px;
+  padding: 15px 17px 15px 20px;
+  border-radius: 999px;
+  background: var(--accent-bright);
+  box-shadow: 0 12px 28px rgba(0, 160, 220, 0.2);
+  transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.primaryCta span,
+.groupLink span {
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 0.7;
+}
+
+.productImageWrap {
+  position: absolute;
+  inset: 150px -28px 28px 90px;
+  z-index: 1;
+}
+
+.productImage {
+  object-fit: contain;
+  object-position: center bottom;
+  filter: saturate(0.94) contrast(1.06) drop-shadow(0 28px 38px rgba(0, 0, 0, 0.62));
+}
+
+.stageFooter {
+  position: absolute;
+  right: clamp(22px, 4vw, 56px);
+  bottom: 24px;
+  left: clamp(22px, 4vw, 56px);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(216, 228, 231, 0.62);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+}
+
+.stageFooterRule {
+  flex: 1;
+  height: 1px;
+  background: rgba(216, 228, 231, 0.22);
+}
+
+.signup {
+  min-width: 0;
+}
+
+.signupHeader {
+  padding: 19px 6px 23px;
+}
+
+.signupKicker {
+  margin-bottom: 14px;
+  color: var(--accent-bright);
+}
+
+.signupHeader h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(2rem, 3.3vw, 3.3rem);
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  line-height: 0.98;
+}
+
+.signupHeader > p:last-child {
+  max-width: 500px;
+  margin: 17px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.62;
+}
+
+.formCard {
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 25px;
+  background: var(--panel-soft);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.26);
+}
+
+.formCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 13px 14px;
+  color: #dce8ea;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.formStatus {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-bright);
+  box-shadow: 0 0 0 4px rgba(54, 201, 255, 0.1);
+}
+
+.formStep {
+  margin-left: auto;
+  color: #728085;
+  font-size: 9px;
+  letter-spacing: 0.13em;
+}
+
+.formFrameWrap {
+  overflow: hidden;
+  border-radius: 17px;
+  background: #f8f9f9;
+}
+
+.formFrame {
+  display: block;
+  width: 100%;
+  min-height: 1036px;
+  border: 0;
+  background: #f8f9f9;
+}
+
+.nextStep {
+  display: flex;
+  gap: 14px;
+  margin-top: 16px;
+  padding: 18px 17px;
+  border: 1px solid rgba(54, 201, 255, 0.23);
+  border-radius: 17px;
+  background: rgba(8, 35, 46, 0.38);
+}
+
+.nextStepIcon {
+  display: grid;
+  flex: 0 0 27px;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent-bright);
+  color: #05212b;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.nextStepTitle {
+  margin: 0;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.nextStepText {
+  max-width: 470px;
+  margin: 5px 0 0;
+  color: #aebdc1;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.groupLink,
+.groupPlaceholder {
+  margin-top: 12px;
+  color: var(--accent-bright);
+  font-size: 11px;
+}
+
+.groupLink {
+  justify-content: flex-start;
+  gap: 8px;
+  transition: color 180ms ease;
+}
+
+.groupPlaceholder {
+  display: inline-block;
+  color: #809198;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.finePrint {
+  margin: 13px 7px 0;
+  color: #69767b;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 22px 4px 30px;
+  color: #59666a;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .primaryCta:hover {
+    background: #64d8ff;
+    box-shadow: 0 15px 34px rgba(0, 174, 239, 0.34);
+    transform: translateY(-2px);
+  }
+
+  .groupLink:hover {
+    color: #8de4ff;
+  }
+}
+
+@media (max-width: 1100px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 0.83fr);
+    gap: 24px;
+  }
+
+  .stage {
+    min-height: 880px;
+  }
+
+  .productImageWrap {
+    left: 46px;
+  }
+
+  .stageFooter {
+    font-size: 8px;
+  }
+}
+
+@media (max-width: 980px) {
+  .layout {
+    grid-template-columns: 1fr;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .stage {
+    min-height: 760px;
+  }
+
+  .signupHeader {
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .signupHeader > p:last-child {
+    max-width: 560px;
+  }
+}
+
+@media (max-width: 600px) {
+  .shell {
+    width: min(100% - 24px, 1380px);
+  }
+
+  .topbar {
+    min-height: 65px;
+  }
+
+  .brandName {
+    font-size: 13px;
+  }
+
+  .topbarLabel {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+  }
+
+  .layout {
+    gap: 19px;
+    padding-top: 12px;
+  }
+
+  .stage {
+    min-height: 715px;
+    border-radius: 21px;
+  }
+
+  .copy {
+    padding: 35px 23px 0;
+  }
+
+  .eyebrow {
+    margin-bottom: 18px;
+    font-size: 8px;
+    letter-spacing: 0.14em;
+  }
+
+  .title {
+    font-size: clamp(3.55rem, 16vw, 5rem);
+  }
+
+  .lede {
+    max-width: 300px;
+    margin-top: 22px;
+    font-size: 13px;
+    line-height: 1.57;
+  }
+
+  .scarcity {
+    max-width: 302px;
+    margin-top: 21px;
+    padding: 12px 13px;
+  }
+
+  .scarcityNumber {
+    font-size: 25px;
+  }
+
+  .scarcityCopy {
+    font-size: 10px;
+  }
+
+  .scarcityCopy strong {
+    font-size: 10px;
+  }
+
+  .primaryCta {
+    margin-top: 20px;
+    padding: 14px 16px 14px 18px;
+    font-size: 11px;
+  }
+
+  .productImageWrap {
+    inset: 220px -46px 18px 30px;
+  }
+
+  .stageFooter {
+    right: 18px;
+    bottom: 17px;
+    left: 18px;
+    gap: 8px;
+    font-size: 7px;
+    letter-spacing: 0.08em;
+  }
+
+  .signupHeader {
+    padding: 8px 2px 17px;
+  }
+
+  .signupKicker {
+    margin-bottom: 11px;
+    font-size: 8px;
+  }
+
+  .signupHeader h2 {
+    font-size: 2.35rem;
+  }
+
+  .signupHeader > p:last-child {
+    margin-top: 12px;
+    font-size: 13px;
+  }
+
+  .formCard {
+    padding: 7px;
+    border-radius: 20px;
+  }
+
+  .formCardHeader {
+    padding: 10px 9px 12px;
+    font-size: 10px;
+  }
+
+  .formFrameWrap {
+    border-radius: 14px;
+  }
+
+  .formFrame {
+    min-height: 1036px;
+  }
+
+  .nextStep {
+    gap: 11px;
+    padding: 15px 13px;
+  }
+
+  .nextStepText {
+    font-size: 11px;
+  }
+
+  .footer {
+    padding-top: 18px;
+    padding-bottom: 22px;
+    font-size: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primaryCta,
+  .groupLink {
+    transition: none;
+  }
+}

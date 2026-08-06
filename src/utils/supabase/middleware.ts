@@ -43,6 +43,7 @@ export async function updateSession(request: NextRequest) {
   const isPublicSalesPage = /^\/bryza[0-9]+$/.test(pathname.toLowerCase());
   const isPublicEarningsCalculator = pathname === '/calculadora-de-ganhos';
   const isPublicCadastroPage = pathname.startsWith('/cadastro');
+  const isPublicZeloLaunch = pathname === '/zelo-lancamento';
   const isPublicLojaPage = pathname.startsWith('/loja');
   const isPublicPaymentReturn = pathname === '/pagamento/retorno';
   const isPublicPaymentEndpoint =
@@ -63,6 +64,7 @@ export async function updateSession(request: NextRequest) {
     || isPublicSalesPage
     || isPublicEarningsCalculator
     || isPublicCadastroPage
+    || isPublicZeloLaunch
     || isPublicLojaPage
     || isPublicPaymentReturn
     || isPublicPaymentEndpoint
