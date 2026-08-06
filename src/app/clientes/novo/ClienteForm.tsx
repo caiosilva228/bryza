@@ -6,6 +6,54 @@ import Link from 'next/link';
 import { AmbassadorAssignmentOption, Cliente } from '@/models/types';
 import { toast } from 'sonner';
 
+const AMBASSADOR_LABEL_SEPARATOR = '\u2014';
+
+function formatAmbassadorLabel(ambassador: Pick<AmbassadorAssignmentOption, 'referral_code' | 'full_name'>) {
+  return `${ambassador.referral_code} ${AMBASSADOR_LABEL_SEPARATOR} ${ambassador.full_name}`;
+}
+
+function normalizeAmbassadorSearchValue(value: string) {
+  return value.trim().toLocaleLowerCase();
+}
+
+function getAmbassadorSearchTerm(value: string) {
+  return value.split(AMBASSADOR_LABEL_SEPARATOR, 1)[0].trim();
+}
+
+function mergeCurrentAmbassador(
+  ambassadors: AmbassadorAssignmentOption[],
+  initialData?: Cliente
+) {
+  const currentAmbassador = initialData?.indicated_by;
+  if (!currentAmbassador || ambassadors.some((ambassador) => ambassador.id === currentAmbassador.id)) {
+    return ambassadors;
+  }
+
+  return [
+    {
+      id: currentAmbassador.id,
+      full_name: currentAmbassador.full_name,
+      display_name: null,
+      username: currentAmbassador.referral_code,
+      referral_code: currentAmbassador.referral_code,
+    },
+    ...ambassadors,
+  ];
+}
+
+function ambassadorMatchesSearch(ambassador: AmbassadorAssignmentOption, query: string) {
+  const normalizedQuery = normalizeAmbassadorSearchValue(query);
+  if (!normalizedQuery) return true;
+
+  return [
+    ambassador.referral_code,
+    ambassador.username,
+    ambassador.full_name,
+    ambassador.display_name,
+    formatAmbassadorLabel(ambassador),
+  ].some((value) => value && normalizeAmbassadorSearchValue(value).includes(normalizedQuery));
+}
+
 export function ClienteForm({ 
   profile, 
   vendedores, 
@@ -40,6 +88,11 @@ export function ClienteForm({
   const [selectedAmbassadorId, setSelectedAmbassadorId] = useState(
     initialData?.commissionable_ambassador_id || ''
   );
+  const [ambassadorOptions, setAmbassadorOptions] = useState(() => (
+    mergeCurrentAmbassador(ambassadors, initialData)
+  ));
+  const [isAmbassadorListOpen, setIsAmbassadorListOpen] = useState(false);
+  const [isSearchingAmbassadors, setIsSearchingAmbassadors] = useState(false);
   const [assignmentReason, setAssignmentReason] = useState('');
   const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
   
@@ -70,6 +123,67 @@ export function ClienteForm({
       setCidades([]);
     }
   }, [formData.estado]);
+
+  useEffect(() => {
+    if (isVendedor) return;
+
+    const query = getAmbassadorSearchTerm(ambassadorQuery);
+    if (!query) {
+      setAmbassadorOptions(mergeCurrentAmbassador(ambassadors, initialData));
+      setIsSearchingAmbassadors(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsSearchingAmbassadors(true);
+
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        const response = await fetch(
+          `/api/clientes/ambassadors?query=${encodeURIComponent(query)}`,
+          { cache: 'no-store' }
+        );
+        const result = await response.json().catch(() => null);
+
+        if (!response.ok || !result?.success) {
+          throw new Error(result?.message || 'Falha ao pesquisar embaixadores.');
+        }
+
+        if (!cancelled) {
+          setAmbassadorOptions(mergeCurrentAmbassador(result.ambassadors || [], initialData));
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error('Erro ao pesquisar embaixadores:', error);
+          setAmbassadorOptions(mergeCurrentAmbassador([], initialData));
+        }
+      } finally {
+        if (!cancelled) setIsSearchingAmbassadors(false);
+      }
+    }, 180);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [ambassadorQuery, ambassadors, initialData, isVendedor]);
+
+  useEffect(() => {
+    const normalizedQuery = normalizeAmbassadorSearchValue(ambassadorQuery);
+    if (!normalizedQuery) return;
+
+    const match = ambassadorOptions.find((ambassador) => [
+      ambassador.referral_code,
+      ambassador.username,
+      ambassador.full_name,
+      ambassador.display_name,
+      formatAmbassadorLabel(ambassador),
+    ].some((value) => value && normalizeAmbassadorSearchValue(value) === normalizedQuery));
+
+    if (match) {
+      setSelectedAmbassadorId((currentId) => currentId === match.id ? currentId : match.id);
+    }
+  }, [ambassadorOptions, ambassadorQuery]);
 
   // Carregar Leaflet (CSS e JS) via CDN dinamicamente para evitar problemas de SSR no Next.js
   useEffect(() => {
@@ -360,6 +474,22 @@ export function ClienteForm({
     }
   };
 
+  const visibleAmbassadors = ambassadorOptions
+    .filter((ambassador) => ambassadorMatchesSearch(ambassador, ambassadorQuery))
+    .slice(0, 30);
+
+  const handleAmbassadorQueryChange = (value: string) => {
+    setAmbassadorQuery(value);
+    setSelectedAmbassadorId('');
+    setIsAmbassadorListOpen(true);
+  };
+
+  const handleAmbassadorSelect = (ambassador: AmbassadorAssignmentOption) => {
+    setAmbassadorQuery(formatAmbassadorLabel(ambassador));
+    setSelectedAmbassadorId(ambassador.id);
+    setIsAmbassadorListOpen(false);
+  };
+
   return (
     <form onSubmit={handleSubmit}>
       <datalist id="estados-list">
@@ -438,33 +568,82 @@ export function ClienteForm({
         {!isVendedor && (
           <div style={{ gridColumn: '1 / -1' }}>
             <label style={labelStyle}>Indicado por (Embaixador)</label>
-            <input
-              type="text"
-              list="active-ambassadors"
-              value={ambassadorQuery}
-              onChange={(event) => {
-                const value = event.target.value;
-                setAmbassadorQuery(value);
-                const normalized = value.trim().toLowerCase();
-                const match = ambassadors.find((ambassador) => {
-                  const option = `${ambassador.referral_code} — ${ambassador.full_name}`.toLowerCase();
-                  return option === normalized
-                    || ambassador.referral_code.toLowerCase() === normalized
-                    || ambassador.full_name.toLowerCase() === normalized;
-                });
-                setSelectedAmbassadorId(match?.id || '');
-              }}
-              placeholder="Pesquise pelo nome ou código; deixe vazio para nenhum"
-              style={{ ...inputStyle, textTransform: 'none' }}
-            />
-            <datalist id="active-ambassadors">
-              {ambassadors.map((ambassador) => (
-                <option
-                  key={ambassador.id}
-                  value={`${ambassador.referral_code} — ${ambassador.full_name}`}
-                />
-              ))}
-            </datalist>
+            <div style={{ position: 'relative', marginBottom: '16px' }}>
+              <input
+                type="text"
+                value={ambassadorQuery}
+                onFocus={() => setIsAmbassadorListOpen(true)}
+                onBlur={() => window.setTimeout(() => setIsAmbassadorListOpen(false), 150)}
+                onChange={(event) => handleAmbassadorQueryChange(event.target.value)}
+                placeholder="Pesquise pelo nome ou código; deixe vazio para nenhum"
+                autoComplete="off"
+                role="combobox"
+                aria-expanded={isAmbassadorListOpen}
+                aria-controls="active-ambassadors-list"
+                style={{ ...inputStyle, marginBottom: 0, textTransform: 'none' }}
+              />
+              {isAmbassadorListOpen && (
+                <div
+                  id="active-ambassadors-list"
+                  role="listbox"
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 4px)',
+                    left: 0,
+                    right: 0,
+                    zIndex: 20,
+                    maxHeight: '260px',
+                    overflowY: 'auto',
+                    backgroundColor: 'var(--color-surface-container-lowest)',
+                    border: '1px solid var(--color-outline-variant)',
+                    borderRadius: '8px',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+                    padding: '4px',
+                  }}
+                >
+                  {visibleAmbassadors.map((ambassador) => (
+                    <button
+                      key={ambassador.id}
+                      type="button"
+                      role="option"
+                      aria-selected={selectedAmbassadorId === ambassador.id}
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => handleAmbassadorSelect(ambassador)}
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        padding: '10px 12px',
+                        border: 'none',
+                        borderRadius: '6px',
+                        backgroundColor: selectedAmbassadorId === ambassador.id
+                          ? 'var(--color-primary-container)'
+                          : 'transparent',
+                        color: 'var(--color-on-surface)',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '14px',
+                      }}
+                    >
+                      <strong>{ambassador.referral_code}</strong>
+                      <span style={{ color: 'var(--color-on-surface-variant)' }}>
+                        {` ${AMBASSADOR_LABEL_SEPARATOR} ${ambassador.full_name}`}
+                      </span>
+                    </button>
+                  ))}
+                  {isSearchingAmbassadors && (
+                    <div style={{ padding: '10px 12px', color: 'var(--color-on-surface-variant)', fontSize: '13px' }}>
+                      Buscando embaixadores...
+                    </div>
+                  )}
+                  {!isSearchingAmbassadors && visibleAmbassadors.length === 0 && (
+                    <div style={{ padding: '10px 12px', color: 'var(--color-on-surface-variant)', fontSize: '13px' }}>
+                      Nenhum embaixador ativo encontrado.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             <input type="hidden" name="ambassador_id" value={selectedAmbassadorId} />
             {selectedAmbassadorId && (
               !initialData?.commissionable_ambassador_id

@@ -67,10 +67,10 @@ export const getClienteById = async (id: string): Promise<Cliente | null> => {
   return data as Cliente;
 };
 
-export const getActiveAmbassadorsForCustomerAssignment = async (): Promise<AmbassadorAssignmentOption[]> => {
+export const getActiveAmbassadorsForCustomerAssignment = async (query = ''): Promise<AmbassadorAssignmentOption[]> => {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc('fn_search_active_ambassadors', {
-    p_query: '',
+    p_query: query.trim(),
   });
 
   if (error) {
