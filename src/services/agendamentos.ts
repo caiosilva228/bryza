@@ -117,9 +117,11 @@ export const retornarPedidoParaAgendamento = async (pedidoId: string, dataAgenda
     .from('agendamentos')
     .select('id')
     .eq('pedido_id', pedidoId)
-    .single();
+    .maybeSingle();
 
-  if (!searchOriginalError && agendamentoOriginal) {
+  if (searchOriginalError) throw searchOriginalError;
+
+  if (agendamentoOriginal) {
     // 2a. Reutilizar o agendamento original: atualizar para 'agendado', nova data e limpar pedido_id
     const { error: updateOriginalError } = await supabase
       .from('agendamentos')
@@ -133,14 +135,18 @@ export const retornarPedidoParaAgendamento = async (pedidoId: string, dataAgenda
 
     if (updateOriginalError) throw updateOriginalError;
 
-    // Deletar o pedido para liberar o estoque reservado
-    const { error: deleteError } = await supabase
+    // Cancelar o pedido para liberar o estoque sem quebrar referências
+    // históricas de comissões e pagamentos.
+    const { error: cancelError } = await supabase
       .from('pedidos')
-      .delete()
+      .update({
+        status_pedido: 'cancelado',
+        updated_at: new Date().toISOString()
+      })
       .eq('id', pedidoId);
 
-    if (deleteError) {
-      // Reverter alteração do agendamento em caso de erro na deleção
+    if (cancelError) {
+      // Reverter alteração do agendamento em caso de erro no cancelamento
       await supabase
         .from('agendamentos')
         .update({
@@ -149,7 +155,7 @@ export const retornarPedidoParaAgendamento = async (pedidoId: string, dataAgenda
           updated_at: new Date().toISOString()
         })
         .eq('id', agendamentoOriginal.id);
-      throw deleteError;
+      throw cancelError;
     }
 
     return { id: agendamentoOriginal.id };
@@ -221,15 +227,19 @@ export const retornarPedidoParaAgendamento = async (pedidoId: string, dataAgenda
     }
   }
 
-  // 4b. Deletar o pedido
-  const { error: deleteError } = await supabase
+  // 4b. Cancelar o pedido para liberar o estoque sem apagar seu histórico
+  // financeiro ou as referências de comissão.
+  const { error: cancelError } = await supabase
     .from('pedidos')
-    .delete()
+    .update({
+      status_pedido: 'cancelado',
+      updated_at: new Date().toISOString()
+    })
     .eq('id', pedidoId);
 
-  if (deleteError) {
+  if (cancelError) {
     await supabase.from('agendamentos').delete().eq('id', agendamentoData.id);
-    throw deleteError;
+    throw cancelError;
   }
 
   return agendamentoData;
