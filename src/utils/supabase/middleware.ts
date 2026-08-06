@@ -44,6 +44,7 @@ export async function updateSession(request: NextRequest) {
   const isPublicEarningsCalculator = pathname === '/calculadora-de-ganhos';
   const isPublicCadastroPage = pathname.startsWith('/cadastro');
   const isPublicZeloLaunch = pathname === '/zelo-lancamento';
+  const isPublicZeloLeadApi = pathname === '/api/zelo-leads';
   const isPublicLojaPage = pathname.startsWith('/loja');
   const isPublicPaymentReturn = pathname === '/pagamento/retorno';
   const isPublicPaymentEndpoint =
@@ -65,6 +66,7 @@ export async function updateSession(request: NextRequest) {
     || isPublicEarningsCalculator
     || isPublicCadastroPage
     || isPublicZeloLaunch
+    || isPublicZeloLeadApi
     || isPublicLojaPage
     || isPublicPaymentReturn
     || isPublicPaymentEndpoint

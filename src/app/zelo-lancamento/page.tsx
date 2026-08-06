@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import ZeloLeadForm from './ZeloLeadForm';
 import styles from './zelo-lancamento.module.css';
-
-const formUrl =
-  'https://docs.google.com/forms/d/e/1FAIpQLSe_FtOw8FxkPAkAHfPnmz0WjjWELdJcm619I1X76ELwzsJ-Ag/viewform?embedded=true';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://bryza.com.br'),
@@ -117,58 +115,7 @@ export default function ZeloLancamentoPage() {
               </p>
             </div>
 
-            <div className={styles.formCard}>
-              <div className={styles.formCardHeader}>
-                <span className={styles.formStatus} aria-hidden="true" />
-                <span>Cadastro rápido</span>
-                <span className={styles.formStep}>01 / 01</span>
-              </div>
-
-              <div className={styles.formFrameWrap}>
-                <iframe
-                  className={styles.formFrame}
-                  title="Cadastro para o pré-lançamento do Zelo"
-                  src={formUrl}
-                  width="640"
-                  height="1036"
-                  loading="eager"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                >
-                  Carregando formulário…
-                </iframe>
-              </div>
-            </div>
-
-            <aside className={styles.nextStep} id="grupo">
-              <div className={styles.nextStepIcon} aria-hidden="true">
-                ✓
-              </div>
-              <div>
-                <p className={styles.nextStepTitle}>Depois do cadastro</p>
-                <p className={styles.nextStepText}>
-                  Entre no grupo fechado do WhatsApp para acompanhar a data de
-                  lançamento. O link de compra será divulgado lá.
-                </p>
-                {whatsappGroupUrl ? (
-                  <a
-                    className={styles.groupLink}
-                    href={whatsappGroupUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Entrar no grupo fechado <span aria-hidden="true">↗</span>
-                  </a>
-                ) : (
-                  <span className={styles.groupPlaceholder}>
-                    Convite do grupo fechado em breve
-                  </span>
-                )}
-              </div>
-            </aside>
-
-            <p className={styles.finePrint}>
-              Oferta especial exclusiva para os 100 primeiros cadastros.
-            </p>
+            <ZeloLeadForm whatsappGroupUrl={whatsappGroupUrl} />
           </section>
         </div>
 
